@@ -10,6 +10,7 @@
   
   <!-- Firebase SDK (v9 Compatibilidad) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <!-- Tipografía -->
@@ -35,13 +36,90 @@
       padding: 15px;
     }
 
-    .main-wrapper {
+    #authOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(2, 136, 209, 0.95);
+      backdrop-filter: blur(10px);
       display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      transition: opacity 0.3s ease;
+    }
+
+    .auth-box {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 24px;
+      text-align: center;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border: 3px solid #b3e5fc;
+    }
+
+    .btn-google {
+      width: 100%;
+      background: #ffffff;
+      border: 2px solid #b3e5fc;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #37474f;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+
+    .btn-google:hover {
+      background: #f4f9fd;
+      border-color: #0288d1;
+    }
+
+    .user-badge-header {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(6px);
+      padding: 6px 14px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+
+    .user-badge-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0288d1;
+    }
+
+    .user-badge-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a237e;
+    }
+
+    .main-wrapper {
+      display: none;
       flex-direction: column;
       gap: 20px;
       width: 100%;
       max-width: 1000px;
-      margin-top: 10px;
+      margin-top: 45px;
       padding-bottom: 40px;
     }
 
@@ -58,7 +136,7 @@
         align-items: flex-start;
       }
       .main-wrapper {
-        margin-top: 20px;
+        margin-top: 35px;
       }
     }
 
@@ -78,14 +156,6 @@
         padding: 24px;
         border-radius: 24px;
       }
-    }
-
-    .admin-card {
-      display: none;
-    }
-
-    .admin-card.visible {
-      display: block;
     }
 
     .form-card h2, .admin-card h3 {
@@ -152,7 +222,7 @@
       background-color: #e0f7fa;
     }
 
-    .btn-action, .btn-scan, .btn-admin-access, .btn-nequi-dl, .btn-proof-save, .btn-finish-order {
+    .btn-action, .btn-scan, .btn-nequi-dl, .btn-proof-save, .btn-finish-order {
       width: 100%;
       background: linear-gradient(135deg, #00c853 0%, #b2ff59 100%);
       color: #004d40;
@@ -193,18 +263,7 @@
       background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
       color: white;
       box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
-      margin-top: 12px;
-    }
-
-    .btn-admin-access {
-      background: linear-gradient(135deg, #78909c 0%, #455a64 100%);
-      color: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-      font-size: 0.9rem;
-      padding: 10px;
-      max-width: 220px;
-      margin: 0 auto;
-      border-radius: 14px;
+      margin-top: 15px;
     }
 
     .btn-rand {
@@ -342,6 +401,16 @@
       display: inline-block;
       margin-top: 2px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .nequi-desc-label {
+      font-size: 0.75rem;
+      color: #455a64;
+      font-weight: 600;
+      margin-top: 6px;
+      text-align: center;
+      word-break: break-word;
+      display: block;
     }
 
     .ticket-body {
@@ -524,65 +593,202 @@
       display: none;
     }
 
-    /* Modal de Progreso de Descarga */
-    #progressModal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .progress-box {
+    .survey-item {
       background: #ffffff;
-      padding: 24px;
-      border-radius: 20px;
-      text-align: center;
-      width: 90%;
-      max-width: 320px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-      border: 3px solid #0288d1;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      background: #e0f7fa;
-      height: 16px;
+      border: 1px solid #b3e5fc;
+      padding: 10px 12px;
       border-radius: 10px;
-      margin: 15px 0;
-      overflow: hidden;
-      border: 2px solid #b3e5fc;
+      margin-bottom: 10px;
     }
 
-    .progress-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #00c853, #26c6da);
-      border-radius: 8px;
-      transition: width 0.1s linear;
+    .survey-question {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1a237e;
+      margin-bottom: 6px;
+    }
+
+    .survey-justification {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .survey-justification.active {
+      display: block;
+    }
+
+    .stars-container {
+      background: #ffffff;
+      border: 2px solid #ffb300;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .stars-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #e65100;
+      margin-bottom: 6px;
+    }
+
+    .stars-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      font-size: 1.8rem;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+
+    .star {
+      color: #e0e0e0;
+      transition: color 0.2s;
+    }
+
+    .star.active {
+      color: #ffb300;
+    }
+
+    .stars-label-desc {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #0277bd;
+      margin-bottom: 8px;
+    }
+
+    /* Ticket Oculto para Generar la Imagen de Reseña y Estrellas */
+    #surveyTicketTemplate {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 360px;
+      border-radius: 18px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      border: 3px solid #ffffff;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .survey-ticket-overlay {
+      background: rgba(255, 255, 255, 0.93);
+      backdrop-filter: blur(2px);
+      padding: 20px 16px;
+      width: 100%;
+    }
+
+    .survey-ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+      font-size: 0.72rem;
+    }
+
+    .survey-ticket-q {
+      font-weight: 700;
+      color: #37474f;
+      max-width: 75%;
+    }
+
+    .survey-ticket-ans {
+      font-weight: 700;
+      color: #0288d1;
+    }
+
+    #moonToast {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(2, 136, 209, 0.95);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 12px 22px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      border: 2px solid #b3e5fc;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 99999;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      text-align: center;
+    }
+
+    #moonToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
   </style>
 </head>
 <body>
 
-  <!-- MODAL DE PROGRESO -->
-  <div id="progressModal">
-    <div class="progress-box">
-      <h4 style="color: #0277bd; margin-bottom: 5px;">📥 Generando Imagen...</h4>
-      <p id="progressText" style="font-size: 0.85rem; color: #546e7a; font-weight: 600;">Preparando archivo (0%)</p>
-      <div class="progress-bar-bg">
-        <div id="progressBarFill" class="progress-bar-fill"></div>
+  <!-- PANTALLA DE INICIO DE SESIÓN CON GOOGLE -->
+  <div id="authOverlay">
+    <div class="auth-box">
+      <div class="logo-moonshop" style="margin-bottom: 10px; font-size: 1.8rem;">
+        <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+      </div>
+      <p style="font-size: 0.9rem; color: #546e7a; font-weight: 600; margin-bottom: 15px;">Inicia sesión con tu cuenta de Google para acceder al sistema.</p>
+      
+      <button class="btn-google" onclick="playBubbleSound(); loginWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.2v3.15C3.18 21.32 7.23 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.2C.44 8.12 0 9.87 0 12s.44 3.88 1.2 5.42l4.08-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.68 1.2 6.58l4.08 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        Continuar con Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ICONO Y NOMBRE DE GOOGLE EN LA ESQUINA -->
+  <div id="userBadgeHeader" class="user-badge-header" style="display:none;">
+    <img id="userBadgeAvatar" class="user-badge-avatar" src="" alt="Avatar">
+    <span id="userBadgeName" class="user-badge-name">Usuario</span>
+  </div>
+
+  <!-- NOTIFICACIÓN FLOTANTE MOONSHOP -->
+  <div id="moonToast">✨ Tu imagen está siendo preparada para instalarse...</div>
+
+  <!-- PLANTILLA DE TICKET DE ENCUESTA OCULTA (SE GENERA AL CERRAR) -->
+  <div id="surveyTicketTemplate">
+    <div class="survey-ticket-overlay">
+      <div class="ticket-header" style="padding-bottom: 6px; margin-bottom: 8px;">
+        <div class="logo-moonshop" style="font-size: 1.2rem;">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+        <div style="font-size: 0.7rem; color: #546e7a; font-weight: 700;">REPORTE OFICIAL DE RESEÑA & CALIFICACIÓN</div>
+        <div><span class="ticket-code" id="st-code" style="font-size: 0.85rem;">#MOON-0000</span></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div class="survey-ticket-row"><span class="survey-ticket-q">1. ¿Se ha respetado al cliente?</span><span class="survey-ticket-ans" id="st-q1">SÍ</span></div>
+        <div class="survey-ticket-row"><span class="survey-ticket-q">2. ¿Al cliente le gustó la experiencia?</span><span class="survey-ticket-ans" id="st-q2">SÍ</span></div>
+        <div class="survey-ticket-row"><span class="survey-ticket-q">3. ¿El cliente estuvo satisfecho?</span><span class="survey-ticket-ans" id="st-q3">SÍ</span></div>
+        <div class="survey-ticket-row"><span class="survey-ticket-q">4. ¿Tuvo problema con la compra?</span><span class="survey-ticket-ans" id="st-q4">NO</span></div>
+        <div class="survey-ticket-row"><span class="survey-ticket-q">5. ¿Hubo demora en la entrega?</span><span class="survey-ticket-ans" id="st-q5">NO</span></div>
+        <div class="survey-ticket-row"><span class="survey-ticket-q">6. Todo se hizo con orden</span><span class="survey-ticket-ans" id="st-q6">SÍ</span></div>
+      </div>
+
+      <div class="ticket-divider"></div>
+
+      <div style="text-align: center; margin: 6px 0;">
+        <div style="font-size: 0.75rem; font-weight: 700; color: #e65100;" id="st-stars-text">⭐⭐⭐⭐⭐ Excelente</div>
+        <div style="font-size: 0.65rem; color: #546e7a; font-style: italic;" id="st-comment">Sin comentarios adicionales</div>
+      </div>
+
+      <div class="ticket-footer">
+        <div class="ticket-date" id="st-date">FECHA: --/--/----</div>
       </div>
     </div>
   </div>
 
-  <div class="main-wrapper">
+  <div id="mainWrapper" class="main-wrapper">
     
-    <button class="btn-admin-access" onclick="playBubbleSound(); requestAdminAccess()">🔐 Panel Administrador</button>
-
     <div class="container">
       
       <!-- Formulario de Creación -->
@@ -767,7 +973,7 @@
 
     <!-- Panel Admin -->
     <div id="adminPanel" class="admin-card">
-      <h3>🔍 Admin Panel - Consultar Código MOON</h3>
+      <h3>🔍 Panel Administrador - Consultar Código MOON</h3>
       
       <div class="form-group">
         <label for="searchCode">Escribe los 4 dígitos (Ej. 7157):</label>
@@ -822,6 +1028,11 @@
           </div>
 
           <div class="form-group">
+            <label for="sec2DescInput">Descripción Opcional (Ej. Razón del pago):</label>
+            <input type="text" id="sec2DescInput" placeholder="Ej. Pago por Robux 1000" value="" oninput="renderNequiTicket()">
+          </div>
+
+          <div class="form-group">
             <label>Nombre del Titular de la Cuenta:</label>
             <input type="text" id="sec2HolderInput" value="Darwin Rincón" oninput="renderNequiTicket()">
           </div>
@@ -843,11 +1054,12 @@
 
           <div id="nequiTicketRender" class="nequi-ticket-style">
             <div class="nequi-ticket-overlay">
-              <div class="ticket-header">
+              <div class="ticket-header" style="padding-bottom: 8px;">
                 <div class="logo-moonshop">
                   <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
                 </div>
                 <div><span class="ticket-code" id="sec2TicketCodeLbl">#MOON-7157</span></div>
+                <span id="sec2DescLbl" class="nequi-desc-label"></span>
               </div>
 
               <div class="ticket-body">
@@ -910,6 +1122,94 @@
 
           <button id="saveProofBtn" class="btn-proof-save" onclick="playBubbleSound(); savePaymentProof()">📤 Publicar Comprobante en Firebase</button>
           
+          <!-- FORMULARIO DE RESEÑAS & ESTRELLAS -->
+          <div style="margin-top: 15px; border-top: 2px dashed #ffb300; padding-top: 12px;">
+            <label style="font-size: 0.95rem; color: #e65100; margin-bottom: 10px; font-weight: 700;">📝 Encuesta de Calificación & Reseña de Venta:</label>
+
+            <div class="survey-item">
+              <div class="survey-question">1. ¿Se ha respetado al cliente?</div>
+              <select id="q1" onchange="checkSurveyLogic('q1', 'j1')">
+                <option value="SI">Sí</option>
+                <option value="NO">No</option>
+              </select>
+              <div id="j1" class="survey-justification">
+                <input type="text" id="just1" placeholder="Justifica por qué...">
+              </div>
+            </div>
+
+            <div class="survey-item">
+              <div class="survey-question">2. ¿Al cliente le gustó la experiencia?</div>
+              <select id="q2" onchange="checkSurveyLogic('q2', 'j2')">
+                <option value="SI">Sí</option>
+                <option value="NO">No</option>
+              </select>
+              <div id="j2" class="survey-justification">
+                <input type="text" id="just2" placeholder="Justifica por qué...">
+              </div>
+            </div>
+
+            <div class="survey-item">
+              <div class="survey-question">3. ¿El cliente estuvo satisfecho con su compra?</div>
+              <select id="q3" onchange="checkSurveyLogic('q3', 'j3')">
+                <option value="SI">Sí</option>
+                <option value="NO">No</option>
+              </select>
+              <div id="j3" class="survey-justification">
+                <input type="text" id="just3" placeholder="Justifica por qué...">
+              </div>
+            </div>
+
+            <div class="survey-item">
+              <div class="survey-question">4. ¿El cliente tuvo algún problema con la compra?</div>
+              <select id="q4" onchange="checkSurveyLogic('q4', 'j4')">
+                <option value="NO">No</option>
+                <option value="SI">Sí</option>
+              </select>
+              <div id="j4" class="survey-justification">
+                <input type="text" id="just4" placeholder="Justifica el problema...">
+              </div>
+            </div>
+
+            <div class="survey-item">
+              <div class="survey-question">5. ¿Hubo demora en la entrega?</div>
+              <select id="q5" onchange="checkSurveyLogic('q5', 'j5')">
+                <option value="NO">No</option>
+                <option value="SI">Sí</option>
+              </select>
+              <div id="j5" class="survey-justification">
+                <input type="text" id="just5" placeholder="Justifica la demora...">
+              </div>
+            </div>
+
+            <div class="survey-item">
+              <div class="survey-question">6. Todo se hizo con orden y no hubo ningún inconveniente</div>
+              <select id="q6" onchange="checkSurveyLogic('q6', 'j6')">
+                <option value="SI">Sí</option>
+                <option value="NO">No</option>
+              </select>
+              <div id="j6" class="survey-justification">
+                <input type="text" id="just6" placeholder="Justifica qué inconveniente hubo...">
+              </div>
+            </div>
+
+            <div class="stars-container">
+              <div class="stars-title">⭐ Calificación General del Servicio</div>
+              <div class="stars-row" id="starRow">
+                <span class="star" onclick="setRating(1)">★</span>
+                <span class="star" onclick="setRating(2)">★</span>
+                <span class="star" onclick="setRating(3)">★</span>
+                <span class="star" onclick="setRating(4)">★</span>
+                <span class="star" onclick="setRating(5)">★</span>
+              </div>
+              <div id="starsLabelDesc" class="stars-label-desc">Selecciona una calificación</div>
+              
+              <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" id="starJustification" placeholder="Comentario u opinión opcional sobre la calificación...">
+              </div>
+            </div>
+
+          </div>
+
           <button id="finishOrderBtn" class="btn-finish-order" onclick="playBubbleSound(); finishOrder()">📦 Pedido Realizado (Cerrar / Bloquear Ticket)</button>
         </div>
 
@@ -931,6 +1231,7 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
     let nequiQrBase64 = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop";
@@ -939,6 +1240,7 @@
     let currentTicketRefundData = "NO";
     let currentTicketTimestamp = 0;
     let avatarBase64 = "https://via.placeholder.com/100";
+    let currentStarRating = 5; // Por defecto 5 estrellas
 
     function playBubbleSound() {
       try {
@@ -961,35 +1263,93 @@
       } catch (e) {}
     }
 
-    function showProgressModal(onComplete) {
-      const modal = document.getElementById('progressModal');
-      const fill = document.getElementById('progressBarFill');
-      const text = document.getElementById('progressText');
-      
-      modal.style.display = 'flex';
-      let progress = 0;
-      fill.style.width = '0%';
+    function showMoonToast() {
+      const toast = document.getElementById('moonToast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
 
-      let interval = setInterval(() => {
-        progress += 5;
-        if (progress <= 100) {
-          fill.style.width = progress + '%';
-          text.innerText = `Generando archivo (${progress}%)`;
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch((error) => {
+        alert("⚠️ Error al iniciar sesión con Google: " + error.message);
+      });
+    }
+
+    auth.onAuthStateChanged((user) => {
+      const authOverlay = document.getElementById('authOverlay');
+      const mainWrapper = document.getElementById('mainWrapper');
+      const userBadgeHeader = document.getElementById('userBadgeHeader');
+      const userBadgeAvatar = document.getElementById('userBadgeAvatar');
+      const userBadgeName = document.getElementById('userBadgeName');
+
+      if (user) {
+        authOverlay.style.display = 'none';
+        mainWrapper.style.display = 'flex';
+        userBadgeHeader.style.display = 'flex';
+
+        userBadgeAvatar.src = user.photoURL || "https://via.placeholder.com/100";
+        userBadgeName.innerText = user.displayName || user.email || "Administrador";
+      } else {
+        authOverlay.style.display = 'flex';
+        mainWrapper.style.display = 'none';
+        userBadgeHeader.style.display = 'none';
+      }
+    });
+
+    function setRating(starsCount) {
+      playBubbleSound();
+      currentStarRating = starsCount;
+      const stars = document.querySelectorAll('.star');
+      const descLabel = document.getElementById('starsLabelDesc');
+
+      stars.forEach((star, index) => {
+        if (index < starsCount) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
         }
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            modal.style.display = 'none';
-            if (onComplete) onComplete();
-          }, 200);
-        }
-      }, 30);
+      });
+
+      const descriptions = {
+        1: "⭐ Malo",
+        2: "⭐⭐ Malo todavía",
+        3: "⭐⭐⭐ Medio",
+        4: "⭐⭐⭐⭐ Bueno",
+        5: "⭐⭐⭐⭐⭐ Excelente"
+      };
+      descLabel.innerText = descriptions[starsCount] || "";
+    }
+
+    // Inicializar estrellas en 5 por defecto al cargar
+    window.onload = function() {
+      loadDefaultBackground();
+      setTicketDate();
+      generateRandomCode();
+      updateCategoryFields();
+      setRating(5);
+    };
+
+    function checkSurveyLogic(selectId, divId) {
+      const val = document.getElementById(selectId).value;
+      const div = document.getElementById(divId);
+      let isNegative = (selectId === 'q4' || selectId === 'q5') ? (val === 'SI') : (val === 'NO');
+
+      if (isNegative) {
+        div.classList.add('active');
+      } else {
+        div.classList.remove('active');
+        div.querySelector('input').value = '';
+      }
     }
 
     function loadDefaultBackground() {
       const storeImageLink = "https://kommodo.ai/i/SnliSX0qytsT3NILOcrH";
       document.getElementById('ticket').style.backgroundImage = `url("${storeImageLink}")`;
       document.getElementById('nequiTicketRender').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('surveyTicketTemplate').style.backgroundImage = `url("${storeImageLink}")`;
     }
 
     function generateRandomCode() {
@@ -1029,7 +1389,9 @@
     function setTicketDate() {
       const now = new Date();
       const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-      document.getElementById('lbl-date').innerText = 'FECHA: ' + now.toLocaleDateString('es-ES', options);
+      const dateStr = 'FECHA: ' + now.toLocaleDateString('es-ES', options);
+      document.getElementById('lbl-date').innerText = dateStr;
+      document.getElementById('st-date').innerText = dateStr;
     }
 
     function updateCategoryFields() {
@@ -1100,19 +1462,6 @@
       document.getElementById('lbl-price').innerText = isNaN(numPrice) ? '$0.00' : '$' + numPrice.toFixed(2);
     }
 
-    function requestAdminAccess() {
-      const secretKey = "moonfed2026";
-      let userInput = prompt("Ingresa la clave de administrador:");
-      
-      if (userInput === secretKey) {
-        let adminCard = document.getElementById('adminPanel');
-        adminCard.classList.add('visible');
-        adminCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else if (userInput !== null) {
-        alert("❌ Clave incorrecta.");
-      }
-    }
-
     function resetFormToDefault() {
       document.getElementById('productCategory').value = "Robux";
       updateCategoryFields();
@@ -1135,46 +1484,46 @@
       const ticketElement = document.getElementById('ticket');
       const category = document.getElementById('productCategory').value;
 
-      showProgressModal(() => {
-        html2canvas(ticketElement, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null
-        }).then(canvas => {
-          const imageBase64 = canvas.toDataURL('image/png');
+      showMoonToast();
 
-          let ticketData = {
-            code: '#MOON-' + code,
-            category: category,
-            dynamicValue: document.getElementById('dynamicFieldInput').value.trim(),
-            platform: document.getElementById('socialPlatform').value,
-            socialUser: document.getElementById('socialUser').value.trim(),
-            avatarImage: avatarBase64,
-            price: document.getElementById('lbl-price').innerText,
-            buyer: document.getElementById('buyer').value.trim(),
-            seller: document.getElementById('seller').value.trim(),
-            refund: document.getElementById('refund').value,
-            date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
-            image: imageBase64,
-            status: 'PENDIENTE',
-            timestamp: Date.now()
-          };
+      html2canvas(ticketElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
 
-          db.ref('tickets/' + code).set(ticketData, (error) => {
-            if (error) {
-              alert("⚠️ Error al guardar en Firebase: " + error.message);
-            } else {
-              const downloadLink = document.createElement('a');
-              downloadLink.href = imageBase64;
-              downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
-              document.body.appendChild(downloadLink);
-              downloadLink.click();
-              document.body.removeChild(downloadLink);
+        let ticketData = {
+          code: '#MOON-' + code,
+          category: category,
+          dynamicValue: document.getElementById('dynamicFieldInput').value.trim(),
+          platform: document.getElementById('socialPlatform').value,
+          socialUser: document.getElementById('socialUser').value.trim(),
+          avatarImage: avatarBase64,
+          price: document.getElementById('lbl-price').innerText,
+          buyer: document.getElementById('buyer').value.trim(),
+          seller: document.getElementById('seller').value.trim(),
+          refund: document.getElementById('refund').value,
+          date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
+          image: imageBase64,
+          status: 'PENDIENTE',
+          timestamp: Date.now()
+        };
 
-              resetFormToDefault();
-            }
-          });
+        db.ref('tickets/' + code).set(ticketData, (error) => {
+          if (error) {
+            alert("⚠️ Error al guardar en Firebase: " + error.message);
+          } else {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageBase64;
+            downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            resetFormToDefault();
+          }
         });
       });
     }
@@ -1220,6 +1569,11 @@
 
           document.getElementById('sec2CodeInput').value = cleanCode;
           document.getElementById('sec2TicketCodeLbl').innerText = '#MOON-' + cleanCode;
+          
+          if (!document.getElementById('sec2DescInput').value) {
+            document.getElementById('sec2DescInput').value = data.category + ": " + data.dynamicValue;
+          }
+
           if (data.price) {
             let numPrice = parseFloat(data.price.replace('$', ''));
             document.getElementById('sec2PriceInput').value = isNaN(numPrice) ? 25.00 : numPrice;
@@ -1254,21 +1608,22 @@
 
     function downloadSavedTicketImage() {
       if (currentSavedTicketBase64) {
+        showMoonToast();
         let code = document.getElementById('sec1-code').innerText;
-        showProgressModal(() => {
-          const link = document.createElement('a');
-          link.href = currentSavedTicketBase64;
-          link.download = `Ticket-MOON-${code}.png`;
-          link.click();
-        });
+        const link = document.createElement('a');
+        link.href = currentSavedTicketBase64;
+        link.download = `Ticket-MOON-${code}.png`;
+        link.click();
       }
     }
 
     function renderNequiTicket() {
+      const desc = document.getElementById('sec2DescInput').value;
       const holder = document.getElementById('sec2HolderInput').value;
       const phone = document.getElementById('sec2PhoneInput').value;
       const price = parseFloat(document.getElementById('sec2PriceInput').value);
 
+      document.getElementById('sec2DescLbl').innerText = desc || '';
       document.getElementById('sec2HolderLbl').innerText = holder || '-';
       document.getElementById('sec2PhoneLbl').innerText = phone || '000 000 0000';
       document.getElementById('sec2PriceLbl').innerText = isNaN(price) ? '$0.00' : '$' + price.toFixed(2);
@@ -1291,18 +1646,18 @@
       const ticketNequiBox = document.getElementById('nequiTicketRender');
       let code = document.getElementById('sec2CodeInput').value;
 
-      showProgressModal(() => {
-        html2canvas(ticketNequiBox, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null
-        }).then(canvas => {
-          const link = document.createElement('a');
-          link.download = `Ficha-Nequi-MOON-${code}.png`;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        });
+      showMoonToast();
+
+      html2canvas(ticketNequiBox, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Ficha-Nequi-MOON-${code}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
       });
     }
 
@@ -1345,6 +1700,7 @@
       });
     }
 
+    /* PEDIDO REALIZADO: GENERA TICKET DE ENCUESTA EN IMAGEN Y BLOQUEA */
     function finishOrder() {
       let code = document.getElementById('sec2CodeInput').value;
       if (!code) return;
@@ -1359,21 +1715,77 @@
         return;
       }
 
-      let confirmClose = confirm("¿Estás seguro de marcar este pedido como REALIZADO? El ticket se cerrará y bloqueará permanentemente.");
+      // Validar justificaciones obligatorias de la encuesta
+      let surveyData = {};
+      for (let i = 1; i <= 6; i++) {
+        let ans = document.getElementById('q' + i).value;
+        let just = document.getElementById('just' + i).value.trim();
+        let isNeg = (i === 4 || i === 5) ? (ans === 'SI') : (ans === 'NO');
+
+        if (isNeg && !just) {
+          alert(`⚠️ Debes justificar la respuesta de la pregunta #${i} ya que fue marcada negativamente.`);
+          document.getElementById('just' + i).focus();
+          return;
+        }
+        surveyData['q' + i] = ans;
+        surveyData['just' + i] = just;
+      }
+
+      surveyData['stars'] = currentStarRating;
+      surveyData['starComment'] = document.getElementById('starJustification').value.trim();
+
+      // Preparar el ticket visual oculto para renderizar la imagen
+      document.getElementById('st-code').innerText = '#MOON-' + code;
+      for (let i = 1; i <= 6; i++) {
+        let ans = document.getElementById('q' + i).value;
+        let just = document.getElementById('just' + i).value.trim();
+        document.getElementById('st-q' + i).innerText = just ? `${ans} (${just})` : ans;
+      }
+
+      const starTexts = { 1: "⭐ Malo", 2: "⭐⭐ Malo todavía", 3: "⭐⭐⭐ Medio", 4: "⭐⭐⭐⭐ Bueno", 5: "⭐⭐⭐⭐⭐ Excelente" };
+      document.getElementById('st-stars-text').innerText = starTexts[currentStarRating] || "⭐⭐⭐⭐⭐ Excelente";
       
-      if (confirmClose) {
-        db.ref('tickets/' + code).update({ status: 'COMPLETADO' }, (error) => {
+      let commentVal = document.getElementById('starJustification').value.trim();
+      document.getElementById('st-comment').innerText = commentVal ? `"${commentVal}"` : "Sin comentarios adicionales";
+
+      showMoonToast();
+
+      // Convertir el ticket de encuesta en imagen y descargarlo al vuelo
+      const surveyTicketElement = document.getElementById('surveyTicketTemplate');
+      html2canvas(surveyTicketElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const surveyImageBase64 = canvas.toDataURL('image/png');
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = surveyImageBase64;
+        downloadLink.download = `Reseña-Encuesta-MOON-${code}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        let finalData = {
+          status: 'COMPLETADO',
+          survey: surveyData,
+          surveyImage: surveyImageBase64
+        };
+
+        db.ref('tickets/' + code).update(finalData, (error) => {
           if (error) {
             alert("⚠️ Error al actualizar el estado: " + error.message);
           } else {
-            alert("📦 ¡Pedido finalizado y cerrado con éxito! El ticket #" + code + " ha sido bloqueado.");
-            searchTicketByCode();
+            alert("📦 ¡Pedido realizado y cerrado con éxito! La ficha de encuesta se ha descargado y el ticket #" + code + " ha sido bloqueado.");
+            location.reload();
           }
         });
-      }
+      });
     }
 
     function disableAllFields() {
+      document.getElementById('sec2DescInput').disabled = true;
       document.getElementById('sec2HolderInput').disabled = true;
       document.getElementById('sec2PhoneInput').disabled = true;
       document.getElementById('sec2PriceInput').disabled = true;
@@ -1386,6 +1798,7 @@
     }
 
     function enableAllFields() {
+      document.getElementById('sec2DescInput').disabled = false;
       document.getElementById('sec2HolderInput').disabled = false;
       document.getElementById('sec2PhoneInput').disabled = false;
       document.getElementById('sec2PriceInput').disabled = false;
@@ -1396,13 +1809,6 @@
       document.getElementById('saveProofBtn').style.display = 'flex';
       document.getElementById('finishOrderBtn').style.display = 'flex';
     }
-
-    window.onload = function() {
-      loadDefaultBackground();
-      setTicketDate();
-      generateRandomCode();
-      updateCategoryFields();
-    };
   </script>
 
 </body>
