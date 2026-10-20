@@ -10,7 +10,6 @@
   
   <!-- Firebase SDK (v9 Compatibilidad) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <!-- Tipografía -->
@@ -36,90 +35,13 @@
       padding: 15px;
     }
 
-    #authOverlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(2, 136, 209, 0.95);
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 99999;
-      transition: opacity 0.3s ease;
-    }
-
-    .auth-box {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 24px;
-      text-align: center;
-      width: 90%;
-      max-width: 360px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border: 3px solid #b3e5fc;
-    }
-
-    .btn-google {
-      width: 100%;
-      background: #ffffff;
-      border: 2px solid #b3e5fc;
-      border-radius: 14px;
-      padding: 12px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #37474f;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transition: all 0.2s;
-    }
-
-    .btn-google:hover {
-      background: #f4f9fd;
-      border-color: #0288d1;
-    }
-
-    .user-badge-header {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(6px);
-      padding: 6px 14px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: 2px solid #ffffff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
-    }
-
-    .user-badge-avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #0288d1;
-    }
-
-    .user-badge-name {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #1a237e;
-    }
-
     .main-wrapper {
-      display: none;
+      display: flex;
       flex-direction: column;
       gap: 20px;
       width: 100%;
       max-width: 1000px;
-      margin-top: 45px;
+      margin-top: 15px;
       padding-bottom: 40px;
     }
 
@@ -134,9 +56,6 @@
       .container {
         flex-direction: row;
         align-items: flex-start;
-      }
-      .main-wrapper {
-        margin-top: 35px;
       }
     }
 
@@ -725,32 +644,6 @@
 </head>
 <body>
 
-  <!-- PANTALLA DE INICIO DE SESIÓN CON GOOGLE -->
-  <div id="authOverlay">
-    <div class="auth-box">
-      <div class="logo-moonshop" style="margin-bottom: 10px; font-size: 1.8rem;">
-        <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
-      </div>
-      <p style="font-size: 0.9rem; color: #546e7a; font-weight: 600; margin-bottom: 15px;">Inicia sesión con tu cuenta de Google para acceder al sistema.</p>
-      
-      <button class="btn-google" onclick="playBubbleSound(); loginWithGoogle()">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.2v3.15C3.18 21.32 7.23 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.2C.44 8.12 0 9.87 0 12s.44 3.88 1.2 5.42l4.08-3.15z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.68 1.2 6.58l4.08 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-        </svg>
-        Continuar con Google
-      </button>
-    </div>
-  </div>
-
-  <!-- ICONO Y NOMBRE DE GOOGLE EN LA ESQUINA -->
-  <div id="userBadgeHeader" class="user-badge-header" style="display:none;">
-    <img id="userBadgeAvatar" class="user-badge-avatar" src="" alt="Avatar">
-    <span id="userBadgeName" class="user-badge-name">Usuario</span>
-  </div>
-
   <!-- NOTIFICACIÓN FLOTANTE MOONSHOP -->
   <div id="moonToast">✨ Tu imagen está siendo preparada para instalarse...</div>
 
@@ -1220,7 +1113,6 @@
   </div>
 
   <script>
-    // NUEVA CONFIGURACIÓN DE FIREBASE (moon-24a67)
     const firebaseConfig = {
       apiKey: "AIzaSyDr3hb4KDhyV6S4e7K__ZN8qWVHbxLp9DE",
       authDomain: "moon-24a67.firebaseapp.com",
@@ -1232,7 +1124,6 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
 
     let nequiQrBase64 = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop";
@@ -1271,34 +1162,6 @@
         toast.classList.remove('show');
       }, 3000);
     }
-
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch((error) => {
-        alert("⚠️ Error al iniciar sesión con Google: " + error.message);
-      });
-    }
-
-    auth.onAuthStateChanged((user) => {
-      const authOverlay = document.getElementById('authOverlay');
-      const mainWrapper = document.getElementById('mainWrapper');
-      const userBadgeHeader = document.getElementById('userBadgeHeader');
-      const userBadgeAvatar = document.getElementById('userBadgeAvatar');
-      const userBadgeName = document.getElementById('userBadgeName');
-
-      if (user) {
-        authOverlay.style.display = 'none';
-        mainWrapper.style.display = 'flex';
-        userBadgeHeader.style.display = 'flex';
-
-        userBadgeAvatar.src = user.photoURL || "https://via.placeholder.com/100";
-        userBadgeName.innerText = user.displayName || user.email || "Administrador";
-      } else {
-        authOverlay.style.display = 'flex';
-        mainWrapper.style.display = 'none';
-        userBadgeHeader.style.display = 'none';
-      }
-    });
 
     function setRating(starsCount) {
       playBubbleSound();
