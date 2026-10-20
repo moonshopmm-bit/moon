@@ -1,450 +1,1294 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moon Shop | MM2 Store</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .blue-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-        .discord-glow { box-shadow: 0 0 15px rgba(88, 101, 242, 0.4); }
-        .bg-gradient-moon { background: radial-gradient(circle at top right, #1e3a8a 0%, #020617 60%); }
-        
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        .animate-weapon { animation: float 4s ease-in-out infinite; }
-        .animate-weapon-delay { animation: float 4s ease-in-out infinite; animation-delay: 2s; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Tickets & Pagos - MOONSHOP</title>
+  
+  <!-- Librería para convertir HTML a Imagen PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- Firebase SDK (v9 Compatibilidad para Web) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
-        #chat-panel { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(20px) scale(0.9); opacity: 0; pointer-events: none; }
-        #chat-panel.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
-        .message-bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; margin-bottom: 10px; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .ai-msg { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .user-msg { background: #3b82f6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        
-        [data-fs-success] { display: none; }
-        .fs-success [data-fs-success] { display: block; }
-        .fs-success #my-form { display: none; }
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 
-        .input-field { 
-            width: 100%; 
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 12px 16px; 
-            border-radius: 14px; 
-            color: white; 
-            outline: none; 
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .input-field:focus { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-        
-        label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-left: 4px; margin-bottom: 4px; display: block; }
-    </style>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 50%, #81c784 100%);
+      color: #2d3748;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .main-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 10px;
+      padding-bottom: 40px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) and (orientation: landscape), (min-width: 900px) {
+      .container {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .main-wrapper {
+        margin-top: 20px;
+      }
+    }
+
+    .form-card, .admin-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      flex: 1;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ffffff;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .form-card, .admin-card {
+        padding: 24px;
+        border-radius: 24px;
+      }
+    }
+
+    .admin-card {
+      display: none;
+    }
+
+    .admin-card.visible {
+      display: block;
+    }
+
+    .form-card h2, .admin-card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      color: #0277bd;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #455a64;
+      margin-bottom: 4px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prefix {
+      position: absolute;
+      left: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #0288d1;
+      user-select: none;
+      font-size: 0.9rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #f4f9fd;
+      border: 2px solid #b3e5fc;
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: #1a237e;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #0288d1;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.2);
+    }
+
+    .code-input, .search-code-input {
+      padding-left: 85px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .code-input {
+      background-color: #e0f7fa;
+    }
+
+    .btn-action, .btn-scan, .btn-admin-access, .btn-nequi-dl, .btn-proof-save, .btn-finish-order {
+      width: 100%;
+      background: linear-gradient(135deg, #00c853 0%, #b2ff59 100%);
+      color: #004d40;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
+    }
+
+    .btn-scan {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    }
+
+    .btn-nequi-dl {
+      background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+    }
+
+    .btn-proof-save {
+      background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%);
+      color: #3e2723;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    }
+
+    .btn-finish-order {
+      background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+      margin-top: 12px;
+    }
+
+    .btn-admin-access {
+      background: linear-gradient(135deg, #78909c 0%, #455a64 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      font-size: 0.9rem;
+      padding: 10px;
+      max-width: 220px;
+      margin: 0 auto;
+      border-radius: 14px;
+    }
+
+    .btn-rand {
+      background: #e1f5fe;
+      border: 1px solid #0288d1;
+      color: #0288d1;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+
+    .preview-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .preview-title {
+      font-size: 0.85rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Estilo General de Tickets (Mismo fondo y bordes) */
+    .ticket {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 18px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #ffffff;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .ticket-overlay {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(2px);
+      padding: 20px 16px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ticket::before, .ticket::after {
+      content: '';
+      position: absolute;
+      top: 72%;
+      width: 18px;
+      height: 18px;
+      background: #26c6da;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .ticket::before { left: -9px; }
+    .ticket::after { right: -9px; }
+
+    .ticket-header {
+      text-align: center;
+      border-bottom: 2px dashed #b0bec5;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #f0f8ff;
+      border: 2px solid #b3e5fc;
+      border-radius: 30px;
+      padding: 6px 12px;
+      margin-bottom: 10px;
+    }
+
+    .user-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0288d1;
+    }
+
+    .user-info-text {
+      text-align: left;
+    }
+
+    .user-platform-label {
+      font-size: 0.65rem;
+      color: #0288d1;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .user-handle-label {
+      font-size: 0.85rem;
+      color: #1a237e;
+      font-weight: 700;
+    }
+
+    .logo-moonshop {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: inline-block;
+      text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+    }
+    .m-1 { color: #0091ea; }
+    .m-2 { color: #ffb300; }
+    .m-3 { color: #ffab00; }
+    .m-4 { color: #ff3d00; }
+    .m-5 { color: #aa00ff; }
+    .m-6 { color: #00bfa5; }
+    .m-7 { color: #00e676; }
+    .m-8 { color: #ff9100; }
+
+    .ticket-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0288d1;
+      background: #ffffff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .ticket-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .ticket-label {
+      font-size: 0.75rem;
+      color: #546e7a;
+      font-weight: 600;
+    }
+
+    .ticket-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1a237e;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    .ticket-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    .badge-dev {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .badge-si { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .badge-no { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+
+    .ticket-divider {
+      border-top: 2px dashed #b0bec5;
+      margin: 4px 0;
+    }
+
+    .ticket-footer {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .barcode {
+      height: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      background: #fff;
+      padding: 2px 4px;
+      margin-top: 4px;
+      border-radius: 3px;
+    }
+    .bar {
+      background: #263238;
+      height: 100%;
+    }
+
+    .ticket-date {
+      font-size: 0.65rem;
+      color: #78909c;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .scan-result-container {
+      margin-top: 15px;
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .scan-result-container.active {
+      display: flex;
+    }
+
+    .admin-section-box {
+      background: #f0f8ff;
+      border: 2px solid #0288d1;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .section-title-badge {
+      display: inline-block;
+      background: #0288d1;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Ficha Nequi con el MISMO diseño y colores del Ticket Principal */
+    .nequi-ticket-style {
+      width: 100%;
+      max-width: 320px;
+      margin: 15px auto;
+      border-radius: 18px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #ffffff;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .nequi-ticket-overlay {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(2px);
+      padding: 20px 16px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .nequi-ticket-style::before, .nequi-ticket-style::after {
+      content: '';
+      position: absolute;
+      top: 72%;
+      width: 18px;
+      height: 18px;
+      background: #26c6da;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .nequi-ticket-style::before { left: -9px; }
+    .nequi-ticket-style::after { right: -9px; }
+
+    .nequi-qr-container {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: 2px solid #b3e5fc;
+    }
+
+    .nequi-qr-image {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .result-img-preview {
+      max-width: 100%;
+      max-height: 250px;
+      border-radius: 12px;
+      border: 2px solid #0288d1;
+      margin-top: 8px;
+    }
+
+    .status-locked-banner {
+      background: #ffebee;
+      border: 2px solid #c62828;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: none;
+    }
+  </style>
 </head>
-<body class="bg-gradient-moon min-h-screen">
+<body>
 
-    <nav class="flex flex-col md:flex-row justify-between items-center px-6 py-6 max-w-7xl mx-auto relative z-50 gap-4">
-        <h1 class="text-2xl font-extrabold tracking-tighter text-blue-400">MOON <span class="text-white">SHOP</span></h1>
+  <div class="main-wrapper">
+    
+    <button class="btn-admin-access" onclick="playBubbleSound(); requestAdminAccess()">🔐 Panel Administrador</button>
+
+    <div class="container">
+      
+      <!-- Formulario de Creación -->
+      <div class="form-card">
+        <h2>🛍️ Crear Ticket MOONSHOP</h2>
         
-        <!-- Navegación visible en móvil y desktop -->
-        <div class="flex space-x-6 md:space-x-8 text-[11px] md:text-sm font-bold text-gray-300 uppercase tracking-widest">
-            <a href="#" class="hover:text-blue-400 transition border-b-2 border-transparent hover:border-blue-400 pb-1">Inicio</a>
-            <a href="#catalogo" class="hover:text-blue-400 transition border-b-2 border-transparent hover:border-blue-400 pb-1">Catálogo</a>
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=moonshopmm@gmail.com&su=Soporte/Queja%20Moon%20Shop" target="_blank" class="hover:text-blue-400 transition border-b-2 border-transparent hover:border-blue-400 pb-1">Soporte</a>
+        <div class="form-group">
+          <label for="code">#MOON-CODE (Generado)</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input 
+              type="text" 
+              id="code" 
+              class="code-input" 
+              maxlength="4" 
+              readonly
+            >
+          </div>
+          <button class="btn-rand" onclick="playBubbleSound(); generateRandomCode()">🎲 Generar Otro Código</button>
         </div>
 
-        <a href="https://discord.gg/4tdMZ5trzF" target="_blank" class="bg-[#5865F2] hover:bg-[#4752c4] px-5 py-2 rounded-full text-xs md:text-sm font-bold transition discord-glow flex items-center gap-2">Discord</a>
-    </nav>
-
-    <section class="max-w-7xl mx-auto px-6 pt-6 md:pt-10 pb-16 md:pb-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-        <div class="space-y-6 text-center md:text-left">
-            <div class="inline-block bg-blue-900/30 text-blue-400 px-4 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest border border-blue-500/30">Nuestra Misión</div>
-            <h2 class="text-4xl md:text-6xl font-extrabold leading-tight">Vender, Crecer y <br> <span class="text-blue-500">Liderar el Mercado</span></h2>
-            <p class="text-gray-400 text-sm md:text-lg leading-relaxed max-w-lg mx-auto md:mx-0">En <b>Moon Shop</b>, nuestro propósito es convertirnos en la tienda más barata de MM2 en Colombia. Queremos que cada jugador crezca su inventario.</p>
-            <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                <a href="#catalogo" class="bg-white text-black px-6 py-3 md:px-8 md:py-4 rounded-2xl font-bold hover:bg-blue-500 hover:text-white transition-all shadow-lg text-sm md:text-base">Ver Catálogo</a>
-                <div class="flex items-center gap-2 text-xs md:text-sm font-semibold text-blue-400"><span>●</span> Stock 2026</div>
-            </div>
+        <div class="form-group">
+          <label for="itemCode">Código del Ítem / Producto</label>
+          <input 
+            type="text" 
+            id="itemCode" 
+            placeholder="Ej. 7157" 
+            value="7157"
+            oninput="updateTicket()"
+          >
         </div>
-        <div class="relative h-[280px] md:h-[400px] flex items-center justify-center mt-8 md:mt-0">
-            <div class="absolute inset-0 bg-blue-500/10 blur-[80px] md:blur-[100px] rounded-full"></div>
-            <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/b/b5/HarvesterImproved.png" class="w-48 h-48 md:w-64 md:h-64 object-contain animate-weapon z-20">
-            <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/e/eb/Icebreaker.png" class="w-32 h-32 md:w-48 md:h-48 object-contain animate-weapon-delay absolute top-0 right-4 md:right-10 z-10 opacity-30 md:opacity-50">
-            <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/1/1a/Updated_Candy.png" class="w-32 h-32 md:w-48 md:h-48 object-contain animate-weapon-delay absolute bottom-0 left-4 md:left-10 z-10 opacity-30 md:opacity-50">
+
+        <div class="form-group">
+          <label for="socialPlatform">Plataforma de Usuario</label>
+          <select id="socialPlatform" onchange="playBubbleSound(); updateTicket()">
+            <option value="TikTok">TikTok</option>
+            <option value="Discord">Discord</option>
+          </select>
         </div>
-    </section>
 
-    <section id="catalogo" class="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-24 border-t border-white/5 scroll-mt-24">
-        <div class="text-center mb-10 md:mb-16">
-            <h3 class="text-2xl md:text-3xl font-black mb-2 uppercase tracking-tighter">Catálogo Completo</h3>
+        <div class="form-group">
+          <label for="socialUser">Usuario (@handle)</label>
+          <input 
+            type="text" 
+            id="socialUser" 
+            placeholder="Ej. @darwin_rbx" 
+            value="@darwin_rbx"
+            oninput="updateTicket()"
+          >
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
-            
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/b/b5/HarvesterImproved.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 8</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Harvester</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$27.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Harvester', 27000, 8)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
 
-             <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/1/14/Shark.png/revision/latest?cb=20210204081632" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 6</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Shark</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$5.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Shark', 5000, 8)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/e/eb/Icebreaker.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 6</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Icebreaker</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Godly</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$12.500 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Icebreaker', 12500, 6)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/1/1a/Updated_Candy.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 6</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Candy</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Godly</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$11.500 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Candy', 11500, 6)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/f/f8/BatwingUpdated2.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 22</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Batwing</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$13.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Batwing', 13000, 22)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/1/1a/Icewingknife.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 1</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Icewing</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$3.500 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Icewing', 3500, 1)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/6/6d/Sugar_v2.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 8</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Sugar</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Godly</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$7.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Sugar', 7000, 8)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/8/89/Icepiercer.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 5</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Icepiercer</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$21.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Icepiercer', 21000, 5)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/5/5e/ElderwoodScythev2.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 12</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Elderwood Scythe</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$7.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Elderwood Scythe', 7000, 12)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
-            <div class="glass p-3 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] hover:scale-[1.02] transition-all group">
-                <div class="bg-blue-950/40 rounded-[1.2rem] md:rounded-[2rem] h-32 md:h-56 mb-3 md:mb-6 flex items-center justify-center border border-white/5 relative">
-                    <img src="https://static.wikia.nocookie.net/murder-mystery-2/images/f/fa/LugerUpdated.png" class="w-full h-full object-contain p-3 md:p-6 group-hover:scale-110 transition-transform">
-                    <span class="absolute top-2 right-2 bg-black/60 px-2 py-0.5 rounded-full text-[8px] md:text-[10px] font-bold border border-white/10 text-blue-400">STOCK: 12</span>
-                </div>
-                <h3 class="text-sm md:text-2xl font-bold truncate">Luger</h3>
-                <p class="text-gray-500 text-[9px] md:text-sm mb-3 md:mb-6 uppercase font-bold">Ancient</p>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <span class="text-sm md:text-2xl font-extrabold">$7.000 <small class="text-blue-400 text-[8px] md:text-xs">COP</small></span>
-                    <button onclick="openModal('Luger', 7000, 12)" class="w-full md:w-auto bg-white text-black px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-base font-bold hover:bg-blue-600 hover:text-white transition">Comprar</button>
-                </div>
-            </div>
-
+        <div class="form-group">
+          <label>Foto de Perfil (Red Social)</label>
+          <input 
+            type="file" 
+            id="avatarFile" 
+            accept="image/*" 
+            onchange="handleAvatarUpload(event)"
+          >
         </div>
-    </section>
 
-    <div id="paymentModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass max-w-2xl w-full p-8 rounded-[3rem] relative border border-white/10 shadow-2xl overflow-y-auto max-h-[95vh]">
-            <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 text-3xl hover:text-white transition">&times;</button>
-            
-            <div class="grid md:grid-cols-5 gap-10 mt-4">
-                <div class="md:col-span-2 flex flex-col items-center justify-center text-center">
-                    <div class="bg-white p-3 rounded-[2rem] shadow-xl mb-4">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcDzl-dmkSdq1kfDUofrt0YnXm73WpKmQ8TA&s" class="w-20">
-                    </div>
-                    <h3 class="text-xl font-extrabold mb-1">Total a Pagar</h3>
-                    <p id="modalItemName" class="text-blue-400 font-bold text-sm mb-4"></p>
-                    
-                    <div class="bg-blue-600/20 px-4 py-3 rounded-2xl border border-blue-500/30 w-full">
-                        <p class="text-[10px] text-blue-300 font-bold uppercase mb-1">Nequi / Celular</p>
-                        <p class="text-lg font-black text-white tracking-widest leading-none">321 434 6720</p>
-                    </div>
-                </div>
-
-                <div class="md:col-span-3">
-                    <h3 class="text-2xl font-extrabold mb-4">Detalles del Envío</h3>
-                    
-                    <div data-fs-success class="space-y-4">
-                        <div class="p-5 bg-green-500/20 text-green-400 rounded-3xl text-sm font-bold text-center border border-green-500/30">
-                            ¡Pedido recibido! Revisamos en minutos.<br><br>
-                            Te enviamos un correo con el link del Servidor ¿Te llego? Si no te ha llegado hunde reenviar informacion
-                        </div>
-                        <button onclick="resendForm()" class="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-2xl font-bold transition text-xs uppercase tracking-widest border border-white/10">
-                            Reenviar Información
-                        </button>
-                    </div>
-                    
-                    <form id="my-form" class="space-y-4">
-                        <input type="hidden" id="hiddenItem" name="Item">
-                        
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <div class="flex justify-between items-center mb-2">
-                                <label class="m-0">Cantidad:</label>
-                                <span id="stockAvailable" class="text-[10px] text-blue-400 font-bold"></span>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <input type="number" id="itemQuantity" name="cantidad" value="1" min="1" oninput="updateTotal()" class="input-field text-center text-lg font-bold w-24">
-                                <div class="flex-1 text-right">
-                                    <p class="text-[10px] text-gray-500 font-bold uppercase">Subtotal</p>
-                                    <p id="totalPriceDisplay" class="text-xl font-black text-blue-400">$0</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label>Nombre del Titular (Nequi)</label>
-                            <input type="text" name="titular" placeholder="Ej: Juan Pérez" required class="input-field">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label>Usuario Roblox</label><input type="text" name="roblox" placeholder="Ej: @Usuario" required class="input-field"></div>
-                            <div><label>Usuario Discord</label><input type="text" name="discord" placeholder="Ej: @usuario" required class="input-field"></div>
-                            <div><label>Número Nequi</label><input type="tel" name="numero" placeholder="Ej: 321 434 6720" required class="input-field"></div>
-                            <div><label>Tu Gmail</label><input type="email" name="email" placeholder="Ej: ejemplo@gmail.com" required class="input-field"></div>
-                        </div>
-                        <button type="submit" id="submit-btn" class="w-full bg-blue-600 py-4 rounded-2xl font-black blue-glow transition hover:bg-blue-500 uppercase tracking-widest">Enviar Pedido Ahora</button>
-                    </form>
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="item">Nombre del Ítem / Producto</label>
+          <input 
+            type="text" 
+            id="item" 
+            placeholder="Nombre del producto..." 
+            value="Producto Moonshop"
+            oninput="updateTicket()"
+          >
         </div>
-    </div>
 
-    <div class="fixed bottom-6 right-6 z-[60]">
-        <button onclick="toggleChat()" class="bg-blue-600 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl blue-glow hover:scale-110 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+        <div class="form-group">
+          <label for="price">Precio ($)</label>
+          <input 
+            type="number" 
+            id="price" 
+            placeholder="0.00" 
+            step="0.01" 
+            value="25.00"
+            oninput="updateTicket()"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="buyer">Nombre del Comprador</label>
+          <input 
+            type="text" 
+            id="buyer" 
+            placeholder="Ej. Ana García" 
+            value="Cliente Moonshop"
+            oninput="updateTicket()"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="seller">Nombre del Vendedor</label>
+          <input 
+            type="text" 
+            id="seller" 
+            placeholder="Ej. Carlos V." 
+            value="Moonshop Staff"
+            oninput="updateTicket()"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="refund">¿Aplica Devolución?</label>
+          <select id="refund" onchange="playBubbleSound(); updateTicket()">
+            <option value="NO">No hay devolución</option>
+            <option value="SI">Sí hay devolución</option>
+          </select>
+        </div>
+
+        <button class="btn-action" onclick="playBubbleSound(); saveAndDownloadTicket()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          💾 Guardar en Firebase & Descargar Ticket
         </button>
-        <div id="chat-panel" class="absolute bottom-20 right-0 w-[300px] md:w-[400px] h-[500px] md:h-[550px] glass rounded-[2.5rem] flex flex-col overflow-hidden shadow-2xl border border-white/10">
-            <div class="bg-blue-600 p-5 font-bold">Moon Assistant AI ✨</div>
-            <div id="chat-content" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-4">
-                <div class="message-bubble ai-msg">¡Hola! Soy la IA de Moon Shop. ¿Dudas con el pago al 321 434 6720?</div>
+      </div>
+
+      <!-- Vista Previa -->
+      <div class="preview-container">
+        <div class="preview-title">Vista Previa del Ticket</div>
+        
+        <div id="ticket" class="ticket">
+          <div class="ticket-overlay">
+            
+            <div class="ticket-header">
+              <div class="user-profile-badge">
+                <img id="lbl-avatar" class="user-avatar-img" src="https://via.placeholder.com/100" alt="Avatar">
+                <div class="user-info-text">
+                  <div class="user-platform-label" id="lbl-platform">TikTok</div>
+                  <div class="user-handle-label" id="lbl-handle">@darwin_rbx</div>
+                </div>
+              </div>
+
+              <div class="logo-moonshop">
+                <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+              </div>
+              <div><span class="ticket-code" id="lbl-code">#MOON-0000</span></div>
             </div>
-            <div class="p-4 bg-white/5">
-                <form id="ai-form" class="flex space-x-2">
-                    <input type="text" id="ai-input" placeholder="Pregunta algo..." class="flex-1 bg-white/10 border border-white/10 p-4 rounded-2xl text-sm outline-none text-white">
-                    <button type="submit" class="bg-blue-600 p-4 rounded-2xl text-white">🚀</button>
-                </form>
+
+            <div class="ticket-body">
+              <div class="ticket-row">
+                <span class="ticket-label">Código Ítem:</span>
+                <span class="ticket-value" id="lbl-item-code">#7157</span>
+              </div>
+
+              <div class="ticket-row">
+                <span class="ticket-label">Ítem:</span>
+                <span class="ticket-value" id="lbl-item">Producto Moonshop</span>
+              </div>
+
+              <div class="ticket-row">
+                <span class="ticket-label">Comprador:</span>
+                <span class="ticket-value" id="lbl-buyer">Cliente Moonshop</span>
+              </div>
+
+              <div class="ticket-row">
+                <span class="ticket-label">Vendedor:</span>
+                <span class="ticket-value" id="lbl-seller">Moonshop Staff</span>
+              </div>
+
+              <div class="ticket-row">
+                <span class="ticket-label">Devolución:</span>
+                <span id="lbl-refund" class="badge-dev badge-no">NO APLICA</span>
+              </div>
+
+              <div class="ticket-divider"></div>
+
+              <div class="ticket-row" style="align-items: center;">
+                <span class="ticket-label">Precio:</span>
+                <span class="ticket-value ticket-price" id="lbl-price">$25.00</span>
+              </div>
             </div>
+
+            <div class="ticket-footer">
+              <div id="dynamicBarcode" class="barcode"></div>
+              <div class="ticket-date" id="lbl-date">FECHA: --/--/----</div>
+            </div>
+
+          </div>
         </div>
+      </div>
+
     </div>
 
-    <script>
-        const modal = document.getElementById('paymentModal');
-        const form = document.getElementById('my-form');
-        let currentItemPrice = 0;
-        let currentItemBaseName = "";
-        let currentMaxStock = 0;
+    <!-- Panel Admin -->
+    <div id="adminPanel" class="admin-card">
+      <h3>🔍 Admin Panel - Consultar Código MOON</h3>
+      
+      <div class="form-group">
+        <label for="searchCode">Escribe los 4 dígitos (Ej. 7157):</label>
+        <div class="input-wrapper">
+          <span class="prefix">#MOON-</span>
+          <input 
+            type="text" 
+            id="searchCode" 
+            class="search-code-input" 
+            maxlength="4" 
+            placeholder="7157"
+          >
+        </div>
+        <button class="btn-scan" onclick="playBubbleSound(); searchTicketByCode()">🔍 Buscar Resultados</button>
+      </div>
 
-        let resendCount = 0;
-        let isWaiting = false;
+      <!-- AVISO DE TICKET BLOQUEADO -->
+      <div id="lockBanner" class="status-locked-banner">
+        🔒 ESTE TICKET YA FUE FINALIZADO Y BLOQUEADO (PEDIDO REALIZADO). NO SE PUEDE MODIFICAR.
+      </div>
 
-        function openModal(name, price, stock) { 
-            currentItemBaseName = name;
-            currentItemPrice = price;
-            currentMaxStock = stock;
-            
-            modal.classList.remove('hidden'); 
-            modal.classList.remove('fs-success'); 
-            document.getElementById('modalItemName').innerText = name; 
-            
-            const qtyInput = document.getElementById('itemQuantity');
-            qtyInput.value = 1;
-            document.getElementById('stockAvailable').innerText = "DISPONIBLE: " + stock;
-            
-            updateTotal();
+      <!-- RESULTADOS DIVIDIDOS EN 3 SECCIONES -->
+      <div id="scanResult" class="scan-result-container">
+        
+        <!-- SECCIÓN 1: TICKET GUARDADO -->
+        <div class="admin-section-box">
+          <span class="section-title-badge">1. 🎟️ Ticket Guardado (#MOON-<span id="sec1-code"></span>)</span>
+          <div class="result-row"><strong>Código del Ítem:</strong> <span id="sec1-item-code">-</span></div>
+          <div class="result-row"><strong>Ítem / Producto:</strong> <span id="sec1-item">-</span></div>
+          <div class="result-row"><strong>Plataforma / Usuario:</strong> <span id="sec1-social">-</span></div>
+          <div class="result-row"><strong>Comprador:</strong> <span id="sec1-buyer">-</span></div>
+          <div class="result-row"><strong>Vendedor:</strong> <span id="sec1-seller">-</span></div>
+          <div class="result-row"><strong>Precio:</strong> <span id="sec1-price">-</span></div>
+          <div class="result-row"><strong>Devolución:</strong> <span id="sec1-refund">-</span></div>
+          <div class="result-row"><strong>Fecha de Emisión:</strong> <span id="sec1-date">-</span></div>
+          
+          <div style="text-align: center; margin-top: 10px;">
+            <label>Imagen del Ticket Registrado:</label><br>
+            <img id="sec1-img" class="result-img-preview" src="" alt="Ticket Guardado">
+            <button class="btn-scan" style="margin-top: 8px;" onclick="playBubbleSound(); downloadSavedTicketImage()">📥 Descargar Imagen del Ticket</button>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: FICHA NEQUI QR CON EL MISMO DISEÑO DE TICKET -->
+        <div class="admin-section-box" style="border-color: #0288d1;">
+          <span class="section-title-badge">2. 📱 Configurar & Descargar Ficha QR Nequi</span>
+          
+          <div class="form-group">
+            <label>Código del Ticket (Por Defecto):</label>
+            <div class="input-wrapper">
+              <span class="prefix">#MOON-</span>
+              <input type="text" id="sec2CodeInput" class="code-input" readonly>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre del Titular de la Cuenta:</label>
+            <input type="text" id="sec2HolderInput" value="Darwin Rincón" oninput="renderNequiTicket()">
+          </div>
+
+          <div class="form-group">
+            <label>Número de Teléfono Nequi:</label>
+            <input type="text" id="sec2PhoneInput" value="300 000 0000" oninput="renderNequiTicket()">
+          </div>
+
+          <div class="form-group">
+            <label>Precio a Cobrar ($):</label>
+            <input type="number" id="sec2PriceInput" step="0.01" value="25.00" oninput="renderNequiTicket()">
+          </div>
+
+          <div class="form-group">
+            <label>Subir Foto del Código QR de Nequi:</label>
+            <input type="file" id="sec2QrFile" accept="image/*" onchange="handleNequiQrFile(event)">
+          </div>
+
+          <!-- FICHA NEQUI CON DISEÑO IDÉNTICO AL TICKET -->
+          <div id="nequiTicketRender" class="nequi-ticket-style">
+            <div class="nequi-ticket-overlay">
+              <div class="ticket-header">
+                <div class="logo-moonshop">
+                  <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                </div>
+                <div><span class="ticket-code" id="sec2TicketCodeLbl">#MOON-7157</span></div>
+              </div>
+
+              <div class="ticket-body">
+                <div class="ticket-row">
+                  <span class="ticket-label">Pago Nequi:</span>
+                  <span class="ticket-value" style="color: #00838f; font-family: 'JetBrains Mono';" id="sec2PhoneLbl">300 000 0000</span>
+                </div>
+
+                <div class="ticket-row">
+                  <span class="ticket-label">Titular:</span>
+                  <span class="ticket-value" id="sec2HolderLbl">Darwin Rincón</span>
+                </div>
+
+                <div class="ticket-divider"></div>
+
+                <div class="nequi-qr-container">
+                  <img id="sec2QrImg" class="nequi-qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop" alt="QR Nequi">
+                </div>
+
+                <div class="ticket-divider"></div>
+
+                <div class="ticket-row" style="align-items: center;">
+                  <span class="ticket-label">Total a Pagar:</span>
+                  <span class="ticket-value ticket-price" id="sec2PriceLbl">$25.00</span>
+                </div>
+              </div>
+
+              <div class="ticket-footer">
+                <div class="ticket-date">PAGO OFICIAL VERIFICADO NEQUI</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-nequi-dl" onclick="playBubbleSound(); downloadNequiTicket()">📥 Descargar Ficha QR Nequi</button>
+        </div>
+
+        <!-- SECCIÓN 3: COMPROBANTE DE PAGO & CIERRE DE PEDIDO -->
+        <div class="admin-section-box" style="border-color: #ff9800;">
+          <span class="section-title-badge" style="background: #ff9800; color: #3e2723;">3. 📤 Comprobante de Pago & Cierre</span>
+          
+          <div class="form-group">
+            <label>Teléfono del Cliente que Pagó:</label>
+            <input type="text" id="sec3PhoneInput" placeholder="Ej. +57 312 345 6789">
+          </div>
+
+          <div class="form-group">
+            <label>Hora y Fecha del Pago:</label>
+            <input type="text" id="sec3TimeInput" placeholder="Ej. 19/10/2026 - 09:15 PM">
+          </div>
+
+          <div class="form-group">
+            <label>Subir Foto del Comprobante:</label>
+            <input type="file" id="sec3ProofFile" accept="image/*" onchange="handleProofFile(event)">
+          </div>
+
+          <div id="sec3ProofImgBox" style="display:none; text-align:center;">
+            <label>Resumen del Comprobante Cargado:</label><br>
+            <img id="sec3ProofImg" class="result-img-preview" src="" alt="Comprobante">
+          </div>
+
+          <button id="saveProofBtn" class="btn-proof-save" onclick="playBubbleSound(); savePaymentProof()">📤 Publicar Comprobante en Firebase</button>
+          
+          <button id="finishOrderBtn" class="btn-finish-order" onclick="playBubbleSound(); finishOrder()">📦 Pedido Realizado (Cerrar / Bloquear Ticket)</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyByGaZHa8KJjFsfVgF6G1eLFmW70dielc4",
+      authDomain: "tienda-33972.firebaseapp.com",
+      databaseURL: "https://tienda-33972-default-rtdb.firebaseio.com",
+      projectId: "tienda-33972",
+      storageBucket: "tienda-33972.firebasestorage.app",
+      messagingSenderId: "348867313665",
+      appId: "1:348867313665:web:f05c56d1a1fad029484000"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let nequiQrBase64 = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop";
+    let proofBase64 = "";
+    let currentSavedTicketBase64 = "";
+    let currentTicketRefundData = "NO";
+    let currentTicketTimestamp = 0;
+    let avatarBase64 = "https://via.placeholder.com/100";
+
+    // EFECTO DE SONIDO DE BURBUJA (POP) CON AUDIO SYNTH
+    function playBubbleSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        osc.type = 'sine';
+        // Tono ascendente de burbuja
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {
+        // Ignorar si el navegador bloquea audio antes de la primera interacción
+      }
+    }
+
+    function loadDefaultBackground() {
+      const storeImageLink = "https://kommodo.ai/i/SnliSX0qytsT3NILOcrH";
+      document.getElementById('ticket').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('nequiTicketRender').style.backgroundImage = `url("${storeImageLink}")`;
+    }
+
+    function generateRandomCode() {
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('code').value = randomNum;
+      updateTicket();
+      generateBarcode(randomNum.toString());
+    }
+
+    function generateBarcode(codeStr) {
+      const barcodeContainer = document.getElementById('dynamicBarcode');
+      barcodeContainer.innerHTML = '';
+      
+      for (let i = 0; i < codeStr.length; i++) {
+        let digit = parseInt(codeStr[i]);
+        let barsCount = 3 + (digit % 4);
+        for (let j = 0; j < barsCount; j++) {
+          let bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.width = ((j % 2 === 0) ? 2 : 4) + 'px';
+          bar.style.marginRight = '2px';
+          barcodeContainer.appendChild(bar);
         }
+        let space = document.createElement('div');
+        space.style.width = '6px';
+        barcodeContainer.appendChild(space);
+      }
+      for (let i = 0; i < 15; i++) {
+        let bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = (i % 3 === 0 ? 3 : 2) + 'px';
+        bar.style.marginRight = '2px';
+        barcodeContainer.appendChild(bar);
+      }
+    }
 
-        function closeModal() { modal.classList.add('hidden'); }
+    function setTicketDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      document.getElementById('lbl-date').innerText = 'FECHA: ' + now.toLocaleDateString('es-ES', options);
+    }
 
-        function updateTotal() {
-            const qtyInput = document.getElementById('itemQuantity');
-            let qty = parseInt(qtyInput.value);
+    function handleAvatarUpload(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarBase64 = e.target.result;
+          document.getElementById('lbl-avatar').src = avatarBase64;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-            if (qty > currentMaxStock) {
-                alert("⚠️ Error: Solo tenemos " + currentMaxStock + " unidades en stock de este item.");
-                qtyInput.value = currentMaxStock;
-                qty = currentMaxStock;
-            }
+    function updateTicket() {
+      let codeInput = document.getElementById('code').value.trim().padStart(4, '0');
+      let itemCodeInput = document.getElementById('itemCode').value.trim();
+      let platformInput = document.getElementById('socialPlatform').value;
+      let userInput = document.getElementById('socialUser').value.trim();
+      let itemInput = document.getElementById('item').value.trim();
+      let priceInput = document.getElementById('price').value;
+      let buyerInput = document.getElementById('buyer').value.trim();
+      let sellerInput = document.getElementById('seller').value.trim();
+      let refundValue = document.getElementById('refund').value;
 
-            const total = qty * currentItemPrice;
-            const formatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(total);
-            
-            document.getElementById('totalPriceDisplay').innerText = formatted;
-            document.getElementById('hiddenItem').value = `${currentItemBaseName} (Cant: ${qty} - Total: ${formatted})`;
-        }
+      document.getElementById('lbl-code').innerText = '#MOON-' + codeInput;
+      document.getElementById('lbl-item-code').innerText = '#' + (itemCodeInput || '-');
+      document.getElementById('lbl-platform').innerText = platformInput;
+      document.getElementById('lbl-handle').innerText = userInput || '@usuario';
+      document.getElementById('lbl-item').innerText = itemInput || '-';
+      document.getElementById('lbl-buyer').innerText = buyerInput || '-';
+      document.getElementById('lbl-seller').innerText = sellerInput || '-';
+      
+      const lblRefund = document.getElementById('lbl-refund');
+      if (refundValue === 'SI') {
+        lblRefund.innerText = 'SÍ APLICA';
+        lblRefund.className = 'badge-dev badge-si';
+      } else {
+        lblRefund.innerText = 'NO APLICA';
+        lblRefund.className = 'badge-dev badge-no';
+      }
 
-        function resendForm() {
-            if (isWaiting) return;
+      let numPrice = parseFloat(priceInput);
+      document.getElementById('lbl-price').innerText = isNaN(numPrice) ? '$0.00' : '$' + numPrice.toFixed(2);
+    }
 
-            resendCount++;
-            let waitTime;
+    function requestAdminAccess() {
+      const secretKey = "moonfed2026";
+      let userInput = prompt("Ingresa la clave de administrador:");
+      
+      if (userInput === secretKey) {
+        let adminCard = document.getElementById('adminPanel');
+        adminCard.classList.add('visible');
+        adminCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (userInput !== null) {
+        alert("❌ Clave incorrecta.");
+      }
+    }
 
-            if (resendCount === 1) waitTime = 1;
-            else if (resendCount === 2) waitTime = 3;
-            else if (resendCount === 3) waitTime = 5;
-            else waitTime = 10;
+    function saveAndDownloadTicket() {
+      let code = document.getElementById('code').value.trim().padStart(4, '0');
+      const ticketElement = document.getElementById('ticket');
 
-            const waitMs = waitTime * 60 * 1000;
-            startCooldown(waitMs);
+      html2canvas(ticketElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
 
-            modal.classList.remove('fs-success');
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "REENVIANDO...";
-            form.requestSubmit();
-        }
-
-        function startCooldown(duration) {
-            isWaiting = true;
-            const resendBtn = document.querySelector('[onclick="resendForm()"]');
-            const originalText = "Reenviar Información";
-            
-            let timeLeft = duration / 1000;
-
-            const interval = setInterval(() => {
-                const mins = Math.floor(timeLeft / 60);
-                const secs = Math.floor(timeLeft % 60);
-                
-                resendBtn.innerText = `Espera ${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                resendBtn.disabled = true;
-                resendBtn.style.opacity = "0.5";
-                resendBtn.style.cursor = "not-allowed";
-
-                timeLeft--;
-
-                if (timeLeft < 0) {
-                    clearInterval(interval);
-                    isWaiting = false;
-                    resendBtn.innerText = originalText;
-                    resendBtn.disabled = false;
-                    resendBtn.style.opacity = "1";
-                    resendBtn.style.cursor = "pointer";
-                }
-            }, 1000);
-        }
-
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            
-            const qty = parseInt(document.getElementById('itemQuantity').value);
-            if (qty > currentMaxStock) {
-                alert("⚠️ No puedes comprar más de la cantidad disponible (" + currentMaxStock + ")");
-                return;
-            }
-
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "PROCESANDO ENVÍO...";
-            btn.disabled = true;
-            const formData = new FormData(form);
-            const response = await fetch('https://formspree.io/f/mdabaowk', {
-                method: 'POST', body: formData, headers: { 'Accept': 'application/json' }
-            });
-            if (response.ok) {
-                modal.classList.add('fs-success');
-                btn.disabled = false;
-                btn.innerText = "ENVIAR PEDIDO AHORA";
-            }
+        let ticketData = {
+          code: '#MOON-' + code,
+          itemCode: document.getElementById('itemCode').value.trim(),
+          platform: document.getElementById('socialPlatform').value,
+          socialUser: document.getElementById('socialUser').value.trim(),
+          avatarImage: avatarBase64,
+          item: document.getElementById('item').value.trim(),
+          price: document.getElementById('lbl-price').innerText,
+          buyer: document.getElementById('buyer').value.trim(),
+          seller: document.getElementById('seller').value.trim(),
+          refund: document.getElementById('refund').value,
+          date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
+          image: imageBase64,
+          status: 'PENDIENTE',
+          timestamp: Date.now()
         };
 
-        function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); }
-        const aiForm = document.getElementById('ai-form');
-        const chatContent = document.getElementById('chat-content');
+        db.ref('tickets/' + code).set(ticketData, (error) => {
+          if (error) {
+            alert("⚠️ Error al guardar en Firebase: " + error.message);
+          } else {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageBase64;
+            downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
 
-        aiForm.onsubmit = (e) => {
-            e.preventDefault();
-            const input = document.getElementById('ai-input');
-            if (!input.value.trim()) return;
-            appendMessage(input.value, 'user-msg');
-            input.value = '';
-            setTimeout(() => { 
-                appendMessage("¡Entendido! Una vez realices el pago al número 321 434 6720 y envíes el formulario con los detalles, procesaremos tu entrega en minutos.", 'ai-msg'); 
-            }, 800);
-        };
+            generateRandomCode();
+          }
+        });
+      });
+    }
 
-        function appendMessage(text, className) {
-            const div = document.createElement('div');
-            div.className = `message-bubble ${className}`;
-            div.innerText = text;
-            chatContent.appendChild(div);
-            chatContent.scrollTop = chatContent.scrollHeight;
+    function searchTicketByCode() {
+      let inputDigits = document.getElementById('searchCode').value.trim();
+      
+      if (!inputDigits || inputDigits.length < 1) {
+        alert("⚠️ Escribe los números del código a buscar (ejemplo: 7157).");
+        return;
+      }
+
+      let cleanCode = inputDigits.padStart(4, '0');
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        let resultContainer = document.getElementById('scanResult');
+        let lockBanner = document.getElementById('lockBanner');
+
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          currentTicketRefundData = data.refund || 'NO';
+          currentTicketTimestamp = data.timestamp || Date.now();
+
+          document.getElementById('sec1-code').innerText = cleanCode;
+          document.getElementById('sec1-item-code').innerText = '#' + (data.itemCode || '-');
+          document.getElementById('sec1-item').innerText = data.item;
+          document.getElementById('sec1-social').innerText = (data.platform || 'TikTok') + ' (' + (data.socialUser || '@usuario') + ')';
+          document.getElementById('sec1-buyer').innerText = data.buyer;
+          document.getElementById('sec1-seller').innerText = data.seller;
+          document.getElementById('sec1-price').innerText = data.price;
+          document.getElementById('sec1-refund').innerText = (data.refund === 'SI') ? 'Sí Aplica' : 'No Aplica';
+          document.getElementById('sec1-date').innerText = data.date;
+          if (data.image) {
+            currentSavedTicketBase64 = data.image;
+            document.getElementById('sec1-img').src = data.image;
+          }
+
+          document.getElementById('sec2CodeInput').value = cleanCode;
+          document.getElementById('sec2TicketCodeLbl').innerText = '#MOON-' + cleanCode;
+          if (data.price) {
+            let numPrice = parseFloat(data.price.replace('$', ''));
+            document.getElementById('sec2PriceInput').value = isNaN(numPrice) ? 25.00 : numPrice;
+          }
+          renderNequiTicket();
+
+          if (data.proofPhone) document.getElementById('sec3PhoneInput').value = data.proofPhone;
+          if (data.proofTime) document.getElementById('sec3TimeInput').value = data.proofTime;
+          if (data.proofImage) {
+            proofBase64 = data.proofImage;
+            document.getElementById('sec3ProofImg').src = data.proofImage;
+            document.getElementById('sec3ProofImgBox').style.display = 'block';
+          }
+
+          if (data.status === 'COMPLETADO') {
+            lockBanner.style.display = 'block';
+            lockBanner.innerText = "🔒 ESTE TICKET YA FUE FINALIZADO Y BLOQUEADO.";
+            disableAllFields();
+          } else {
+            lockBanner.style.display = 'none';
+            enableAllFields();
+          }
+
+          resultContainer.classList.add('active');
+        } else {
+          alert('❌ No se encontró registro en Firebase con el código: #' + cleanCode);
+          resultContainer.classList.remove('active');
+          lockBanner.style.display = 'none';
         }
+      });
+    }
 
-        window.onclick = (e) => { if (e.target == modal) closeModal(); }
-    </script>
+    function downloadSavedTicketImage() {
+      if (currentSavedTicketBase64) {
+        let code = document.getElementById('sec1-code').innerText;
+        const link = document.createElement('a');
+        link.href = currentSavedTicketBase64;
+        link.download = `Ticket-MOON-${code}.png`;
+        link.click();
+      }
+    }
+
+    function renderNequiTicket() {
+      const holder = document.getElementById('sec2HolderInput').value;
+      const phone = document.getElementById('sec2PhoneInput').value;
+      const price = parseFloat(document.getElementById('sec2PriceInput').value);
+
+      document.getElementById('sec2HolderLbl').innerText = holder || '-';
+      document.getElementById('sec2PhoneLbl').innerText = phone || '000 000 0000';
+      document.getElementById('sec2PriceLbl').innerText = isNaN(price) ? '$0.00' : '$' + price.toFixed(2);
+    }
+
+    function handleNequiQrFile(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          nequiQrBase64 = e.target.result;
+          document.getElementById('sec2QrImg').src = nequiQrBase64;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function downloadNequiTicket() {
+      const ticketNequiBox = document.getElementById('nequiTicketRender');
+      let code = document.getElementById('sec2CodeInput').value;
+
+      html2canvas(ticketNequiBox, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Ficha-Nequi-MOON-${code}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    function handleProofFile(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          proofBase64 = e.target.result;
+          document.getElementById('sec3ProofImg').src = proofBase64;
+          document.getElementById('sec3ProofImgBox').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function savePaymentProof() {
+      let code = document.getElementById('sec2CodeInput').value;
+      let phone = document.getElementById('sec3PhoneInput').value.trim();
+      let time = document.getElementById('sec3TimeInput').value.trim();
+
+      if (!code) {
+        alert("⚠️ Selecciona o busca un código de ticket válido.");
+        return;
+      }
+
+      let proofData = {
+        proofPhone: phone,
+        proofTime: time,
+        proofImage: proofBase64
+      };
+
+      db.ref('tickets/' + code).update(proofData, (error) => {
+        if (error) {
+          alert("⚠️ Error al publicar en Firebase: " + error.message);
+        } else {
+          alert("✅ Comprobante guardado en Firebase para el ticket #" + code);
+        }
+      });
+    }
+
+    function finishOrder() {
+      let code = document.getElementById('sec2CodeInput').value;
+      if (!code) return;
+
+      const now = Date.now();
+      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+      const timeElapsed = now - currentTicketTimestamp;
+
+      if (currentTicketRefundData === 'SI' && timeElapsed < threeDaysInMs) {
+        let daysLeft = Math.ceil((threeDaysInMs - timeElapsed) / (1000 * 60 * 60 * 24));
+        alert(`⏳ Este ticket TIENE APLICA DEVOLUCIÓN. Deben transcurrir 3 días para su cierre definitivo. Faltan aproximadamente ${daysLeft} día(s).`);
+        return;
+      }
+
+      let confirmClose = confirm("¿Estás seguro de marcar este pedido como REALIZADO? El ticket se cerrará y bloqueará permanentemente.");
+      
+      if (confirmClose) {
+        db.ref('tickets/' + code).update({ status: 'COMPLETADO' }, (error) => {
+          if (error) {
+            alert("⚠️ Error al actualizar el estado: " + error.message);
+          } else {
+            alert("📦 ¡Pedido finalizado y cerrado con éxito! El ticket #" + code + " ha sido bloqueado.");
+            searchTicketByCode();
+          }
+        });
+      }
+    }
+
+    function disableAllFields() {
+      document.getElementById('sec2HolderInput').disabled = true;
+      document.getElementById('sec2PhoneInput').disabled = true;
+      document.getElementById('sec2PriceInput').disabled = true;
+      document.getElementById('sec2QrFile').disabled = true;
+      document.getElementById('sec3PhoneInput').disabled = true;
+      document.getElementById('sec3TimeInput').disabled = true;
+      document.getElementById('sec3ProofFile').disabled = true;
+      document.getElementById('saveProofBtn').style.display = 'none';
+      document.getElementById('finishOrderBtn').style.display = 'none';
+    }
+
+    function enableAllFields() {
+      document.getElementById('sec2HolderInput').disabled = false;
+      document.getElementById('sec2PhoneInput').disabled = false;
+      document.getElementById('sec2PriceInput').disabled = false;
+      document.getElementById('sec2QrFile').disabled = false;
+      document.getElementById('sec3PhoneInput').disabled = false;
+      document.getElementById('sec3TimeInput').disabled = false;
+      document.getElementById('sec3ProofFile').disabled = false;
+      document.getElementById('saveProofBtn').style.display = 'flex';
+      document.getElementById('finishOrderBtn').style.display = 'flex';
+    }
+
+    window.onload = function() {
+      loadDefaultBackground();
+      setTicketDate();
+      generateRandomCode();
+    };
+  </script>
+
 </body>
 </html>
