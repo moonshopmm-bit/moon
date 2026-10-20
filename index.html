@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Tickets & Pagos - MOONSHOP</title>
   
-  <!-- Librería para convertir HTML a Imagen PNG -->
+  <!-- Librería html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
-  <!-- Firebase SDK (v9 Compatibilidad para Web) -->
+  <!-- Firebase SDK (v9 Compatibilidad) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
@@ -31,7 +31,6 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
       align-items: center;
       padding: 15px;
     }
@@ -238,7 +237,7 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    /* Estilo General de Tickets (Mismo fondo y bordes) */
+    /* Ticket */
     .ticket {
       width: 100%;
       max-width: 340px;
@@ -450,7 +449,7 @@
       margin-bottom: 12px;
     }
 
-    /* Ficha Nequi con el MISMO diseño y colores del Ticket Principal */
+    /* Ficha Nequi */
     .nequi-ticket-style {
       width: 100%;
       max-width: 320px;
@@ -524,9 +523,61 @@
       margin-bottom: 12px;
       display: none;
     }
+
+    /* Modal de Progreso de Descarga */
+    #progressModal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .progress-box {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      border: 3px solid #0288d1;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      background: #e0f7fa;
+      height: 16px;
+      border-radius: 10px;
+      margin: 15px 0;
+      overflow: hidden;
+      border: 2px solid #b3e5fc;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #00c853, #26c6da);
+      border-radius: 8px;
+      transition: width 0.1s linear;
+    }
   </style>
 </head>
 <body>
+
+  <!-- MODAL DE PROGRESO -->
+  <div id="progressModal">
+    <div class="progress-box">
+      <h4 style="color: #0277bd; margin-bottom: 5px;">📥 Generando Imagen...</h4>
+      <p id="progressText" style="font-size: 0.85rem; color: #546e7a; font-weight: 600;">Preparando archivo (0%)</p>
+      <div class="progress-bar-bg">
+        <div id="progressBarFill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+  </div>
 
   <div class="main-wrapper">
     
@@ -554,12 +605,21 @@
         </div>
 
         <div class="form-group">
-          <label for="itemCode">Código del Ítem / Producto</label>
+          <label for="productCategory">Categoría del Ítem / Producto</label>
+          <select id="productCategory" onchange="playBubbleSound(); updateCategoryFields()">
+            <option value="Robux">Robux</option>
+            <option value="Murder Mystery">Murder Mystery</option>
+            <option value="Adopt Me">Adopt Me</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="dynamicFieldLabel" for="dynamicFieldInput">Cantidad de Robux</label>
           <input 
             type="text" 
-            id="itemCode" 
-            placeholder="Ej. 7157" 
-            value="7157"
+            id="dynamicFieldInput" 
+            placeholder="Ej. 1000 Robux" 
+            value="1000 Robux"
             oninput="updateTicket()"
           >
         </div>
@@ -590,17 +650,6 @@
             id="avatarFile" 
             accept="image/*" 
             onchange="handleAvatarUpload(event)"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="item">Nombre del Ítem / Producto</label>
-          <input 
-            type="text" 
-            id="item" 
-            placeholder="Nombre del producto..." 
-            value="Producto Moonshop"
-            oninput="updateTicket()"
           >
         </div>
 
@@ -678,13 +727,8 @@
 
             <div class="ticket-body">
               <div class="ticket-row">
-                <span class="ticket-label">Código Ítem:</span>
-                <span class="ticket-value" id="lbl-item-code">#7157</span>
-              </div>
-
-              <div class="ticket-row">
-                <span class="ticket-label">Ítem:</span>
-                <span class="ticket-value" id="lbl-item">Producto Moonshop</span>
+                <span class="ticket-label" id="ticketLblCategory">Cantidad:</span>
+                <span class="ticket-value" id="lbl-dynamic-value">1000 Robux</span>
               </div>
 
               <div class="ticket-row">
@@ -740,19 +784,17 @@
         <button class="btn-scan" onclick="playBubbleSound(); searchTicketByCode()">🔍 Buscar Resultados</button>
       </div>
 
-      <!-- AVISO DE TICKET BLOQUEADO -->
       <div id="lockBanner" class="status-locked-banner">
         🔒 ESTE TICKET YA FUE FINALIZADO Y BLOQUEADO (PEDIDO REALIZADO). NO SE PUEDE MODIFICAR.
       </div>
 
-      <!-- RESULTADOS DIVIDIDOS EN 3 SECCIONES -->
       <div id="scanResult" class="scan-result-container">
         
-        <!-- SECCIÓN 1: TICKET GUARDADO -->
+        <!-- SECCIÓN 1 -->
         <div class="admin-section-box">
           <span class="section-title-badge">1. 🎟️ Ticket Guardado (#MOON-<span id="sec1-code"></span>)</span>
-          <div class="result-row"><strong>Código del Ítem:</strong> <span id="sec1-item-code">-</span></div>
-          <div class="result-row"><strong>Ítem / Producto:</strong> <span id="sec1-item">-</span></div>
+          <div class="result-row"><strong>Categoría:</strong> <span id="sec1-category">-</span></div>
+          <div class="result-row"><strong id="sec1-label-item">Detalle:</strong> <span id="sec1-item-value">-</span></div>
           <div class="result-row"><strong>Plataforma / Usuario:</strong> <span id="sec1-social">-</span></div>
           <div class="result-row"><strong>Comprador:</strong> <span id="sec1-buyer">-</span></div>
           <div class="result-row"><strong>Vendedor:</strong> <span id="sec1-seller">-</span></div>
@@ -767,7 +809,7 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 2: FICHA NEQUI QR CON EL MISMO DISEÑO DE TICKET -->
+        <!-- SECCIÓN 2 -->
         <div class="admin-section-box" style="border-color: #0288d1;">
           <span class="section-title-badge">2. 📱 Configurar & Descargar Ficha QR Nequi</span>
           
@@ -799,7 +841,6 @@
             <input type="file" id="sec2QrFile" accept="image/*" onchange="handleNequiQrFile(event)">
           </div>
 
-          <!-- FICHA NEQUI CON DISEÑO IDÉNTICO AL TICKET -->
           <div id="nequiTicketRender" class="nequi-ticket-style">
             <div class="nequi-ticket-overlay">
               <div class="ticket-header">
@@ -843,7 +884,7 @@
           <button class="btn-nequi-dl" onclick="playBubbleSound(); downloadNequiTicket()">📥 Descargar Ficha QR Nequi</button>
         </div>
 
-        <!-- SECCIÓN 3: COMPROBANTE DE PAGO & CIERRE DE PEDIDO -->
+        <!-- SECCIÓN 3 -->
         <div class="admin-section-box" style="border-color: #ff9800;">
           <span class="section-title-badge" style="background: #ff9800; color: #3e2723;">3. 📤 Comprobante de Pago & Cierre</span>
           
@@ -879,7 +920,6 @@
   </div>
 
   <script>
-    // Configuración Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyByGaZHa8KJjFsfVgF6G1eLFmW70dielc4",
       authDomain: "tienda-33972.firebaseapp.com",
@@ -900,7 +940,6 @@
     let currentTicketTimestamp = 0;
     let avatarBase64 = "https://via.placeholder.com/100";
 
-    // EFECTO DE SONIDO DE BURBUJA (POP) CON AUDIO SYNTH
     function playBubbleSound() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -908,7 +947,6 @@
         const gainNode = audioCtx.createGain();
 
         osc.type = 'sine';
-        // Tono ascendente de burbuja
         osc.frequency.setValueAtTime(300, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
 
@@ -920,9 +958,32 @@
 
         osc.start();
         osc.stop(audioCtx.currentTime + 0.08);
-      } catch (e) {
-        // Ignorar si el navegador bloquea audio antes de la primera interacción
-      }
+      } catch (e) {}
+    }
+
+    function showProgressModal(onComplete) {
+      const modal = document.getElementById('progressModal');
+      const fill = document.getElementById('progressBarFill');
+      const text = document.getElementById('progressText');
+      
+      modal.style.display = 'flex';
+      let progress = 0;
+      fill.style.width = '0%';
+
+      let interval = setInterval(() => {
+        progress += 5;
+        if (progress <= 100) {
+          fill.style.width = progress + '%';
+          text.innerText = `Generando archivo (${progress}%)`;
+        }
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            modal.style.display = 'none';
+            if (onComplete) onComplete();
+          }, 200);
+        }
+      }, 30);
     }
 
     function loadDefaultBackground() {
@@ -971,6 +1032,31 @@
       document.getElementById('lbl-date').innerText = 'FECHA: ' + now.toLocaleDateString('es-ES', options);
     }
 
+    function updateCategoryFields() {
+      const category = document.getElementById('productCategory').value;
+      const label = document.getElementById('dynamicFieldLabel');
+      const input = document.getElementById('dynamicFieldInput');
+      const ticketCatLbl = document.getElementById('ticketLblCategory');
+
+      if (category === 'Robux') {
+        label.innerText = 'Cantidad de Robux';
+        input.placeholder = 'Ej. 1000 Robux';
+        input.value = '1000 Robux';
+        ticketCatLbl.innerText = 'Cantidad:';
+      } else if (category === 'Murder Mystery') {
+        label.innerText = 'Nombre del Arma';
+        input.placeholder = 'Ej. Chromas / Godly';
+        input.value = 'Chromatic Gun';
+        ticketCatLbl.innerText = 'Arma:';
+      } else if (category === 'Adopt Me') {
+        label.innerText = 'Nombre de la Pet o Posición';
+        input.placeholder = 'Ej. Shadow Dragon';
+        input.value = 'Shadow Dragon';
+        ticketCatLbl.innerText = 'Pet / Posición:';
+      }
+      updateTicket();
+    }
+
     function handleAvatarUpload(event) {
       playBubbleSound();
       const file = event.target.files[0];
@@ -986,20 +1072,18 @@
 
     function updateTicket() {
       let codeInput = document.getElementById('code').value.trim().padStart(4, '0');
-      let itemCodeInput = document.getElementById('itemCode').value.trim();
+      let dynamicVal = document.getElementById('dynamicFieldInput').value.trim();
       let platformInput = document.getElementById('socialPlatform').value;
       let userInput = document.getElementById('socialUser').value.trim();
-      let itemInput = document.getElementById('item').value.trim();
       let priceInput = document.getElementById('price').value;
       let buyerInput = document.getElementById('buyer').value.trim();
       let sellerInput = document.getElementById('seller').value.trim();
       let refundValue = document.getElementById('refund').value;
 
       document.getElementById('lbl-code').innerText = '#MOON-' + codeInput;
-      document.getElementById('lbl-item-code').innerText = '#' + (itemCodeInput || '-');
       document.getElementById('lbl-platform').innerText = platformInput;
       document.getElementById('lbl-handle').innerText = userInput || '@usuario';
-      document.getElementById('lbl-item').innerText = itemInput || '-';
+      document.getElementById('lbl-dynamic-value').innerText = dynamicVal || '-';
       document.getElementById('lbl-buyer').innerText = buyerInput || '-';
       document.getElementById('lbl-seller').innerText = sellerInput || '-';
       
@@ -1029,48 +1113,68 @@
       }
     }
 
+    function resetFormToDefault() {
+      document.getElementById('productCategory').value = "Robux";
+      updateCategoryFields();
+      document.getElementById('socialUser').value = "";
+      document.getElementById('price').value = "";
+      document.getElementById('buyer').value = "";
+      document.getElementById('seller').value = "";
+      document.getElementById('refund').value = "NO";
+      
+      avatarBase64 = "https://via.placeholder.com/100";
+      document.getElementById('lbl-avatar').src = avatarBase64;
+      document.getElementById('avatarFile').value = "";
+
+      generateRandomCode();
+      setTicketDate();
+    }
+
     function saveAndDownloadTicket() {
       let code = document.getElementById('code').value.trim().padStart(4, '0');
       const ticketElement = document.getElementById('ticket');
+      const category = document.getElementById('productCategory').value;
 
-      html2canvas(ticketElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null
-      }).then(canvas => {
-        const imageBase64 = canvas.toDataURL('image/png');
+      showProgressModal(() => {
+        html2canvas(ticketElement, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null
+        }).then(canvas => {
+          const imageBase64 = canvas.toDataURL('image/png');
 
-        let ticketData = {
-          code: '#MOON-' + code,
-          itemCode: document.getElementById('itemCode').value.trim(),
-          platform: document.getElementById('socialPlatform').value,
-          socialUser: document.getElementById('socialUser').value.trim(),
-          avatarImage: avatarBase64,
-          item: document.getElementById('item').value.trim(),
-          price: document.getElementById('lbl-price').innerText,
-          buyer: document.getElementById('buyer').value.trim(),
-          seller: document.getElementById('seller').value.trim(),
-          refund: document.getElementById('refund').value,
-          date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
-          image: imageBase64,
-          status: 'PENDIENTE',
-          timestamp: Date.now()
-        };
+          let ticketData = {
+            code: '#MOON-' + code,
+            category: category,
+            dynamicValue: document.getElementById('dynamicFieldInput').value.trim(),
+            platform: document.getElementById('socialPlatform').value,
+            socialUser: document.getElementById('socialUser').value.trim(),
+            avatarImage: avatarBase64,
+            price: document.getElementById('lbl-price').innerText,
+            buyer: document.getElementById('buyer').value.trim(),
+            seller: document.getElementById('seller').value.trim(),
+            refund: document.getElementById('refund').value,
+            date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
+            image: imageBase64,
+            status: 'PENDIENTE',
+            timestamp: Date.now()
+          };
 
-        db.ref('tickets/' + code).set(ticketData, (error) => {
-          if (error) {
-            alert("⚠️ Error al guardar en Firebase: " + error.message);
-          } else {
-            const downloadLink = document.createElement('a');
-            downloadLink.href = imageBase64;
-            downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+          db.ref('tickets/' + code).set(ticketData, (error) => {
+            if (error) {
+              alert("⚠️ Error al guardar en Firebase: " + error.message);
+            } else {
+              const downloadLink = document.createElement('a');
+              downloadLink.href = imageBase64;
+              downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
 
-            generateRandomCode();
-          }
+              resetFormToDefault();
+            }
+          });
         });
       });
     }
@@ -1095,8 +1199,14 @@
           currentTicketTimestamp = data.timestamp || Date.now();
 
           document.getElementById('sec1-code').innerText = cleanCode;
-          document.getElementById('sec1-item-code').innerText = '#' + (data.itemCode || '-');
-          document.getElementById('sec1-item').innerText = data.item;
+          document.getElementById('sec1-category').innerText = data.category || 'Robux';
+          
+          let labelText = "Cantidad:";
+          if (data.category === 'Murder Mystery') labelText = "Arma:";
+          if (data.category === 'Adopt Me') labelText = "Pet / Posición:";
+          document.getElementById('sec1-label-item').innerText = labelText;
+          document.getElementById('sec1-item-value').innerText = data.dynamicValue || '-';
+
           document.getElementById('sec1-social').innerText = (data.platform || 'TikTok') + ' (' + (data.socialUser || '@usuario') + ')';
           document.getElementById('sec1-buyer').innerText = data.buyer;
           document.getElementById('sec1-seller').innerText = data.seller;
@@ -1145,10 +1255,12 @@
     function downloadSavedTicketImage() {
       if (currentSavedTicketBase64) {
         let code = document.getElementById('sec1-code').innerText;
-        const link = document.createElement('a');
-        link.href = currentSavedTicketBase64;
-        link.download = `Ticket-MOON-${code}.png`;
-        link.click();
+        showProgressModal(() => {
+          const link = document.createElement('a');
+          link.href = currentSavedTicketBase64;
+          link.download = `Ticket-MOON-${code}.png`;
+          link.click();
+        });
       }
     }
 
@@ -1179,16 +1291,18 @@
       const ticketNequiBox = document.getElementById('nequiTicketRender');
       let code = document.getElementById('sec2CodeInput').value;
 
-      html2canvas(ticketNequiBox, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null
-      }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `Ficha-Nequi-MOON-${code}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+      showProgressModal(() => {
+        html2canvas(ticketNequiBox, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `Ficha-Nequi-MOON-${code}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        });
       });
     }
 
@@ -1287,6 +1401,7 @@
       loadDefaultBackground();
       setTicketDate();
       generateRandomCode();
+      updateCategoryFields();
     };
   </script>
 
