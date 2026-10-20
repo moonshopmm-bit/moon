@@ -754,7 +754,7 @@
   <!-- NOTIFICACIÓN FLOTANTE MOONSHOP -->
   <div id="moonToast">✨ Tu imagen está siendo preparada para instalarse...</div>
 
-  <!-- PLANTILLA DE TICKET DE ENCUESTA OCULTA (SE GENERA AL CERRAR) -->
+  <!-- PLANTILLA DE TICKET DE ENCUESTA OCULTA -->
   <div id="surveyTicketTemplate">
     <div class="survey-ticket-overlay">
       <div class="ticket-header" style="padding-bottom: 6px; margin-bottom: 8px;">
@@ -1220,14 +1220,15 @@
   </div>
 
   <script>
+    // NUEVA CONFIGURACIÓN DE FIREBASE (moon-24a67)
     const firebaseConfig = {
-      apiKey: "AIzaSyByGaZHa8KJjFsfVgF6G1eLFmW70dielc4",
-      authDomain: "tienda-33972.firebaseapp.com",
-      databaseURL: "https://tienda-33972-default-rtdb.firebaseio.com",
-      projectId: "tienda-33972",
-      storageBucket: "tienda-33972.firebasestorage.app",
-      messagingSenderId: "348867313665",
-      appId: "1:348867313665:web:f05c56d1a1fad029484000"
+      apiKey: "AIzaSyDr3hb4KDhyV6S4e7K__ZN8qWVHbxLp9DE",
+      authDomain: "moon-24a67.firebaseapp.com",
+      projectId: "moon-24a67",
+      storageBucket: "moon-24a67.firebasestorage.app",
+      messagingSenderId: "873908522303",
+      appId: "1:873908522303:web:26c62438311615185c178a",
+      measurementId: "G-TLXH74LYKT"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -1240,7 +1241,7 @@
     let currentTicketRefundData = "NO";
     let currentTicketTimestamp = 0;
     let avatarBase64 = "https://via.placeholder.com/100";
-    let currentStarRating = 5; // Por defecto 5 estrellas
+    let currentStarRating = 5;
 
     function playBubbleSound() {
       try {
@@ -1323,7 +1324,6 @@
       descLabel.innerText = descriptions[starsCount] || "";
     }
 
-    // Inicializar estrellas en 5 por defecto al cargar
     window.onload = function() {
       loadDefaultBackground();
       setTicketDate();
@@ -1700,7 +1700,6 @@
       });
     }
 
-    /* PEDIDO REALIZADO: GENERA TICKET DE ENCUESTA EN IMAGEN Y BLOQUEA */
     function finishOrder() {
       let code = document.getElementById('sec2CodeInput').value;
       if (!code) return;
@@ -1715,7 +1714,6 @@
         return;
       }
 
-      // Validar justificaciones obligatorias de la encuesta
       let surveyData = {};
       for (let i = 1; i <= 6; i++) {
         let ans = document.getElementById('q' + i).value;
@@ -1734,7 +1732,6 @@
       surveyData['stars'] = currentStarRating;
       surveyData['starComment'] = document.getElementById('starJustification').value.trim();
 
-      // Preparar el ticket visual oculto para renderizar la imagen
       document.getElementById('st-code').innerText = '#MOON-' + code;
       for (let i = 1; i <= 6; i++) {
         let ans = document.getElementById('q' + i).value;
@@ -1750,7 +1747,6 @@
 
       showMoonToast();
 
-      // Convertir el ticket de encuesta en imagen y descargarlo al vuelo
       const surveyTicketElement = document.getElementById('surveyTicketTemplate');
       html2canvas(surveyTicketElement, {
         scale: 1.5,
