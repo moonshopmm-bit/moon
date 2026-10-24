@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Soporte y Atención al Cliente - MOONSHOP</title>
+  
+  <!-- Firebase SDK (v9 Compatibilidad) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 50%, #81c784 100%);
+      color: #2d3748;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .support-app-container {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-bottom: 40px;
+    }
+
+    /* HEADER */
+    .support-header {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      border: 2px solid #ffffff;
+    }
+
+    .logo-moonshop {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin-bottom: 5px;
+      user-select: none;
+    }
+    .m-1 { color: #0091ea; }
+    .m-2 { color: #ffb300; }
+    .m-3 { color: #ffab00; }
+    .m-4 { color: #ff3d00; }
+    .m-5 { color: #aa00ff; }
+    .m-6 { color: #00bfa5; }
+    .m-7 { color: #00e676; }
+    .m-8 { color: #ff9100; }
+
+    .support-subtitle {
+      font-size: 0.9rem;
+      color: #546e7a;
+      font-weight: 600;
+    }
+
+    /* TARJETAS */
+    .support-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      border: 2px solid #ffffff;
+    }
+
+    .support-card h2 {
+      font-size: 1.25rem;
+      color: #0277bd;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #455a64;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #f4f9fd;
+      border: 2px solid #b3e5fc;
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #1a237e;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #0288d1;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.2);
+    }
+
+    .code-input {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      background-color: #e0f7fa;
+    }
+
+    .btn-support {
+      width: 100%;
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+      transition: transform 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .btn-support:hover {
+      transform: translateY(-2px);
+    }
+
+    /* ESTADOS Y RESULTADOS */
+    .ticket-info-box {
+      background: #f0f8ff;
+      border: 2px solid #0288d1;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      padding: 4px 0;
+      border-bottom: 1px dashed #b3e5fc;
+    }
+
+    .ticket-label {
+      color: #546e7a;
+      font-weight: 600;
+    }
+
+    .ticket-value {
+      color: #1a237e;
+      font-weight: 700;
+    }
+
+    /* CHAT EN VIVO CON EL STAFF */
+    .chat-box-container {
+      margin-top: 15px;
+      border: 2px solid #2e7d32;
+      background: #f1f8e9;
+      border-radius: 16px;
+      padding: 14px;
+      display: none;
+    }
+
+    .chat-messages-scroll {
+      height: 250px;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 2px solid #c8e6c9;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-msg-item {
+      background: #f4f9fd;
+      border: 1px solid #b3e5fc;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+    }
+
+    .chat-msg-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #546e7a;
+      margin-bottom: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    #supportToast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(2, 136, 209, 0.95);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 100000;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    #supportToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="support-app-container">
+
+    <!-- HEADER -->
+    <header class="support-header">
+      <div class="logo-moonshop">
+        <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+      </div>
+      <div class="support-subtitle">Centro de Soporte y Ayuda al Cliente</div>
+    </header>
+
+    <!-- TARJETA DE CONSULTA Y SOPORTE -->
+    <div class="support-card">
+      <h2>¿Necesitas ayuda con tu pedido?</h2>
+      <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 15px; text-align: center;">
+        Ingresa los 4 dígitos de tu código de ticket (Ej: <b>1234</b>) para verificar su estado o iniciar un chat en vivo con el Staff.
+      </p>
+
+      <div class="form-group">
+        <label for="clientTicketCode">Código de Ticket (#MOON-):</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="clientTicketCode" class="code-input" maxlength="4" placeholder="Ej. 1234">
+          <button class="btn-support" style="margin-top: 0; width: 130px;" onclick="searchClientTicket()">Consultar</button>
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN DEL TICKET ENCONTRADO -->
+      <div id="clientTicketInfoBox" class="ticket-info-box">
+        <h4 style="color: #0277bd; font-size: 0.95rem; margin-bottom: 8px; text-align: center;">Detalles de tu Ticket</h4>
+        <div class="ticket-row"><span class="ticket-label">Código:</span><span class="ticket-value" id="resCode">-</span></div>
+        <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="resBuyer">-</span></div>
+        <div class="ticket-row"><span class="ticket-label">Ítem:</span><span class="ticket-value" id="resItem">-</span></div>
+        <div class="ticket-row"><span class="ticket-label">Estado:</span><span class="ticket-value" id="resStatus">-</span></div>
+        <div class="ticket-row"><span class="ticket-label">Total:</span><span class="ticket-value" id="resPrice">-</span></div>
+
+        <!-- FORMULARIO PARA ABRIR SOPORTE -->
+        <div id="openSupportFormSection" style="margin-top: 14px; border-top: 2px dashed #0288d1; padding-top: 12px;">
+          <h4 style="color: #0277bd; font-size: 0.9rem; margin-bottom: 8px;">Enviar Mensaje al Staff</h4>
+          
+          <div class="form-group">
+            <label for="clientIssueType">Motivo del Contacto:</label>
+            <select id="clientIssueType">
+              <option value="Demora en entrega">Demora en la entrega</option>
+              <option value="Problema con el pago">Problema con el pago</option>
+              <option value="Revisar producto">Revisar producto / Ítem</option>
+              <option value="Otro motivo">Otro motivo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clientInitialMessage">Tu Mensaje / Pregunta:</label>
+            <textarea id="clientInitialMessage" rows="3" placeholder="Explícanos tu inconveniente..."></textarea>
+          </div>
+
+          <button class="btn-support" style="background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);" onclick="submitClientSupportRequest()">Iniciar Chat con el Staff</button>
+        </div>
+      </div>
+
+      <!-- CHAT ACTIVO CON EL STAFF -->
+      <div id="clientActiveChatBox" class="chat-box-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h4 style="color: #2e7d32; font-size: 0.95rem;"> Chat en Vivo con el Staff</h4>
+          <span style="font-size: 0.75rem; color: #2e7d32; font-weight: bold;"> Conectado</span>
+        </div>
+
+        <div id="clientChatMessagesList" class="chat-messages-scroll"></div>
+
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="clientChatInputMsg" placeholder="Escribe tu mensaje..." onkeypress="handleClientChatKeypress(event)" style="background: white;">
+          <button class="btn-support" style="margin-top: 0; width: 100px;" onclick="sendClientChatMessage()">Enviar</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="supportToast">Mensaje enviado con éxito</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyByGaZHa8KJjFsfVgF6G1eLFmW70dielc4",
+      authDomain: "tienda-33972.firebaseapp.com",
+      databaseURL: "https://tienda-33972-default-rtdb.firebaseio.com",
+      projectId: "tienda-33972",
+      storageBucket: "tienda-33972.firebasestorage.app",
+      messagingSenderId: "348867313665",
+      appId: "1:348867313665:web:f05c56d1a1fad029484000"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let activeSessionKey = "";
+    let currentTicketCode = "";
+
+    function showToast(text) {
+      const toast = document.getElementById('supportToast');
+      toast.innerText = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function searchClientTicket() {
+      let val = document.getElementById('clientTicketCode').value.trim();
+      if (!val) {
+        alert("Ingresa los 4 dígitos de tu ticket.");
+        return;
+      }
+
+      currentTicketCode = val.padStart(4, '0');
+
+      db.ref('tickets/' + currentTicketCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          document.getElementById('resCode').innerText = '#' + currentTicketCode;
+          document.getElementById('resBuyer').innerText = data.buyer || 'Cliente';
+          document.getElementById('resItem').innerText = data.dynamicValue || data.category || 'Producto';
+          document.getElementById('resStatus').innerText = data.status || 'PENDIENTE';
+          document.getElementById('resPrice').innerText = data.price || '$0.00';
+
+          document.getElementById('clientTicketInfoBox').style.display = 'block';
+          showToast("¡Ticket encontrado con éxito!");
+        } else {
+          alert("No se encontró ningún ticket con el código #" + currentTicketCode);
+          document.getElementById('clientTicketInfoBox').style.display = 'none';
+        }
+      });
+    }
+
+    function submitClientSupportRequest() {
+      let issueType = document.getElementById('clientIssueType').value;
+      let msg = document.getElementById('clientInitialMessage').value.trim();
+
+      if (!msg) {
+        alert("Escribe un mensaje explicando tu inconveniente.");
+        return;
+      }
+
+      let sessionRef = db.ref('clientSupportSessions').push();
+      activeSessionKey = sessionRef.key;
+
+      let sessionData = {
+        sessionKey: activeSessionKey,
+        ticketCode: currentTicketCode,
+        issueType: issueType,
+        initialMessage: msg,
+        status: 'PENDIENTE',
+        timestamp: Date.now()
+      };
+
+      sessionRef.set(sessionData, (error) => {
+        if (!error) {
+          // Enviar el primer mensaje al chat privado
+          db.ref('clientSupportChats/' + activeSessionKey).push({
+            sender: 'Cliente (Ticket #' + currentTicketCode + ')',
+            text: msg,
+            time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            timestamp: Date.now()
+          });
+
+          document.getElementById('openSupportFormSection').style.display = 'none';
+          document.getElementById('clientActiveChatBox').style.display = 'block';
+          listenClientActiveChat(activeSessionKey);
+          showToast("¡Solicitud enviada al Staff!");
+        }
+      });
+    }
+
+    function listenClientActiveChat(sessionId) {
+      db.ref('clientSupportChats/' + sessionId).on('value', (snapshot) => {
+        const container = document.getElementById('clientChatMessagesList');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!snapshot.exists()) return;
+
+        snapshot.forEach((child) => {
+          let chatMsg = child.val();
+          let isStaff = chatMsg.sender.includes('Staff');
+          let div = document.createElement('div');
+          div.className = 'chat-msg-item';
+          div.style.background = isStaff ? '#e8f5e9' : '#f0f8ff';
+          div.innerHTML = `
+            <div class="chat-msg-header"><span><b>${chatMsg.sender}</b></span><span>${chatMsg.time || ''}</span></div>
+            <div>${chatMsg.text}</div>
+          `;
+          container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    function sendClientChatMessage() {
+      const input = document.getElementById('clientChatInputMsg');
+      const val = input.value.trim();
+      if (!val || !activeSessionKey) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+      db.ref('clientSupportChats/' + activeSessionKey).push({
+        sender: 'Cliente (#MOON-' + currentTicketCode + ')',
+        text: val,
+        time: timeStr,
+        timestamp: Date.now()
+      }, (error) => {
+        if (!error) input.value = '';
+      });
+    }
+
+    function handleClientChatKeypress(event) {
+      if (event.key === 'Enter') sendClientChatMessage();
+    }
+  </script>
+
+</body>
+</html>
