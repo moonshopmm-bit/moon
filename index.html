@@ -1,0 +1,3867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sistema de Tickets & Pagos - MOONSHOP</title>
+  
+  <!-- Librería html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- Firebase SDK (v9 Compatibilidad) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      overflow-y: auto;
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 50%, #81c784 100%);
+      color: #2d3748;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      position: relative;
+    }
+
+    .main-app-container {
+      width: 100%;
+      max-width: 1400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 60px;
+    }
+
+    /* OVERLAYS Y MODALES */
+    #deviceSelectorOverlay, #loginOverlay, #moonConfirmModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(2, 136, 209, 0.94);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      padding: 15px;
+    }
+
+    #loginOverlay {
+      display: none;
+      z-index: 99985;
+    }
+
+    #moonConfirmModal {
+      display: none;
+      background: rgba(0, 77, 64, 0.85);
+      z-index: 99995;
+    }
+
+    .device-selector-box, .login-box, .confirm-modal-box {
+      background: rgba(255, 255, 255, 0.96);
+      padding: 30px 20px;
+      border-radius: 26px;
+      text-align: center;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border: 3px solid #b3e5fc;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .confirm-modal-box {
+      border-color: #ffb74d;
+    }
+
+    .device-selector-box h2, .login-box h2, .confirm-modal-box h3 {
+      font-size: 1.3rem;
+      color: #0277bd;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    .confirm-modal-box h3 {
+      color: #e65100;
+    }
+
+    .device-option-btn {
+      width: 100%;
+      background: #f0f7fc;
+      border: 2px solid #b3e5fc;
+      color: #0277bd;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.1);
+    }
+
+    .device-option-btn:hover {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: #ffffff;
+      border-color: #0288d1;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(2, 136, 209, 0.3);
+    }
+
+    .btn-login, .btn-confirm-yes, .btn-confirm-no {
+      width: 100%;
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    }
+
+    .btn-confirm-yes {
+      background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    }
+
+    .btn-confirm-no {
+      background: linear-gradient(135deg, #78909c 0%, #b0bec5 100%);
+      color: #1a237e;
+      box-shadow: none;
+    }
+
+    /* HEADER GENERAL Y MODO PC CON FLECHAS MÁS PEQUEÑAS */
+    .app-header {
+      width: 100%;
+      max-width: 1400px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      margin-bottom: 15px;
+      border: 2px solid #ffffff;
+      gap: 12px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .header-top-row {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      min-height: 46px;
+    }
+
+    .header-logo-center {
+      cursor: pointer;
+      font-size: 1.8rem;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 5;
+    }
+
+    /* CONTENEDOR DE PESTAÑAS CON FLECHAS MÁS PEQUEÑAS */
+    .pc-nav-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 0;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transition: max-width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    }
+
+    .app-header.pc-menu-open .pc-nav-wrapper,
+    .app-header.tablet-mode.menu-open .pc-nav-wrapper {
+      max-width: 1050px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .nav-arrow-btn {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(2, 136, 209, 0.3);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .nav-arrow-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .pc-nav-tabs {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scroll-behavior: smooth;
+      padding: 4px 2px;
+      width: 100%;
+    }
+
+    .pc-nav-tabs::-webkit-scrollbar {
+      height: 3px;
+    }
+    .pc-nav-tabs::-webkit-scrollbar-thumb {
+      background: #b3e5fc;
+      border-radius: 4px;
+    }
+
+    .floating-bubble-btn, .mobile-hamburger-btn {
+      display: none;
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(2, 136, 209, 0.4);
+      transition: transform 0.2s ease;
+      z-index: 10;
+    }
+
+    .floating-bubble-btn:hover, .mobile-hamburger-btn:hover {
+      transform: scale(1.08);
+    }
+
+    /* 📱 DISEÑO EXCLUSIVO TABLET (CON ZOOM Y DESAPARICIÓN DE MOONSHOP) */
+    .app-header.tablet-mode {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .app-header.tablet-mode .header-top-row {
+      justify-content: space-between;
+    }
+    .app-header.tablet-mode .header-logo-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .app-header.tablet-mode .floating-bubble-btn {
+      display: flex;
+      margin-left: auto;
+    }
+
+    /* Animación Zoom y Desaparición en Tablet */
+    .app-header.tablet-mode.menu-open .header-logo-center {
+      transform: translateX(-50%) scale(0.3);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .app-header.tablet-mode .pc-nav-wrapper {
+      width: 100%;
+      background: rgba(240, 247, 252, 0.95);
+      border: 2px solid #b3e5fc;
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+      margin-top: 0;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .app-header.tablet-mode.menu-open .pc-nav-wrapper {
+      max-height: 100px;
+      opacity: 1;
+      pointer-events: auto;
+      margin-top: 10px;
+    }
+
+    /* 📲 MÓVIL ESTÉTICO, ORDENADO Y PANTALLA COMPLETA PREMIUM */
+    .app-header.mobile-mode {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 15px;
+      position: relative;
+    }
+    .app-header.mobile-mode .header-top-row {
+      justify-content: space-between;
+      width: 100%;
+    }
+    .app-header.mobile-mode .header-logo-center {
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+      font-size: 1.5rem;
+    }
+    .app-header.mobile-mode .mobile-hamburger-btn {
+      display: flex;
+      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      font-size: 1.1rem;
+    }
+
+    .app-header.mobile-mode.hamburger-open .header-logo-center {
+      transform: translateX(12px) scale(0.9);
+      color: #0277bd;
+    }
+
+    .app-header.mobile-mode .pc-nav-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      max-width: 100%;
+      background: rgba(2, 136, 209, 0.96);
+      backdrop-filter: blur(12px);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+      max-height: none;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .app-header.mobile-mode.hamburger-open .pc-nav-wrapper {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .app-header.mobile-mode .pc-nav-tabs {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 380px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .app-header.mobile-mode .pc-nav-tabs .pc-tab-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #b3e5fc;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    /* Botón de cierre estético para el menú móvil */
+    .mobile-close-btn {
+      display: none;
+      background: #ff5252;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 100000;
+    }
+
+    .app-header.mobile-mode.hamburger-open .mobile-close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app-header.mobile-mode .nav-arrow-btn {
+      display: none; /* No se necesitan flechas en móvil vertical */
+    }
+
+    .pc-tab-btn {
+      background: #f0f7fc;
+      border: 2px solid #b3e5fc;
+      color: #0277bd;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .pc-tab-btn:hover, .pc-tab-btn.active {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: #ffffff;
+      border-color: #0288d1;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    }
+
+    .pc-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 4px;
+      background: #ffb300;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .view-section {
+      display: none;
+      width: 100%;
+      max-width: 1400px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .view-section.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 22px;
+      padding: 24px 18px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ffffff;
+      margin-top: 5px;
+    }
+
+    .welcome-title {
+      font-size: 1.8rem;
+      color: #0277bd;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .welcome-purpose-box {
+      text-align: left;
+      background: #f0f8ff;
+      border: 2px solid #0288d1;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .welcome-purpose-box h3 {
+      color: #0277bd;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .welcome-purpose-box p {
+      font-size: 0.9rem;
+      color: #37474f;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+      width: 100%;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+
+    .form-card, .admin-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 18px;
+      flex: 1.2;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border: 2px solid #ffffff;
+      width: 100%;
+    }
+
+    .form-card h2, .admin-card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+      color: #0277bd;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .form-row-2 {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .form-row-2 {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    .form-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #455a64;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prefix {
+      position: absolute;
+      left: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #0288d1;
+      user-select: none;
+      font-size: 0.85rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #f4f9fd;
+      border: 2px solid #b3e5fc;
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: #1a237e;
+      font-size: 0.92rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #0288d1;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.2);
+    }
+
+    .code-input, .search-code-input {
+      padding-left: 75px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .code-input {
+      background-color: #e0f7fa;
+    }
+
+    .btn-action, .btn-nequi-go, .btn-scan, .btn-nequi-dl, .btn-proof-save, .btn-finish-order, .btn-person, .btn-start-work, .btn-add-item {
+      width: 100%;
+      background: linear-gradient(135deg, #00c853 0%, #b2ff59 100%);
+      color: #004d40;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
+    }
+
+    .btn-nequi-go {
+      background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+    }
+
+    .btn-scan {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    }
+
+    .btn-nequi-dl {
+      background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+    }
+
+    .btn-proof-save {
+      background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%);
+      color: #3e2723;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    }
+
+    .btn-finish-order {
+      background: linear-gradient(135deg, #aa00ff 0%, #e040fb 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(170, 0, 255, 0.3);
+      margin-top: 12px;
+    }
+
+    .btn-person, .btn-start-work {
+      background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    }
+
+    .btn-add-item {
+      background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%);
+      color: #3e2723;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-rand {
+      width: 100%;
+      background: #e1f5fe;
+      border: 1px solid #0288d1;
+      color: #0288d1;
+      font-size: 0.8rem;
+      padding: 10px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .preview-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      position: sticky;
+      top: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .preview-container {
+        position: static;
+      }
+    }
+
+    .preview-title {
+      font-size: 0.85rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .ticket {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+      border: 3.5px solid #ffffff;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.2s ease;
+    }
+
+    .ticket-overlay {
+      background: rgba(255, 255, 255, 0.89);
+      padding: 26px 22px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ticket::before, .ticket::after {
+      content: '';
+      position: absolute;
+      top: 72%;
+      width: 18px;
+      height: 18px;
+      background: #26c6da;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .ticket::before { left: -9px; }
+    .ticket::after { right: -9px; }
+
+    .ticket-header {
+      text-align: center;
+      border-bottom: 2px dashed #b0bec5;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #f0f8ff;
+      border: 2px solid #b3e5fc;
+      border-radius: 30px;
+      padding: 6px 12px;
+      margin-bottom: 10px;
+    }
+
+    .user-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0288d1;
+    }
+
+    .user-info-text {
+      text-align: left;
+    }
+
+    .user-platform-label {
+      font-size: 0.65rem;
+      color: #0288d1;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .user-handle-label {
+      font-size: 0.85rem;
+      color: #1a237e;
+      font-weight: 700;
+    }
+
+    .logo-moonshop {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: inline-block;
+      text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .m-1 { color: #0091ea; }
+    .m-2 { color: #ffb300; }
+    .m-3 { color: #ffab00; }
+    .m-4 { color: #ff3d00; }
+    .m-5 { color: #aa00ff; }
+    .m-6 { color: #00bfa5; }
+    .m-7 { color: #00e676; }
+    .m-8 { color: #ff9100; }
+
+    .ticket-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0288d1;
+      background: #ffffff;
+      padding: 3px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .default-game-banner {
+      width: 100%;
+      height: 80px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 2px solid #b3e5fc;
+      display: block;
+    }
+
+    .ticket-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 3px 0;
+    }
+
+    .ticket-label {
+      font-size: 0.82rem;
+      color: #546e7a;
+      font-weight: 600;
+    }
+
+    .ticket-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1a237e;
+      text-align: right;
+      max-width: 65%;
+      word-break: break-word;
+    }
+
+    .ticket-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    .ticket-divider {
+      border-top: 2px dashed #b0bec5;
+      margin: 6px 0;
+    }
+
+    .ticket-footer {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .barcode {
+      height: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      background: #fff;
+      padding: 3px 6px;
+      margin-top: 6px;
+      border-radius: 4px;
+    }
+
+    .bar {
+      background: #263238;
+      height: 100%;
+    }
+
+    .ticket-date {
+      font-size: 0.68rem;
+      color: #78909c;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .scan-result-container {
+      margin-top: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .scan-result-container.active {
+      display: flex;
+    }
+
+    .admin-section-box {
+      background: #f0f8ff;
+      border: 2px solid #0288d1;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+    }
+
+    .section-title-badge {
+      display: inline-block;
+      background: #0288d1;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .item-card-calc {
+      background: #ffffff;
+      border: 2px solid #b3e5fc;
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .btn-delete-item {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      float: right;
+      margin-bottom: 4px;
+    }
+
+    .module-result-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .module-result-box.success {
+      display: block;
+      background: #e8f5e9;
+      border: 2px solid #2e7d32;
+      color: #1b5e20;
+    }
+
+    .module-result-box.error {
+      display: block;
+      background: #ffebee;
+      border: 2px solid #c62828;
+      color: #b71c1c;
+    }
+
+    .nequi-qr-container {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 6px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: 2px solid #b3e5fc;
+    }
+
+    .nequi-qr-image {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .result-img-preview {
+      max-width: 100%;
+      max-height: 250px;
+      border-radius: 12px;
+      border: 2px solid #0288d1;
+      margin-top: 6px;
+    }
+
+    .status-locked-banner {
+      background: #ffebee;
+      border: 2px solid #c62828;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      display: none;
+      box-shadow: 0 4px 10px rgba(198, 40, 40, 0.15);
+    }
+
+    .history-grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .history-grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .history-card-item {
+      background: #f4f9fd;
+      border: 2px solid #b3e5fc;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .history-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .checkbox-paper-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: 2.5px solid #e65100;
+      border-radius: 6px;
+      background: #ffffff;
+      font-weight: bold;
+      color: #2e7d32;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox-paper-box:hover {
+      background: #ffe0b2;
+      transform: scale(1.1);
+    }
+
+    .checkbox-paper-box.checked {
+      background: #2e7d32;
+      border-color: #1b5e20;
+      color: #ffffff;
+    }
+
+    #rememberTicketTemplate, #surveyTicketTemplate {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 340px;
+      border-radius: 18px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      border: 3.5px solid #ffffff;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .remember-ticket-overlay, .survey-ticket-overlay {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px 16px;
+      width: 100%;
+    }
+
+    #moonToast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(2, 136, 209, 0.95);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      border: 2px solid #b3e5fc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 100001;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      text-align: center;
+    }
+
+    #moonToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-app-container">
+
+    <!-- MODAL SELECTOR DE DISPOSITIVO INICIAL -->
+    <div id="deviceSelectorOverlay">
+      <div class="device-selector-box">
+        <div class="logo-moonshop" style="font-size: 2.2rem; margin-bottom: 5px;">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+        <h2>¿En qué vas a trabajar hoy?</h2>
+        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 18px;">Selecciona tu dispositivo para adaptar la interfaz a tu medida.</p>
+
+        <button class="device-option-btn" onclick="selectDeviceMode('pc')">
+          💻 Computadora (PC)
+        </button>
+        <button class="device-option-btn" onclick="selectDeviceMode('tablet')">
+          📱 Tablet (Menú Invertido con Zoom)
+        </button>
+        <button class="device-option-btn" onclick="selectDeviceMode('mobile')">
+          📲 Móvil / Celular (Pantalla Completa)
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN PERSONALIZADO -->
+    <div id="moonConfirmModal">
+      <div class="confirm-modal-box">
+        <div class="logo-moonshop" style="font-size: 1.8rem; margin-bottom: 5px;">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+        <h3>¿Seguro que deseas continuar?</h3>
+        <p style="font-size: 0.88rem; color: #455a64; margin-bottom: 15px; line-height: 1.4;">
+          Has presionado <b>NO</b>. El ticket quedará registrado como <b>CERRADO</b> en el sistema y se descargará la imagen de cancelación.
+        </p>
+
+        <button class="btn-confirm-yes" onclick="confirmCancelTicketAction()">Sí, Cerrar Ticket</button>
+        <button class="btn-confirm-no" onclick="closeConfirmModal()">No, Regresar</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA INICIO DE SESIÓN ADMIN -->
+    <div id="loginOverlay">
+      <div class="login-box">
+        <div class="logo-moonshop" style="font-size: 2.2rem; margin-bottom: 5px;">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+        <h2>Iniciar Sesión</h2>
+
+        <div class="form-group">
+          <label for="loginUser">Usuario</label>
+          <input type="text" id="loginUser" placeholder="admin">
+        </div>
+
+        <div class="form-group">
+          <label for="loginPass">Contraseña</label>
+          <input type="password" id="loginPass" placeholder="1234">
+        </div>
+
+        <button class="btn-login" onclick="handleLogin()">Iniciar Sesión</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA VALIDACIÓN TRABAJADOR -->
+    <div id="userAuthOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 131, 143, 0.95); display: none; justify-content: center; align-items: center; z-index: 99980; padding: 15px;">
+      <div class="login-box" style="border-color: #80deea;">
+        <div class="logo-moonshop" style="font-size: 2rem; margin-bottom: 5px;">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+        <h2>Identificación de Trabajador</h2>
+        <p style="font-size: 0.82rem; color: #546e7a; margin-bottom: 12px;">Ingresa tu usuario y código numérico (Ej: Darwin / 2603) para desbloquear las opciones.</p>
+
+        <div class="form-group">
+          <label for="authUserName">Usuario</label>
+          <input type="text" id="authUserName" placeholder="Ej. Darwin">
+        </div>
+
+        <div class="form-group">
+          <label for="authUserCode">Código Numérico</label>
+          <input type="password" id="authUserCode" placeholder="Ej. 2603">
+        </div>
+
+        <button class="btn-login" onclick="verifyUserAuth()">Comenzar a Trabajar</button>
+      </div>
+    </div>
+
+    <!-- HEADER PRINCIPAL -->
+    <header id="appHeader" class="app-header">
+      <div class="header-top-row">
+        <!-- Título central (clic abre/cierra menú) -->
+        <div id="headerLogoTitle" class="logo-moonshop header-logo-center" title="Mostrar/Ocultar Menú" onclick="togglePcMenu()">
+          <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+        </div>
+
+        <!-- Botón Burbuja para Tablet -->
+        <button class="floating-bubble-btn" onclick="toggleBubbleMenu()" title="Abrir Menú">
+          📂
+        </button>
+
+        <!-- Botón Hamburguesa Estético para Móvil -->
+        <button class="mobile-hamburger-btn" onclick="toggleMobileHamburgerMenu()" title="Abrir Menú Móvil">
+          ☰
+        </button>
+
+        <!-- CONTENEDOR DE PESTAÑAS CON FLECHAS PEQUEÑAS (PC y Tablet) Y PANTALLA COMPLETA EN MÓVIL -->
+        <div id="navTabsWrapper" class="pc-nav-wrapper">
+          <button class="mobile-close-btn" onclick="toggleMobileHamburgerMenu()">✕</button>
+          
+          <button class="nav-arrow-btn" onclick="scrollTabs('left')" title="Mover a la Izquierda">◀</button>
+          
+          <nav id="navTabsContainer" class="pc-nav-tabs">
+            <button id="pc-tab-welcome" class="pc-tab-btn active" onclick="switchSection('welcome')">🏠 Inicio</button>
+            <button id="pc-tab-calc-robux" class="pc-tab-btn" onclick="switchCalcSubSection('robux')">💎 Robux</button>
+            <button id="pc-tab-calc-mm2" class="pc-tab-btn" onclick="switchCalcSubSection('mm2')">🔪 MM2</button>
+            <button id="pc-tab-calc-adopt" class="pc-tab-btn" onclick="switchCalcSubSection('adopt')">🐾 Pets</button>
+            <button id="pc-tab-persons" class="pc-tab-btn" onclick="switchSection('persons')">👥 Personas</button>
+            <button id="pc-tab-create" class="pc-tab-btn" onclick="switchSection('create')">🎟️ Crear</button>
+            <button id="pc-tab-pending" class="pc-tab-btn" onclick="switchSection('pending')">⏳ Pendientes</button>
+            <button id="pc-tab-remember" class="pc-tab-btn" style="border-color: #ff9800; color: #e65100;" onclick="switchSection('remember')">🔄 Tickets R</button>
+            <button id="pc-tab-search" class="pc-tab-btn" onclick="switchSection('search')">🔍 Buscar</button>
+            <button id="pc-tab-history" class="pc-tab-btn" onclick="switchSection('history')">📋 Historial</button>
+            <button id="pc-tab-nequi" class="pc-tab-btn" onclick="switchSection('nequi')">📱 Nequi</button>
+            <button id="pc-tab-proof" class="pc-tab-btn" onclick="switchSection('proof')">🧾 Comprobante</button>
+            <button id="pc-tab-survey" class="pc-tab-btn" onclick="switchSection('survey')">⭐ Encuesta</button>
+            <button id="pc-tab-devices" class="pc-tab-btn" style="border-color: #0288d1; color: #0277bd; background: #e1f5fe;" onclick="switchSection('devices')">📱 Dispositivos</button>
+            <button class="pc-tab-btn" style="background:#ffebee; color:#c62828; border-color:#ef9a9a;" onclick="handleLogout()">🚪 Salir</button>
+          </nav>
+
+          <button class="nav-arrow-btn" onclick="scrollTabs('right')" title="Mover a la Derecha">▶</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- NOTIFICACIÓN FLOTANTE -->
+    <div id="moonToast">Guardando datos y transfiriendo información...</div>
+
+    <!-- PLANTILLA OCULTA TICKET PARA RECORDAR -->
+    <div id="rememberTicketTemplate">
+      <div class="remember-ticket-overlay">
+        <div class="ticket-header" style="padding-bottom: 8px; margin-bottom: 10px;">
+          <div class="logo-moonshop" style="font-size: 1.5rem;">
+            <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #f57c00; font-weight: 700; text-transform: uppercase;">RECORDATORIO DE PEDIDO</div>
+          <div><span class="ticket-code" id="remT-code" style="font-size: 0.85rem;">#MOON-0000</span></div>
+        </div>
+
+        <div class="ticket-body">
+          <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="remT-buyer">-</span></div>
+          <div class="ticket-row"><span class="ticket-label">Ítem / Producto:</span><span class="ticket-value" id="remT-item">-</span></div>
+          <div class="ticket-divider"></div>
+          <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Precio del Ítem:</span><span class="ticket-value ticket-price" id="remT-price" style="font-size: 1.1rem; color: #e65100;">$0.00 USD</span></div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <div id="remT-statusBox" style="background: #fff8e1; border: 2px dashed #ffa000; border-radius: 12px; padding: 10px; margin-top: 8px; text-align: center;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: #e65100; margin-bottom: 6px;">¿Deseas seguir con el pedido?</div>
+          <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; font-weight: 700; color: #37474f;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="remT-chk-yes" class="checkbox-paper-box"></span> SÍ
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="remT-chk-no" class="checkbox-paper-box"></span> NO
+            </div>
+          </div>
+          <div id="remT-msgText" style="font-size: 0.78rem; font-weight: 700; color: #0277bd; margin-top: 6px; display: none;"></div>
+        </div>
+
+        <div class="ticket-footer">
+          <div id="remT-barcode" class="barcode"></div>
+          <div class="ticket-date" id="remT-date">MOONSHOP - ATENCIÓN AL CLIENTE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: BIENVENIDA -->
+    <section id="sec-welcome" class="view-section active">
+      <div class="welcome-card">
+        <h1 class="welcome-title">¡Bienvenido a Moonshop!</h1>
+        
+        <div id="startWorkWrapper" style="margin: 15px auto 20px auto; max-width: 320px;">
+          <button class="btn-start-work" onclick="openUserAuthModal()" style="font-size: 1.05rem; padding: 14px;">Comenzar a trabajar</button>
+        </div>
+
+        <div id="instructionsContainer" style="display: none;">
+          <div class="welcome-purpose-box">
+            <h3>El Propósito y Visión de MOONSHOP</h3>
+            <p>
+              <b>MOONSHOP</b> nace con el firme propósito de consolidarse como la plataforma digital líder, segura y confiable en la gestión, comercio y administración de ítems virtuales, Robux y activos en el ecosistema de Roblox y videojuegos destacados como Murder Mystery 2 y Adopt Me (Start Pets). Queremos ofrecer una experiencia profesional tanto para nuestros clientes como para nuestro equipo de trabajo.
+            </p>
+          </div>
+
+          <div style="max-width: 320px; margin: 0 auto;">
+            <button class="btn-start-work" style="background: linear-gradient(135deg, #00c853 0%, #b2ff59 100%); color: #004d40; font-size: 1.05rem; padding: 14px;" onclick="switchSection('create')">Ir a Crear Ticket</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALCULADORA ROBUX -->
+    <section id="sec-calc-robux" class="view-section">
+      <div class="container">
+        <div class="admin-card">
+          <h3>Calculadora de Robux</h3>
+          <div class="admin-section-box">
+            <span class="section-title-badge">Robux (100 = $4,800 COP / $1,200 ARS)</span>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label style="color: #0277bd; font-weight: 700;">Moneda de Pago:</label>
+              <select id="robuxCurrency" onchange="calculateRobux()">
+                <option value="COP">Peso Colombiano (COP)</option>
+                <option value="ARS">Peso Argentino (ARS)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="background: #e1f5fe; padding: 12px; border-radius: 14px; border: 1.5px solid #0288d1; margin-bottom: 14px;">
+              <label style="color: #0277bd; font-weight: 700;">Vincular / Añadir Ticket Existente:</label>
+              <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <input type="text" id="robuxTicketSearch" class="search-code-input" maxlength="4" placeholder="Ej. 1234 (Prueba)" style="background: white;">
+                <button class="btn-scan" style="margin-top: 0; width: 130px;" onclick="loadTicketToCalc('robux')">Buscar</button>
+              </div>
+              <div id="robuxLinkedStatus" style="font-size: 0.8rem; color: #2e7d32; font-weight: 700; margin-top: 6px;">Ningún ticket vinculado.</div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-col">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="calcRobuxQty">Cantidad de Robux:</label>
+                  <input type="number" id="calcRobuxQty" placeholder="Ej. 100" value="100" oninput="calculateRobux()">
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Banner Ticket (Opcional):</label>
+                  <input type="file" accept="image/*" onchange="handleBannerUpload(event, 'calcRobuxBanner')">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px; margin-bottom:0;">
+              <label>Total a Pagar:</label>
+              <input type="text" id="calcRobuxRes" readonly style="font-family: 'JetBrains Mono'; font-weight: bold; background: #e0f7fa; font-size: 1.1rem; color: #0277bd;" value="$4,800.00 COP">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 15px;">
+              <button class="btn-action" style="margin-top: 0;" onclick="saveAndDownloadCalcTicket('robux')">Actualizar & Descargar</button>
+              <button class="btn-nequi-go" style="margin-top: 0;" onclick="redirectToNequiFromCalc('robux')">Dirigir a Nequi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-container">
+          <div class="preview-title">Vista Previa Ticket Robux</div>
+          <div id="calcRobuxTicketBox" class="ticket">
+            <div class="ticket-overlay">
+              <div class="ticket-header">
+                <div class="user-profile-badge">
+                  <img id="calcRobuxAvatar" class="user-avatar-img" src="https://via.placeholder.com/100" alt="Avatar">
+                  <div class="user-info-text">
+                    <div class="user-platform-label" id="calcRobuxPlatform">TikTok</div>
+                    <div class="user-handle-label" id="calcRobuxHandle">@darwin_rbx</div>
+                  </div>
+                </div>
+                <div class="logo-moonshop" style="font-size: 1.4rem;">
+                  <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                </div>
+                <div><span class="ticket-code" id="calcRobuxCodeLbl">#MOON-0000</span></div>
+              </div>
+
+              <img id="calcRobuxBanner" class="default-game-banner" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80" alt="Robux Banner">
+
+              <div class="ticket-body">
+                <div class="ticket-row"><span class="ticket-label">Detalle Ítem:</span><span class="ticket-value" id="calcRobuxValLbl">100 Robux</span></div>
+                <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="calcRobuxBuyerLbl">Cliente Moonshop</span></div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar:</span><span class="ticket-value ticket-price" id="calcRobuxPriceLbl">$4,800.00 COP</span></div>
+              </div>
+              <div class="ticket-footer">
+                <div id="calcRobuxBarcode" class="barcode"></div>
+                <div class="ticket-date" id="calcRobuxDateLbl">FECHA: --/--/----</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALCULADORA MM2 -->
+    <section id="sec-calc-mm2" class="view-section">
+      <div class="container">
+        <div class="admin-card">
+          <h3>Calculadora Murder Mystery 2</h3>
+          <div class="admin-section-box">
+            <span class="section-title-badge">MM2 (Ítems & Comisión)</span>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label style="color: #0277bd; font-weight: 700;">Moneda de Pago:</label>
+              <select id="mm2Currency" onchange="calculateMm2TotalsOnly()">
+                <option value="COP">Peso Colombiano (COP - $3.200 Base USD)</option>
+                <option value="ARS">Peso Argentino (ARS - $1.200 Base USD)</option>
+              </select>
+            </div>
+            
+            <div class="form-group" style="background: #e1f5fe; padding: 12px; border-radius: 14px; border: 1.5px solid #0288d1; margin-bottom: 14px;">
+              <label style="color: #0277bd; font-weight: 700;">Vincular / Añadir Ticket Existente:</label>
+              <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <input type="text" id="mm2TicketSearch" class="search-code-input" maxlength="4" placeholder="Ej. 1234 (Prueba)" style="background: white;">
+                <button class="btn-scan" style="margin-top: 0; width: 130px;" onclick="loadTicketToCalc('mm2')">Buscar</button>
+              </div>
+              <div id="mm2LinkedStatus" style="font-size: 0.8rem; color: #2e7d32; font-weight: 700; margin-top: 6px;">Ningún ticket vinculado.</div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-col">
+                <div class="form-group" style="background: #e8f5e9; padding: 10px; border-radius: 12px; border: 1.5px solid #2e7d32; margin-bottom: 0;">
+                  <label style="color: #1b5e20; font-weight: 700;">Ganancia Adicional:</label>
+                  <input type="number" id="mm2TargetProfit" placeholder="Ej. 5000" value="0" oninput="calculateMm2TotalsOnly()" style="background: white; margin-top: 4px;">
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group" style="background: #f4f9fd; padding: 10px; border-radius: 12px; border: 1.5px solid #b3e5fc; margin-bottom: 0;">
+                  <label>Cambiar Banner MM2:</label>
+                  <input type="file" accept="image/*" onchange="handleBannerUpload(event, 'calcMm2Banner')" style="margin-top: 4px;">
+                </div>
+              </div>
+            </div>
+
+            <div id="mm2ItemsContainer" style="margin-top: 10px;"></div>
+
+            <button class="btn-add-item" onclick="playBubbleSound(); addMm2Item()">Agregar Nueva Suma (Arma MM2)</button>
+
+            <div style="background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 14px; padding: 12px; margin-top: 14px; text-align: center;">
+              <span style="font-size: 0.85rem; font-weight: bold; color: #1b5e20;">TOTAL A PAGAR (CON GANANCIA):</span>
+              <div id="mm2TotalGeneral" style="font-size: 1.4rem; font-family: 'JetBrains Mono'; font-weight: 700; color: #2e7d32; margin-top: 4px;">$0.00 COP</div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 15px;">
+              <button class="btn-action" style="margin-top: 0;" onclick="saveAndDownloadCalcTicket('mm2')">Actualizar & Descargar</button>
+              <button class="btn-nequi-go" style="margin-top: 0;" onclick="redirectToNequiFromCalc('mm2')">Dirigir a Nequi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-container">
+          <div class="preview-title">Vista Previa Ticket MM2</div>
+          <div id="calcMm2TicketBox" class="ticket">
+            <div class="ticket-overlay">
+              <div class="ticket-header">
+                <div class="user-profile-badge">
+                  <img id="calcMm2Avatar" class="user-avatar-img" src="https://via.placeholder.com/100" alt="Avatar">
+                  <div class="user-info-text">
+                    <div class="user-platform-label" id="calcMm2Platform">TikTok</div>
+                    <div class="user-handle-label" id="calcMm2Handle">@darwin_rbx</div>
+                  </div>
+                </div>
+                <div class="logo-moonshop" style="font-size: 1.4rem;">
+                  <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                </div>
+                <div><span class="ticket-code" id="calcMm2CodeLbl">#MOON-0000</span></div>
+              </div>
+
+              <img id="calcMm2Banner" class="default-game-banner" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&auto=format&fit=crop&q=80" alt="MM2 Banner">
+
+              <div class="ticket-body">
+                <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="calcMm2BuyerLbl">Cliente Moonshop</span></div>
+                <div class="ticket-row"><span class="ticket-label">Nombre Arma(s):</span><span class="ticket-value" id="calcMm2ItemsSummaryLbl">Chromatic Gun</span></div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar:</span><span class="ticket-value ticket-price" id="calcMm2PriceLbl">$0.00 COP</span></div>
+              </div>
+              <div class="ticket-footer">
+                <div id="calcMm2Barcode" class="barcode"></div>
+                <div class="ticket-date" id="calcMm2DateLbl">FECHA: --/--/----</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALCULADORA START PETS -->
+    <section id="sec-calc-adopt" class="view-section">
+      <div class="container">
+        <div class="admin-card">
+          <h3>Calculadora Start Pets / Adopt Me</h3>
+          <div class="admin-section-box">
+            <span class="section-title-badge">Start Pets (Ítems & Comisión)</span>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label style="color: #0277bd; font-weight: 700;">Moneda de Pago:</label>
+              <select id="adoptCurrency" onchange="calculateAdoptTotalsOnly()">
+                <option value="COP">Peso Colombiano (COP - $3.200 Base USD)</option>
+                <option value="ARS">Peso Argentino (ARS - $1.200 Base USD)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="background: #e1f5fe; padding: 12px; border-radius: 14px; border: 1.5px solid #0288d1; margin-bottom: 14px;">
+              <label style="color: #0277bd; font-weight: 700;">Vincular / Añadir Ticket Existente:</label>
+              <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <input type="text" id="adoptTicketSearch" class="search-code-input" maxlength="4" placeholder="Ej. 1234 (Prueba)" style="background: white;">
+                <button class="btn-scan" style="margin-top: 0; width: 130px;" onclick="loadTicketToCalc('adopt')">Buscar</button>
+              </div>
+              <div id="adoptLinkedStatus" style="font-size: 0.8rem; color: #2e7d32; font-weight: 700; margin-top: 6px;">Ningún ticket vinculado.</div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-col">
+                <div class="form-group" style="background: #e8f5e9; padding: 10px; border-radius: 12px; border: 1.5px solid #2e7d32; margin-bottom: 0;">
+                  <label style="color: #1b5e20; font-weight: 700;">Ganancia Adicional:</label>
+                  <input type="number" id="adoptTargetProfit" placeholder="Ej. 5000" value="0" oninput="calculateAdoptTotalsOnly()" style="background: white; margin-top: 4px;">
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group" style="background: #f4f9fd; padding: 10px; border-radius: 12px; border: 1.5px solid #b3e5fc; margin-bottom: 0;">
+                  <label>Cambiar Banner Start Pets:</label>
+                  <input type="file" accept="image/*" onchange="handleBannerUpload(event, 'calcAdoptBanner')" style="margin-top: 4px;">
+                </div>
+              </div>
+            </div>
+
+            <div id="adoptItemsContainer" style="margin-top: 10px;"></div>
+
+            <button class="btn-add-item" onclick="playBubbleSound(); addAdoptItem()">Agregar Nueva Suma (Mascota Start Pets)</button>
+
+            <div style="background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 14px; padding: 12px; margin-top: 14px; text-align: center;">
+              <span style="font-size: 0.85rem; font-weight: bold; color: #1b5e20;">TOTAL A PAGAR (CON GANANCIA):</span>
+              <div id="adoptTotalGeneral" style="font-size: 1.4rem; font-family: 'JetBrains Mono'; font-weight: 700; color: #2e7d32; margin-top: 4px;">$0.00 COP</div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 15px;">
+              <button class="btn-action" style="margin-top: 0;" onclick="saveAndDownloadCalcTicket('adopt')">Actualizar & Descargar</button>
+              <button class="btn-nequi-go" style="margin-top: 0;" onclick="redirectToNequiFromCalc('adopt')">Dirigir a Nequi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-container">
+          <div class="preview-title">Vista Previa Ticket Start Pets</div>
+          <div id="calcAdoptTicketBox" class="ticket">
+            <div class="ticket-overlay">
+              <div class="ticket-header">
+                <div class="user-profile-badge">
+                  <img id="calcAdoptAvatar" class="user-avatar-img" src="https://via.placeholder.com/100" alt="Avatar">
+                  <div class="user-info-text">
+                    <div class="user-platform-label" id="calcAdoptPlatform">TikTok</div>
+                    <div class="user-handle-label" id="calcAdoptHandle">@darwin_rbx</div>
+                  </div>
+                </div>
+                <div class="logo-moonshop" style="font-size: 1.4rem;">
+                  <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                </div>
+                <div><span class="ticket-code" id="calcAdoptCodeLbl">#MOON-0000</span></div>
+              </div>
+
+              <img id="calcAdoptBanner" class="default-game-banner" src="https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&auto=format&fit=crop&q=80" alt="Start Pets Banner">
+
+              <div class="ticket-body">
+                <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="calcAdoptBuyerLbl">Cliente Moonshop</span></div>
+                <div class="ticket-row"><span class="ticket-label">Nombre Pet(s):</span><span class="ticket-value" id="calcAdoptItemsSummaryLbl">Shadow Dragon</span></div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar:</span><span class="ticket-value ticket-price" id="calcAdoptPriceLbl">$0.00 COP</span></div>
+              </div>
+              <div class="ticket-footer">
+                <div id="calcAdoptBarcode" class="barcode"></div>
+                <div class="ticket-date" id="calcAdoptDateLbl">FECHA: --/--/----</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN PERSONAS -->
+    <section id="sec-persons" class="view-section">
+      <div class="admin-card">
+        <h3>Gestión de Personas y Usuarios</h3>
+
+        <div id="personAuthBox" class="admin-section-box" style="margin-bottom: 12px;">
+          <h4 style="color: #0277bd; font-size: 0.95rem; margin-bottom: 8px;">Autorización Requerida</h4>
+          <div class="form-group">
+            <label for="masterPersonPass">Contraseña de Administrador (2010):</label>
+            <input type="password" id="masterPersonPass" placeholder="Contraseña...">
+          </div>
+          <button class="btn-person" onclick="verifyMasterPersonPass()">Desbloquear Agregar Usuario</button>
+        </div>
+
+        <div id="personFormPanel" class="admin-section-box" style="display: none; margin-bottom: 15px; border-color: #00c853;">
+          <h4 style="color: #00c853; font-size: 0.95rem; margin-bottom: 8px;">Agregar Nuevo Usuario</h4>
+          
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="newUserName">Nombre de Usuario:</label>
+                <input type="text" id="newUserName" placeholder="Ej. Carlos">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="newUserCode">Código Numérico:</label>
+                <input type="password" id="newUserCode" placeholder="Ej. 1234">
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-action" style="margin-top: 10px;" onclick="saveNewUser()">Guardar Usuario y Código</button>
+        </div>
+
+        <div class="admin-section-box">
+          <span class="section-title-badge">Historial de Entradas al Sistema (Compacto)</span>
+          <div id="historyListContainer" class="history-grid-container" style="max-height: 200px;">
+            <p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">Cargando historial...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN CREAR TICKET -->
+    <section id="sec-create" class="view-section">
+      <div class="container">
+        <div class="form-card">
+          <h2>Crear Ticket MOONSHOP</h2>
+          
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="code">#MOON-CODE</label>
+                <div class="input-wrapper">
+                  <span class="prefix">#</span>
+                  <input type="text" id="code" class="code-input" maxlength="4" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="form-col">
+              <button class="btn-rand" onclick="playBubbleSound(); generateRandomCode()">Generar Código</button>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="productCategory">Categoría del Producto</label>
+                <select id="productCategory" onchange="playBubbleSound(); updateTicket()">
+                  <option value="Robux">Robux</option>
+                  <option value="Murder Mystery">Murder Mystery</option>
+                  <option value="Adopt Me">Adopt Me</option>
+                  <option value="Otro / General">Otro / General</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="dynamicFieldInput">Nombre del Ítem</label>
+                <input type="text" id="dynamicFieldInput" placeholder="Ej. 1000 Robux / Chroma Laser" value="1000 Robux" oninput="updateTicket()">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="priceUsd">Precio Dólares ($ USD)</label>
+                <div class="input-wrapper">
+                  <span class="prefix">$</span>
+                  <input type="number" step="0.01" id="priceUsd" class="code-input" style="background: white;" placeholder="Ej. 5.00" value="0.00" oninput="updateTicket()">
+                </div>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="socialPlatform">Plataforma</label>
+                <select id="socialPlatform" onchange="playBubbleSound(); updateTicket()">
+                  <option value="TikTok">TikTok</option>
+                  <option value="Discord">Discord</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="socialUser">Usuario (@handle)</label>
+                <input type="text" id="socialUser" placeholder="Ej. @darwin_rbx" value="@darwin_rbx" oninput="updateTicket()">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="refund">¿Aplica Devolución?</label>
+                <select id="refund" onchange="playBubbleSound(); updateTicket()">
+                  <option value="NO">No hay devolución</option>
+                  <option value="SI">Sí hay devolución</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Foto de Perfil</label>
+                <input type="file" id="avatarFile" accept="image/*" onchange="handleAvatarUpload(event)">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Imagen Banner (Opcional)</label>
+                <input type="file" id="createBannerFile" accept="image/*" onchange="handleBannerUpload(event, 'createTicketBanner')">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="buyer">Comprador</label>
+                <input type="text" id="buyer" placeholder="Ej. Ana García" value="Cliente Moonshop" oninput="updateTicket()">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="seller">Vendedor</label>
+                <input type="text" id="seller" placeholder="Ej. Moonshop Staff" value="Moonshop Staff" oninput="updateTicket()">
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-action" style="margin-top: 12px;" onclick="playBubbleSound(); saveAndDownloadTicket()">
+            Abrir Código y Descargar Ticket
+          </button>
+        </div>
+
+        <div class="preview-container">
+          <div class="preview-title">Vista Previa del Ticket</div>
+          
+          <div id="ticket" class="ticket">
+            <div class="ticket-overlay">
+              <div class="ticket-header">
+                <div class="user-profile-badge">
+                  <img id="lbl-avatar" class="user-avatar-img" src="https://via.placeholder.com/100" alt="Avatar">
+                  <div class="user-info-text">
+                    <div class="user-platform-label" id="lbl-platform">TikTok</div>
+                    <div class="user-handle-label" id="lbl-handle">@darwin_rbx</div>
+                  </div>
+                </div>
+
+                <div class="logo-moonshop" style="font-size: 1.4rem;">
+                  <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                </div>
+                <div><span class="ticket-code" id="lbl-code">#MOON-0000</span></div>
+              </div>
+
+              <img id="createTicketBanner" class="default-game-banner" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80" alt="Ticket Banner">
+
+              <div class="ticket-body">
+                <div class="ticket-row"><span class="ticket-label">Detalle Ítem:</span><span class="ticket-value" id="lbl-dynamic-value">1000 Robux</span></div>
+                <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="lbl-buyer">Cliente Moonshop</span></div>
+                <div class="ticket-row"><span class="ticket-label">Vendedor:</span><span class="ticket-value" id="lbl-seller">Moonshop Staff</span></div>
+                <div class="ticket-row"><span class="ticket-label">Devolución:</span><span id="lbl-refund" class="badge-dev badge-no">NO APLICA</span></div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar (USD):</span><span class="ticket-value ticket-price" id="lbl-price">$0.00 USD</span></div>
+              </div>
+
+              <div class="ticket-footer">
+                <div id="dynamicBarcode" class="barcode"></div>
+                <div class="ticket-date" id="lbl-date">FECHA: --/--/----</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TICKETS PENDIENTES -->
+    <section id="sec-pending" class="view-section">
+      <div class="admin-card">
+        <h3>Tickets Pendientes</h3>
+        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 12px; text-align: center;">Agrega o busca rápidamente tus tickets pendientes de atención.</p>
+
+        <div class="form-group" style="background: #e1f5fe; padding: 12px; border-radius: 14px; border: 1.5px solid #0288d1; margin-bottom: 15px;">
+          <label style="color: #0277bd; font-weight: 700;">Añadir Ticket Pendiente (Por Código):</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <input type="text" id="pendingInputCode" class="search-code-input" maxlength="4" placeholder="Ej. 1234 (Prueba)" style="background: white;">
+            <button class="btn-scan" style="margin-top: 0; width: 130px;" onclick="addPendingTicket()">Añadir</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <input type="text" id="pendingFilterInput" placeholder="Buscar en mis tickets pendientes..." oninput="renderPendingTickets()" style="background: white;">
+        </div>
+
+        <div id="pendingTicketsContainer" class="history-grid-container">
+          <p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">No hay tickets pendientes agregados.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN: TICKETS PARA RECORDAR (TICKETS R) -->
+    <section id="sec-remember" class="view-section">
+      <div class="admin-card">
+        <h3>Tickets para Recordar / Reanudar Pedido</h3>
+        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 12px; text-align: center;">Usa el código <b style="color: #0277bd;">1234</b> para hacer todas tus pruebas sin cerrarlo jamás.</p>
+
+        <div class="form-group">
+          <label for="rememberCodeInput">Buscar Ticket Existente (#MOON-):</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input type="text" id="rememberCodeInput" class="search-code-input" maxlength="4" placeholder="1234">
+          </div>
+          <button class="btn-scan" style="margin-top: 10px; background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%); color: #3e2723;" onclick="checkRememberTicket()">Consultar Ticket a Recordar</button>
+        </div>
+
+        <div id="rememberResultBox" class="admin-section-box" style="display: none; margin-top: 15px; border-color: #ff9800; background: #fff8e1;">
+          <div style="text-align: center; margin-bottom: 10px;">
+            <span class="section-title-badge" style="background: #f57c00;">Información del Pedido</span>
+            <h4 id="remCodeLbl" style="color: #e65100; font-size: 1.1rem; margin-top: 4px;">#MOON-0000</h4>
+          </div>
+
+          <div style="font-size: 0.9rem; color: #37474f; line-height: 1.6; background: white; padding: 12px; border-radius: 12px; border: 1px solid #ffe082;">
+            <p><b>Comprador:</b> <span id="remBuyerLbl">-</span></p>
+            <p><b>Categoría e Ítem:</b> <span id="remItemLbl">-</span></p>
+            <p><b>Total Registrado:</b> <span id="remPriceLbl" style="color: #2e7d32; font-weight: 700;">$0.00 USD</span></p>
+            <p><b>Estado Actual:</b> <span id="remStatusLbl" style="font-weight: bold;">-</span></p>
+          </div>
+
+          <div style="margin-top: 14px; text-align: center;">
+            <button class="btn-proof-save" style="font-size: 0.95rem; padding: 12px;" onclick="downloadInitialEmptyRememberTicket()">
+              1. Descargar Ticket de Recordatorio (Papel Vacío)
+            </button>
+          </div>
+
+          <div id="interactiveChoiceBox" style="display: none; margin-top: 14px; text-align: center; background: #ffffff; padding: 14px; border-radius: 16px; border: 2px dashed #ff9800; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+            <p style="font-size: 0.92rem; color: #e65100; font-weight: 700; margin-bottom: 8px;">2. Selecciona la respuesta del cliente:</p>
+            
+            <div style="display: flex; justify-content: center; gap: 30px; font-size: 1.1rem; font-weight: 700; color: #37474f; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="handleRememberChoice(true)">
+                <span id="screen-chk-yes" class="checkbox-paper-box"></span> SÍ
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="handleRememberChoice(false)">
+                <span id="screen-chk-no" class="checkbox-paper-box"></span> NO
+              </div>
+            </div>
+
+            <p style="font-size: 0.78rem; color: #78909c;">Tu respuesta quedará **guardada en la nube**, aunque recargues o borres la página.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN BUSCAR TICKET -->
+    <section id="sec-search" class="view-section">
+      <div class="admin-card">
+        <h3>Consulta de Ticket - Información Completa</h3>
+        
+        <div class="form-group">
+          <label for="searchCode">Ingresa el Código de 4 dígitos (#MOON-):</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input type="text" id="searchCode" class="search-code-input" maxlength="4" placeholder="1234">
+          </div>
+          <button class="btn-scan" onclick="playBubbleSound(); searchTicketOnly()">Buscar Ticket</button>
+        </div>
+
+        <div id="searchClosedBanner" class="status-locked-banner">
+          ESTE TICKET YA FUE CERRADO.
+        </div>
+
+        <div id="searchOnlyResult" class="scan-result-container">
+          <div class="container" style="align-items: flex-start; margin-top: 8px;">
+            <div class="admin-section-box" style="flex: 1.2; margin-top: 0;">
+              <span class="section-title-badge">Detalles (#MOON-<span id="only-code"></span>)</span>
+              <div class="ticket-body" style="margin-top: 8px;">
+                <div class="ticket-row"><span class="ticket-label">Categoría:</span><span class="ticket-value" id="only-category">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Detalle Ítem:</span><span class="ticket-value" id="only-item-value">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Plataforma / Usuario:</span><span class="ticket-value" id="only-social">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Comprador:</span><span class="ticket-value" id="only-buyer">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Vendedor:</span><span class="ticket-value" id="only-seller">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Devolución:</span><span class="ticket-value" id="only-refund">-</span></div>
+                <div class="ticket-row"><span class="ticket-label">Fecha Emisión:</span><span class="ticket-value" id="only-date">-</span></div>
+                <div class="ticket-divider"></div>
+                <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar:</span><span class="ticket-value ticket-price" id="only-price">$0.00 USD</span></div>
+              </div>
+            </div>
+
+            <div class="preview-container" style="flex: 1; margin-top: 0;">
+              <div class="preview-title" style="color: #0277bd;">Imagen Oficial del Ticket</div>
+              <div style="text-align: center; width: 100%;">
+                <img id="only-img" class="result-img-preview" src="" alt="Ticket Guardado" style="margin-top: 0; max-height: 280px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                <button class="btn-scan" style="margin-top: 12px;" onclick="playBubbleSound(); downloadOnlyTicketImage()">Descargar Imagen del Ticket</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN HISTORIAL DE TICKETS -->
+    <section id="sec-history" class="view-section">
+      <div class="admin-card">
+        <h3>Historial General de Tickets</h3>
+        <p style="font-size: 0.85rem; color: #546e7a; margin-bottom: 12px; text-align: center;">Aquí se muestran todos los tickets creados, activos y bloqueados en el sistema en vista doble bolillera.</p>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <input type="text" id="historyFilterInput" placeholder="Filtrar por código, comprador o categoría..." oninput="filterHistoryTickets()" style="background: white;">
+        </div>
+
+        <div id="allTicketsHistoryContainer" class="history-grid-container" style="max-height: 380px;">
+          <p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">Cargando historial de tickets...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN NEQUI -->
+    <section id="sec-nequi" class="view-section">
+      <div class="admin-card">
+        <h3>Módulo Nequi - Verificación & Ficha QR</h3>
+        
+        <div class="form-group">
+          <label for="nequiSearchCode">Ingresa el Código de 4 dígitos (#MOON-):</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input type="text" id="nequiSearchCode" class="search-code-input" maxlength="4" placeholder="1234">
+          </div>
+          <button class="btn-nequi-dl" style="margin-top: 10px;" onclick="checkNequiCode()">Verificar Código Nequi</button>
+        </div>
+
+        <div id="nequiClosedBanner" class="status-locked-banner">
+          ESTE TICKET YA FUE CERRADO.
+        </div>
+
+        <div id="nequiResultBox" class="module-result-box">
+          <h4 id="nequiResultTitle" style="font-size: 1.1rem; margin-bottom: 5px;"></h4>
+          <p id="nequiResultText" style="font-size: 0.9rem; margin-bottom: 10px;"></p>
+
+          <div id="nequiFullConfigPanel" style="display: none; margin-top: 12px; border-top: 2px dashed #e91e63; padding-top: 12px;">
+            <div class="container">
+              <div class="form-card" style="background: #ffffff; box-shadow: none; border: 2px solid #f8bbd0; padding: 14px;">
+                <h4 style="color: #c2185b; margin-bottom: 10px; font-size: 1rem;">Configurar Ficha Nequi</h4>
+                
+                <div class="form-row-2">
+                  <div class="form-col">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Concepto:</label>
+                      <input type="text" id="sec2DescInput" placeholder="Ej. Pago por Robux" value="" oninput="renderNequiTicket()">
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Nombre Titular:</label>
+                      <input type="text" id="sec2HolderInput" value="Darwin Rincón" oninput="renderNequiTicket()">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row-2" style="margin-top: 8px;">
+                  <div class="form-col">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Teléfono Nequi:</label>
+                      <input type="text" id="sec2PhoneInput" value="300 000 0000" oninput="renderNequiTicket()">
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Total a Cobrar:</label>
+                      <input type="text" id="sec2PriceInput" value="$0.00 USD" oninput="renderNequiTicket()">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 8px;">
+                  <label>Subir Foto del Código QR Nequi:</label>
+                  <input type="file" id="sec2QrFile" accept="image/*" onchange="handleNequiQrFile(event)">
+                </div>
+
+                <button class="btn-nequi-dl" style="margin-top: 10px;" onclick="playBubbleSound(); downloadNequiTicket()">Descargar Ficha QR Nequi</button>
+              </div>
+
+              <div class="preview-container">
+                <div class="preview-title" style="color: #c2185b;">Vista Previa Ficha Nequi</div>
+                <div id="nequiTicketRender" class="ticket">
+                  <div class="ticket-overlay">
+                    <div class="ticket-header">
+                      <div class="user-profile-badge" style="background: #fce4ec; border-color: #f8bbd0;">
+                        <div class="user-info-text" style="width: 100%; text-align: center;">
+                          <div class="user-platform-label" style="color: #c2185b;">PAGO VERIFICADO NEQUI</div>
+                          <div class="user-handle-label" id="sec2PhoneLbl" style="font-family: 'JetBrains Mono';">300 000 0000</div>
+                        </div>
+                      </div>
+                      <div class="logo-moonshop" style="font-size: 1.4rem;">
+                        <span class="m-1">M</span><span class="m-2">O</span><span class="m-3">O</span><span class="m-4">N</span><span class="m-5">S</span><span class="m-6">H</span><span class="m-7">O</span><span class="m-8">P</span>
+                      </div>
+                      <div><span class="ticket-code" id="sec2TicketCodeLbl">#MOON-0000</span></div>
+                    </div>
+                    <div class="ticket-body">
+                      <div class="ticket-row"><span class="ticket-label">Concepto:</span><span class="ticket-value" id="sec2DescLbl">-</span></div>
+                      <div class="ticket-row"><span class="ticket-label">Titular:</span><span class="ticket-value" id="sec2HolderLbl">Darwin Rincón</span></div>
+                      <div class="ticket-divider"></div>
+                      <div class="nequi-qr-container"><img id="sec2QrImg" class="nequi-qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop" alt="QR Nequi"></div>
+                      <div class="ticket-divider"></div>
+                      <div class="ticket-row" style="align-items: center;"><span class="ticket-label">Total a Pagar:</span><span class="ticket-value ticket-price" id="sec2PriceLbl">$0.00 USD</span></div>
+                    </div>
+                    <div class="ticket-footer">
+                      <div class="barcode" id="nequiBarcode"></div>
+                      <div class="ticket-date">PAGO SEGURO NEQUI - MOONSHOP</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPROBANTES DE PAGO -->
+    <section id="sec-proof" class="view-section">
+      <div class="admin-card">
+        <h3>Módulo Comprobante de Pago</h3>
+        
+        <div class="form-group">
+          <label for="proofSearchCode">Ingresa el Código de 4 dígitos (#MOON-):</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input type="text" id="proofSearchCode" class="search-code-input" maxlength="4" placeholder="1234">
+          </div>
+          <button class="btn-proof-save" style="margin-top: 10px;" onclick="checkProofCode()">Verificar Ticket para Comprobante</button>
+        </div>
+
+        <div id="proofClosedBanner" class="status-locked-banner">
+          ESTE TICKET YA FUE CERRADO.
+        </div>
+
+        <div id="proofResultBox" class="module-result-box">
+          <h4 id="proofResultTitle" style="font-size: 1.1rem; margin-bottom: 5px;"></h4>
+          <p id="proofResultText" style="font-size: 0.9rem; margin-bottom: 10px;"></p>
+
+          <div id="proofFullConfigPanel" style="display: none; text-align: left; margin-top: 12px; border-top: 2px dashed #ff9800; padding-top: 12px;">
+            <div class="form-row-2">
+              <div class="form-col">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Teléfono del Cliente:</label>
+                  <input type="text" id="sec3PhoneInput" placeholder="Ej. +57 312 345 6789">
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Hora y Fecha del Pago:</label>
+                  <input type="text" id="sec3TimeInput" placeholder="Ej. 19/10/2026 - 09:15 PM">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 8px;">
+              <label>Subir Foto del Comprobante:</label>
+              <input type="file" id="sec3ProofFile" accept="image/*" onchange="handleProofFile(event)">
+            </div>
+
+            <div id="sec3ProofImgBox" style="display:none; text-align:center;"><label>Vista Previa del Comprobante Cargado:</label><br><img id="sec3ProofImg" class="result-img-preview" src="" alt="Comprobante"></div>
+            <button id="saveProofBtn" class="btn-proof-save" style="margin-top: 10px;" onclick="playBubbleSound(); savePaymentProof()">Publicar Comprobante en Firebase</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENCUESTA & CALIFICACIÓN -->
+    <section id="sec-survey" class="view-section">
+      <div class="admin-card">
+        <h3>Encuesta, Calificación & Cierre de Pedido</h3>
+        
+        <div class="form-group">
+          <label for="surveySearchCode">Ingresa el Código de 4 dígitos (#MOON-):</label>
+          <div class="input-wrapper">
+            <span class="prefix">#MOON-</span>
+            <input type="text" id="surveySearchCode" class="search-code-input" maxlength="4" placeholder="1234">
+          </div>
+          <button class="btn-finish-order" style="margin-top: 10px;" onclick="checkSurveyCode()">Cargar Encuesta para Ticket</button>
+        </div>
+
+        <div id="lockBanner" class="status-locked-banner">
+          ESTE TICKET YA FUE CERRADO.
+        </div>
+
+        <div id="surveyResultBox" class="module-result-box">
+          <h4 id="surveyResultTitle" style="font-size: 1.1rem; margin-bottom: 5px;"></h4>
+          <p id="surveyResultText" style="font-size: 0.9rem; margin-bottom: 10px;"></p>
+
+          <div id="surveyFullConfigPanel" style="display: none; text-align: left; margin-top: 12px; border-top: 2px dashed #aa00ff; padding-top: 12px;">
+            <label style="font-size: 0.95rem; color: #aa00ff; margin-bottom: 8px; font-weight: 700; display: block;">Encuesta de Calificación & Reseña de Venta:</label>
+
+            <div class="form-row-2">
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">1. ¿Se ha respetado al cliente?</div>
+                  <select id="q1" onchange="checkSurveyLogic('q1', 'j1')"><option value="SI">Sí</option><option value="NO">No</option></select>
+                  <div id="j1" class="survey-justification"><input type="text" id="just1" placeholder="Justifica por qué..."></div>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">2. ¿Al cliente le gustó la experiencia?</div>
+                  <select id="q2" onchange="checkSurveyLogic('q2', 'j2')"><option value="SI">Sí</option><option value="NO">No</option></select>
+                  <div id="j2" class="survey-justification"><input type="text" id="just2" placeholder="Justifica por qué..."></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-2" style="margin-top: 8px;">
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">3. ¿El cliente estuvo satisfecho?</div>
+                  <select id="q3" onchange="checkSurveyLogic('q3', 'j3')"><option value="SI">Sí</option><option value="NO">No</option></select>
+                  <div id="j3" class="survey-justification"><input type="text" id="just3" placeholder="Justifica por qué..."></div>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">4. ¿Tuvo algún problema la compra?</div>
+                  <select id="q4" onchange="checkSurveyLogic('q4', 'j4')"><option value="NO">No</option><option value="SI">Sí</option></select>
+                  <div id="j4" class="survey-justification"><input type="text" id="just4" placeholder="Justifica el problema..."></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-2" style="margin-top: 8px;">
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">5. ¿Hubo demora en la entrega?</div>
+                  <select id="q5" onchange="checkSurveyLogic('q5', 'j5')"><option value="NO">No</option><option value="SI">Sí</option></select>
+                  <div id="j5" class="survey-justification"><input type="text" id="just5" placeholder="Justifica la demora..."></div>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="survey-item" style="margin-bottom: 0; height: 100%;">
+                  <div class="survey-question">6. Todo se hizo con orden</div>
+                  <select id="q6" onchange="checkSurveyLogic('q6', 'j6')"><option value="SI">Sí</option><option value="NO">No</option></select>
+                  <div id="j6" class="survey-justification"><input type="text" id="just6" placeholder="Justifica inconveniente..."></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="stars-container">
+              <div class="stars-title">Calificación General del Servicio</div>
+              <div class="stars-row" id="starRow">
+                <span class="star" onclick="setRating(1)">★</span>
+                <span class="star" onclick="setRating(2)">★</span>
+                <span class="star" onclick="setRating(3)">★</span>
+                <span class="star" onclick="setRating(4)">★</span>
+                <span class="star" onclick="setRating(5)">★</span>
+              </div>
+              <div id="starsLabelDesc" class="stars-label-desc">Selecciona una calificación</div>
+              <div class="form-group" style="margin-bottom: 0;"><input type="text" id="starJustification" placeholder="Comentario u opinión opcional sobre la calificación..."></div>
+            </div>
+
+            <button id="finishOrderBtn" class="btn-finish-order" onclick="playBubbleSound(); finishOrder()">Pedido Realizado (Cerrar / Bloquear Ticket)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DISPOSITIVOS (CAMBIAR DE MODO SIN ALTERAR NADA) -->
+    <section id="sec-devices" class="view-section">
+      <div class="admin-card" style="text-align: center; max-width: 600px; margin: 0 auto;">
+        <h3>Selector de Dispositivo & Vista</h3>
+        <p style="font-size: 0.9rem; color: #546e7a; margin-bottom: 20px;">
+          ¿Te equivocaste de dispositivo? Cambia el modo de visualización de forma instantánea sin perder ningún dato ni alterar nada del sistema.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button class="device-option-btn" onclick="selectDeviceMode('pc'); switchSection('welcome');">
+            💻 Cambiar a Computadora (PC)
+          </button>
+          <button class="device-option-btn" onclick="selectDeviceMode('tablet'); switchSection('welcome');">
+            📱 Cambiar a Tablet (Menú Invertido con Zoom)
+          </button>
+          <button class="device-option-btn" onclick="selectDeviceMode('mobile'); switchSection('welcome');">
+            📲 Cambiar a Móvil / Celular (Pantalla Completa)
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyByGaZHa8KJjFsfVgF6G1eLFmW70dielc4",
+      authDomain: "tienda-33972.firebaseapp.com",
+      databaseURL: "https://tienda-33972-default-rtdb.firebaseio.com",
+      projectId: "tienda-33972",
+      storageBucket: "tienda-33972.firebasestorage.app",
+      messagingSenderId: "348867313665",
+      appId: "1:348867313665:web:f05c56d1a1fad029484000"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "1234";
+    const MASTER_PERSON_PASS = "2010";
+
+    let isUserAuthenticated = localStorage.getItem('moonshop_auth') === 'true';
+    let isAdminLoggedIn = localStorage.getItem('moonshop_admin') === 'true';
+
+    let nequiQrBase64 = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=NequiMoonshop";
+    let proofBase64 = "";
+    let currentSearchOnlyImageBase64 = "";
+    let currentTicketRefundData = "NO";
+    let currentTicketTimestamp = 0;
+    let avatarBase64 = "https://via.placeholder.com/100";
+    let currentStarRating = 5;
+
+    let activeNequiCode = "";
+    let activeProofCode = "";
+    let activeSurveyCode = "";
+    let activeRememberCode = "";
+
+    let linkedTickets = { robux: null, mm2: null, adopt: null };
+
+    let mm2ItemsList = [{ name: "Chromatic Gun", price: 1 }];
+    let adoptItemsList = [{ name: "Shadow Dragon", price: 1 }];
+    let allTicketsCache = {};
+    let pendingTicketsList = JSON.parse(localStorage.getItem('moonshop_pending_tickets')) || [];
+
+    window.onload = function() {
+      if (isAdminLoggedIn) document.getElementById('loginOverlay').style.display = 'none';
+
+      if (isUserAuthenticated) {
+        document.getElementById('startWorkWrapper').style.display = 'none';
+        document.getElementById('instructionsContainer').style.display = 'block';
+        loadHistory();
+        listenAllTickets();
+      }
+
+      ensureTestTicketExists();
+      loadDefaultBackground();
+      setTicketDate();
+      generateRandomCode();
+      setRating(5);
+      calculateRobux();
+      renderMm2ContainerInitial();
+      renderAdoptContainerInitial();
+      updateTicket();
+    };
+
+    /* Función para mover las pestañas con las flechas pequeñas ◀ ▶ en PC */
+    function scrollTabs(direction) {
+      playBubbleSound();
+      const container = document.getElementById('navTabsContainer');
+      if (container) {
+        const scrollAmount = 220;
+        if (direction === 'left') {
+          container.scrollLeft -= scrollAmount;
+        } else {
+          container.scrollLeft += scrollAmount;
+        }
+      }
+    }
+
+    /* Selector de dispositivo */
+    function selectDeviceMode(mode) {
+      playBubbleSound();
+      document.getElementById('deviceSelectorOverlay').style.display = 'none';
+      const headerEl = document.getElementById('appHeader');
+      
+      headerEl.classList.remove('tablet-mode', 'mobile-mode', 'menu-open', 'hamburger-open', 'pc-menu-open');
+
+      if (mode === 'tablet') {
+        headerEl.classList.add('tablet-mode');
+      } else if (mode === 'mobile') {
+        headerEl.classList.add('mobile-mode');
+      }
+    }
+
+    function togglePcMenu() {
+      playBubbleSound();
+      const headerEl = document.getElementById('appHeader');
+      if (!headerEl.classList.contains('mobile-mode') && !headerEl.classList.contains('tablet-mode')) {
+        headerEl.classList.toggle('pc-menu-open');
+      } else if (headerEl.classList.contains('tablet-mode')) {
+        toggleBubbleMenu();
+      } else if (headerEl.classList.contains('mobile-mode')) {
+        toggleMobileHamburgerMenu();
+      }
+    }
+
+    function toggleBubbleMenu() {
+      playBubbleSound();
+      const headerEl = document.getElementById('appHeader');
+      headerEl.classList.toggle('menu-open');
+    }
+
+    function toggleMobileHamburgerMenu() {
+      playBubbleSound();
+      const headerEl = document.getElementById('appHeader');
+      headerEl.classList.toggle('hamburger-open');
+    }
+
+    function ensureTestTicketExists() {
+      db.ref('tickets/1234').once('value').then((snapshot) => {
+        if (!snapshot.exists()) {
+          let testData = {
+            code: '#MOON-1234',
+            category: 'Robux',
+            dynamicValue: '1000 Robux (PRUEBA)',
+            platform: 'TikTok',
+            socialUser: '@test_user',
+            avatarImage: 'https://via.placeholder.com/100',
+            bannerImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80',
+            price: '$5.00 USD',
+            buyer: 'Cliente de Prueba',
+            seller: 'Moonshop Test Staff',
+            refund: 'SI',
+            date: '24/10/2026 - 12:00 PM',
+            status: 'PENDIENTE',
+            timestamp: Date.now()
+          };
+          db.ref('tickets/1234').set(testData);
+        }
+      });
+    }
+
+    function handleLogin() {
+      playBubbleSound();
+      const userVal = document.getElementById('loginUser').value.trim();
+      const passVal = document.getElementById('loginPass').value.trim();
+
+      if (userVal === ADMIN_USER && passVal === ADMIN_PASS) {
+        localStorage.setItem('moonshop_admin', 'true');
+        document.getElementById('loginOverlay').style.display = 'none';
+        switchSection('welcome');
+      } else {
+        alert("Usuario o contraseña incorrectos.");
+      }
+    }
+
+    function openUserAuthModal() {
+      playBubbleSound();
+      document.getElementById('userAuthOverlay').style.display = 'flex';
+    }
+
+    function verifyUserAuth() {
+      playBubbleSound();
+      const name = document.getElementById('authUserName').value.trim();
+      const code = document.getElementById('authUserCode').value.trim();
+
+      if (!name || !code) {
+        alert("Ingresa tu usuario y código numérico.");
+        return;
+      }
+
+      db.ref('users/' + name).once('value').then((snapshot) => {
+        let validCode = "2603";
+        if (snapshot.exists()) {
+          validCode = snapshot.val().code;
+        } else if (name === "Darwin") {
+          validCode = "2603";
+        } else {
+          alert("Este usuario no está registrado en el sistema.");
+          return;
+        }
+
+        if (code === validCode) {
+          const now = new Date();
+          const dateStr = now.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' }) + ' - ' + now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+          
+          db.ref('history').push({ name: name, datetime: dateStr });
+
+          isUserAuthenticated = true;
+          localStorage.setItem('moonshop_auth', 'true');
+
+          document.getElementById('userAuthOverlay').style.display = 'none';
+          document.getElementById('startWorkWrapper').style.display = 'none';
+          document.getElementById('instructionsContainer').style.display = 'block';
+
+          loadHistory();
+          listenAllTickets();
+        } else {
+          alert("Código numérico incorrecto para el usuario " + name);
+        }
+      });
+    }
+
+    function switchCalcSubSection(subName) {
+      playBubbleSound();
+      if (!isUserAuthenticated) {
+        alert("Debes hacer clic en el botón 'Comenzar a trabajar' en la página de inicio.");
+        openUserAuthModal();
+        return;
+      }
+
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.pc-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (subName === 'robux') {
+        document.getElementById('sec-calc-robux').classList.add('active');
+        document.getElementById('pc-tab-calc-robux').classList.add('active');
+        calculateRobux();
+      } else if (subName === 'mm2') {
+        document.getElementById('sec-calc-mm2').classList.add('active');
+        document.getElementById('pc-tab-calc-mm2').classList.add('active');
+        calculateMm2TotalsOnly();
+      } else if (subName === 'adopt') {
+        document.getElementById('sec-calc-adopt').classList.add('active');
+        document.getElementById('pc-tab-calc-adopt').classList.add('active');
+        calculateAdoptTotalsOnly();
+      }
+
+      document.getElementById('appHeader').classList.remove('menu-open');
+      document.getElementById('appHeader').classList.remove('hamburger-open');
+    }
+
+    function handleBannerUpload(event, targetImgId) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(targetImgId).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function loadTicketToCalc(type) {
+      playBubbleSound();
+      let searchInputId = type === 'robux' ? 'robuxTicketSearch' : (type === 'mm2' ? 'mm2TicketSearch' : 'adoptTicketSearch');
+      let statusId = type === 'robux' ? 'robuxLinkedStatus' : (type === 'mm2' ? 'mm2LinkedStatus' : 'adoptLinkedStatus');
+      
+      let val = document.getElementById(searchInputId).value.trim();
+      if (!val) {
+        alert("Ingresa el código de 4 dígitos.");
+        return;
+      }
+      let code = val.padStart(4, '0');
+
+      db.ref('tickets/' + code).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          linkedTickets[type] = { code: code, data: data };
+          let isTest = (code === '1234');
+          document.getElementById(statusId).innerText = `Vinculado al Ticket #${code} ${isTest ? '(🛡️ MODO PRUEBA)' : ''} (${data.buyer || 'Cliente'})`;
+          updateCalcTicketPreview(type);
+        } else {
+          alert(`No existe el ticket #${code}`);
+        }
+      });
+    }
+
+    function updateCalcTicketPreview(type) {
+      let t = linkedTickets[type];
+      if (!t) return;
+      let data = t.data;
+
+      if (type === 'robux') {
+        document.getElementById('calcRobuxCodeLbl').innerText = '#' + t.code;
+        document.getElementById('calcRobuxPlatform').innerText = data.platform || 'TikTok';
+        document.getElementById('calcRobuxHandle').innerText = data.socialUser || '@usuario';
+        if (data.avatarImage) document.getElementById('calcRobuxAvatar').src = data.avatarImage;
+        if (data.bannerImage) document.getElementById('calcRobuxBanner').src = data.bannerImage;
+        document.getElementById('calcRobuxBuyerLbl').innerText = data.buyer || 'Cliente';
+        
+        let qty = document.getElementById('calcRobuxQty').value || 100;
+        document.getElementById('calcRobuxValLbl').innerText = qty + ' Robux';
+        document.getElementById('calcRobuxPriceLbl').innerText = document.getElementById('calcRobuxRes').value;
+        generateBarcode(t.code, 'calcRobuxBarcode');
+      } else if (type === 'mm2') {
+        document.getElementById('calcMm2CodeLbl').innerText = '#' + t.code;
+        document.getElementById('calcMm2Platform').innerText = data.platform || 'TikTok';
+        document.getElementById('calcMm2Handle').innerText = data.socialUser || '@usuario';
+        if (data.avatarImage) document.getElementById('calcMm2Avatar').src = data.avatarImage;
+        if (data.bannerImage) document.getElementById('calcMm2Banner').src = data.bannerImage;
+        document.getElementById('calcMm2BuyerLbl').innerText = data.buyer || 'Cliente';
+        document.getElementById('calcMm2ItemsSummaryLbl').innerText = mm2ItemsList.map(i => i.name).join(', ');
+        document.getElementById('calcMm2PriceLbl').innerText = document.getElementById('mm2TotalGeneral').innerText;
+        generateBarcode(t.code, 'calcMm2Barcode');
+      } else if (type === 'adopt') {
+        document.getElementById('calcAdoptCodeLbl').innerText = '#' + t.code;
+        document.getElementById('calcAdoptPlatform').innerText = data.platform || 'TikTok';
+        document.getElementById('calcAdoptHandle').innerText = data.socialUser || '@usuario';
+        if (data.avatarImage) document.getElementById('calcAdoptAvatar').src = data.avatarImage;
+        if (data.bannerImage) document.getElementById('calcAdoptBanner').src = data.bannerImage;
+        document.getElementById('calcAdoptBuyerLbl').innerText = data.buyer || 'Cliente';
+        document.getElementById('calcAdoptItemsSummaryLbl').innerText = adoptItemsList.map(i => i.name).join(', ');
+        document.getElementById('calcAdoptPriceLbl').innerText = document.getElementById('adoptTotalGeneral').innerText;
+        generateBarcode(t.code, 'calcAdoptBarcode');
+      }
+    }
+
+    function saveAndDownloadCalcTicket(type) {
+      let t = linkedTickets[type];
+      if (!t) {
+        alert("Primero debes buscar y vincular un ticket en la parte superior.");
+        return;
+      }
+
+      let boxId = type === 'robux' ? 'calcRobuxTicketBox' : (type === 'mm2' ? 'calcMm2TicketBox' : 'calcAdoptTicketBox');
+      let bannerImgId = type === 'robux' ? 'calcRobuxBanner' : (type === 'mm2' ? 'calcMm2Banner' : 'calcAdoptBanner');
+      const ticketElement = document.getElementById(boxId);
+      showMoonToast();
+
+      html2canvas(ticketElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
+
+        let updateData = {
+          image: imageBase64,
+          bannerImage: document.getElementById(bannerImgId).src,
+          timestamp: Date.now()
+        };
+
+        if (type === 'robux') {
+          updateData.dynamicValue = document.getElementById('calcRobuxQty').value + ' Robux';
+          updateData.price = document.getElementById('calcRobuxRes').value;
+        } else if (type === 'mm2') {
+          updateData.dynamicValue = mm2ItemsList.map(i => i.name).join(', ');
+          updateData.price = document.getElementById('mm2TotalGeneral').innerText;
+        } else if (type === 'adopt') {
+          updateData.dynamicValue = adoptItemsList.map(i => i.name).join(', ');
+          updateData.price = document.getElementById('adoptTotalGeneral').innerText;
+        }
+
+        db.ref('tickets/' + t.code).update(updateData, (error) => {
+          if (error) {
+            alert("Error al actualizar el ticket en Firebase: " + error.message);
+          } else {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageBase64;
+            downloadLink.download = `Moonshop-Ticket-MOON-${t.code}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          }
+        });
+      });
+    }
+
+    function redirectToNequiFromCalc(type) {
+      let t = linkedTickets[type];
+      let code = t ? t.code : "";
+      let priceVal = "";
+      let descVal = "";
+
+      if (type === 'robux') {
+        priceVal = document.getElementById('calcRobuxRes').value;
+        descVal = "Robux: " + (document.getElementById('calcRobuxQty').value || "100") + " Robux";
+      } else if (type === 'mm2') {
+        priceVal = document.getElementById('mm2TotalGeneral').innerText;
+        descVal = "MM2: " + mm2ItemsList.map(i => i.name).join(', ');
+      } else if (type === 'adopt') {
+        priceVal = document.getElementById('adoptTotalGeneral').innerText;
+        descVal = "Start Pets: " + adoptItemsList.map(i => i.name).join(', ');
+      }
+
+      switchSection('nequi');
+
+      if (code) {
+        document.getElementById('nequiSearchCode').value = code;
+        checkNequiCode();
+      } else {
+        document.getElementById('sec2TicketCodeLbl').innerText = '#MOON-0000';
+        document.getElementById('sec2DescInput').value = descVal;
+        document.getElementById('sec2PriceInput').value = priceVal;
+        renderNequiTicket();
+        generateBarcodeNequi("0000");
+        document.getElementById('nequiResultBox').style.display = 'block';
+        document.getElementById('nequiResultBox').className = "module-result-box success";
+        document.getElementById('nequiResultTitle').innerText = "Pago Nequi Preparado";
+        document.getElementById('nequiResultText').innerText = "Cálculo transferido directamente a la ficha Nequi.";
+        document.getElementById('nequiFullConfigPanel').style.display = "block";
+      }
+    }
+
+    function calculateRobux() {
+      let robuxQty = parseFloat(document.getElementById('calcRobuxQty').value) || 0;
+      let curr = document.getElementById('robuxCurrency').value;
+      
+      let rate = curr === 'ARS' ? 12 : 48;
+      let robuxTotal = robuxQty * rate;
+      
+      document.getElementById('calcRobuxRes').value = "$" + robuxTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + curr;
+      if (linkedTickets.robux) updateCalcTicketPreview('robux');
+    }
+
+    function renderMm2ContainerInitial() {
+      const container = document.getElementById('mm2ItemsContainer');
+      container.innerHTML = '';
+
+      mm2ItemsList.forEach((item, index) => {
+        let div = document.createElement('div');
+        div.className = 'item-card-calc';
+        div.id = `mm2Card_${index}`;
+        div.innerHTML = `
+          ${mm2ItemsList.length > 1 ? `<button class="btn-delete-item" onclick="removeMm2Item(${index})">Eliminar</button>` : ''}
+          <div class="form-group">
+            <label>Nombre del Arma #${index + 1}:</label>
+            <input type="text" value="${item.name}" oninput="updateMm2NameOnly(${index}, this.value)">
+          </div>
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Precio Dólar ($ USD):</label>
+                <input type="number" step="0.01" value="${item.price}" oninput="updateMm2PriceOnly(${index}, parseFloat(this.value) || 0)">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Subtotal:</label>
+                <input type="text" id="mm2ItemRes_${index}" readonly style="font-family: 'JetBrains Mono'; font-weight: bold; background: #e0f7fa; color: #0277bd;" value="$0.00">
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      calculateMm2TotalsOnly();
+    }
+
+    function updateMm2NameOnly(index, nameVal) {
+      mm2ItemsList[index].name = nameVal;
+      if (linkedTickets.mm2) updateCalcTicketPreview('mm2');
+    }
+
+    function updateMm2PriceOnly(index, priceVal) {
+      mm2ItemsList[index].price = priceVal;
+      calculateMm2TotalsOnly();
+    }
+
+    function addMm2Item() {
+      mm2ItemsList.push({ name: "Nueva Arma", price: 1 });
+      renderMm2ContainerInitial();
+    }
+
+    function removeMm2Item(index) {
+      if (mm2ItemsList.length > 1) {
+        mm2ItemsList.splice(index, 1);
+        renderMm2ContainerInitial();
+      } else {
+        alert("Debes mantener al menos un ítem.");
+      }
+    }
+
+    function calculateMm2TotalsOnly() {
+      let baseTotalSum = 0;
+      let curr = document.getElementById('mm2Currency').value;
+      let baseRate = curr === 'ARS' ? 1200 : 3200;
+
+      mm2ItemsList.forEach((item, index) => {
+        let priceUsd = item.price || 0;
+        let withFee = priceUsd + (priceUsd * 0.054) + 0.20;
+        let itemSubtotal = withFee * baseRate;
+        baseTotalSum += itemSubtotal;
+
+        let resEl = document.getElementById(`mm2ItemRes_${index}`);
+        if (resEl) {
+          resEl.value = "$" + itemSubtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + curr;
+        }
+      });
+
+      let targetProfit = parseFloat(document.getElementById('mm2TargetProfit').value) || 0;
+      let finalTotal = baseTotalSum + targetProfit;
+
+      document.getElementById('mm2TotalGeneral').innerText = "$" + finalTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + curr;
+      if (linkedTickets.mm2) updateCalcTicketPreview('mm2');
+    }
+
+    function renderAdoptContainerInitial() {
+      const container = document.getElementById('adoptItemsContainer');
+      container.innerHTML = '';
+
+      adoptItemsList.forEach((item, index) => {
+        let div = document.createElement('div');
+        div.className = 'item-card-calc';
+        div.id = `adoptCard_${index}`;
+        div.innerHTML = `
+          ${adoptItemsList.length > 1 ? `<button class="btn-delete-item" onclick="removeAdoptItem(${index})">Eliminar</button>` : ''}
+          <div class="form-group">
+            <label>Nombre de la Pet #${index + 1}:</label>
+            <input type="text" value="${item.name}" oninput="updateAdoptNameOnly(${index}, this.value)">
+          </div>
+          <div class="form-row-2">
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Precio Dólar ($ USD):</label>
+                <input type="number" step="0.01" value="${item.price}" oninput="updateAdoptPriceOnly(${index}, parseFloat(this.value) || 0)">
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Subtotal:</label>
+                <input type="text" id="adoptItemRes_${index}" readonly style="font-family: 'JetBrains Mono'; font-weight: bold; background: #e0f7fa; color: #0277bd;" value="$0.00">
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      calculateAdoptTotalsOnly();
+    }
+
+    function updateAdoptNameOnly(index, nameVal) {
+      adoptItemsList[index].name = nameVal;
+      if (linkedTickets.adopt) updateCalcTicketPreview('adopt');
+    }
+
+    function updateAdoptPriceOnly(index, priceVal) {
+      adoptItemsList[index].price = priceVal;
+      calculateAdoptTotalsOnly();
+    }
+
+    function addAdoptItem() {
+      adoptItemsList.push({ name: "Nueva Pet", price: 1 });
+      renderAdoptContainerInitial();
+    }
+
+    function removeAdoptItem(index) {
+      if (adoptItemsList.length > 1) {
+        adoptItemsList.splice(index, 1);
+        renderAdoptContainerInitial();
+      } else {
+        alert("Debes mantener al menos un ítem.");
+      }
+    }
+
+    function calculateAdoptTotalsOnly() {
+      let baseTotalSum = 0;
+      let curr = document.getElementById('adoptCurrency').value;
+      let baseRate = curr === 'ARS' ? 1200 : 3200;
+
+      adoptItemsList.forEach((item, index) => {
+        let priceUsd = item.price || 0;
+        let withFee = priceUsd + (priceUsd * 0.054) + 0.20;
+        let itemSubtotal = withFee * baseRate;
+        baseTotalSum += itemSubtotal;
+
+        let resEl = document.getElementById(`adoptItemRes_${index}`);
+        if (resEl) {
+          resEl.value = "$" + itemSubtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + curr;
+        }
+      });
+
+      let targetProfit = parseFloat(document.getElementById('adoptTargetProfit').value) || 0;
+      let finalTotal = baseTotalSum + targetProfit;
+
+      document.getElementById('adoptTotalGeneral').innerText = "$" + finalTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + curr;
+      if (linkedTickets.adopt) updateCalcTicketPreview('adopt');
+    }
+
+    function verifyMasterPersonPass() {
+      playBubbleSound();
+      const pass = document.getElementById('masterPersonPass').value;
+      if (pass === MASTER_PERSON_PASS) {
+        document.getElementById('personAuthBox').style.display = 'none';
+        document.getElementById('personFormPanel').style.display = 'block';
+        alert("Contraseña correcta. Ya puedes agregar usuarios.");
+      } else {
+        alert("Contraseña incorrecta (2010).");
+      }
+    }
+
+    function saveNewUser() {
+      playBubbleSound();
+      const name = document.getElementById('newUserName').value.trim();
+      const code = document.getElementById('newUserCode').value.trim();
+
+      if (!name || !code) {
+        alert("Completa el nombre y el código numérico.");
+        return;
+      }
+
+      db.ref('users/' + name).set({ name: name, code: code }, (error) => {
+        if (error) {
+          alert("Error al guardar: " + error.message);
+        } else {
+          alert("Usuario guardado con éxito.");
+          document.getElementById('newUserName').value = '';
+          document.getElementById('newUserCode').value = '';
+          document.getElementById('personFormPanel').style.display = 'none';
+          document.getElementById('personAuthBox').style.display = 'block';
+          document.getElementById('masterPersonPass').value = '';
+        }
+      });
+    }
+
+    function loadHistory() {
+      db.ref('history').limitToLast(20).on('value', (snapshot) => {
+        const container = document.getElementById('historyListContainer');
+        container.innerHTML = '';
+
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">No hay registros aún.</p>';
+          return;
+        }
+
+        snapshot.forEach((childSnapshot) => {
+          let item = childSnapshot.val();
+          let div = document.createElement('div');
+          div.className = 'history-card-item';
+          div.innerHTML = `<span><b>${item.name}</b></span><span style="font-family: 'JetBrains Mono'; font-size: 0.72rem; color: #0277bd;">${item.datetime}</span>`;
+          container.prepend(div);
+        });
+      });
+    }
+
+    function listenAllTickets() {
+      db.ref('tickets').on('value', (snapshot) => {
+        allTicketsCache = {};
+        if (snapshot.exists()) {
+          snapshot.forEach((child) => {
+            allTicketsCache[child.key] = child.val();
+          });
+        }
+        renderHistoryTickets(allTicketsCache);
+        renderPendingTickets();
+      });
+    }
+
+    function renderHistoryTickets(ticketsObj) {
+      const container = document.getElementById('allTicketsHistoryContainer');
+      container.innerHTML = '';
+
+      const keys = Object.keys(ticketsObj).sort((a, b) => b - a);
+
+      if (keys.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">No hay tickets registrados en el sistema.</p>';
+        return;
+      }
+
+      keys.forEach((code) => {
+        let data = ticketsObj[code];
+        let isClosed = data.status === 'COMPLETADO';
+        let isTest = (code === '1234');
+        
+        let card = document.createElement('div');
+        card.className = 'history-card-item';
+        card.style.borderColor = isClosed ? '#ef9a9a' : (isTest ? '#ffb74d' : '#b3e5fc');
+        card.style.background = isClosed ? '#fff5f5' : (isTest ? '#fffde7' : '#f4f9fd');
+
+        card.innerHTML = `
+          <div class="history-card-top">
+            <span style="color: #0277bd; font-family: 'JetBrains Mono'; font-size: 0.82rem;">#MOON-${code} ${isTest ? '🛡️' : ''}</span>
+            <span style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: ${isClosed ? '#ffebee' : '#e8f5e9'}; color: ${isClosed ? '#c62828' : '#2e7d32'};">${isTest ? 'PRUEBA' : (data.status || 'PENDIENTE')}</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #37474f;">
+            <b>Cliente:</b> ${data.buyer || '-'}<br>
+            <b>Ítem:</b> ${data.dynamicValue || '-'}<br>
+            <b>Total:</b> ${data.price || '$0.00'}
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 4px;">
+            <button class="btn-scan" style="margin-top: 0; padding: 4px 8px; font-size: 0.7rem;" onclick="loadTicketIntoSearch('${code}')">Ver</button>
+            <button class="btn-proof-save" style="margin-top: 0; padding: 4px 8px; font-size: 0.7rem;" onclick="addToPendingList('${code}')">Pendiente</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterHistoryTickets() {
+      let query = document.getElementById('historyFilterInput').value.toLowerCase().trim();
+      let filtered = {};
+
+      for (let code in allTicketsCache) {
+        let t = allTicketsCache[code];
+        let matchCode = code.includes(query);
+        let matchBuyer = (t.buyer || '').toLowerCase().includes(query);
+        let matchCat = (t.category || '').toLowerCase().includes(query);
+
+        if (!query || matchCode || matchBuyer || matchCat) {
+          filtered[code] = t;
+        }
+      }
+      renderHistoryTickets(filtered);
+    }
+
+    function checkRememberTicket() {
+      playBubbleSound();
+      let inputVal = document.getElementById('rememberCodeInput').value.trim();
+      let resultBox = document.getElementById('rememberResultBox');
+
+      if (!inputVal) {
+        alert("Ingresa los 4 dígitos del código.");
+        return;
+      }
+
+      let cleanCode = inputVal.padStart(4, '0');
+      activeRememberCode = cleanCode;
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          let isTest = (cleanCode === '1234');
+
+          document.getElementById('remCodeLbl').innerText = '#MOON-' + cleanCode + (isTest ? ' 🛡️ [TICKET DE PRUEBA]' : '');
+          document.getElementById('remBuyerLbl').innerText = data.buyer || 'Cliente Moonshop';
+          document.getElementById('remItemLbl').innerText = (data.category || 'Robux') + " - " + (data.dynamicValue || '');
+          document.getElementById('remPriceLbl').innerText = data.price || '$0.00 USD';
+          document.getElementById('remStatusLbl').innerText = isTest ? 'ACTIVO (PRUEBA)' : (data.status || 'PENDIENTE');
+
+          document.getElementById('screen-chk-yes').classList.remove('checked');
+          document.getElementById('screen-chk-yes').innerText = '';
+          document.getElementById('screen-chk-no').classList.remove('checked');
+          document.getElementById('screen-chk-no').innerText = '';
+
+          document.getElementById('remT-chk-yes').classList.remove('checked');
+          document.getElementById('remT-chk-yes').innerText = '';
+          document.getElementById('remT-chk-no').classList.remove('checked');
+          document.getElementById('remT-chk-no').innerText = '';
+          document.getElementById('remT-msgText').style.display = 'none';
+
+          document.getElementById('remT-code').innerText = '#MOON-' + cleanCode;
+          document.getElementById('remT-buyer').innerText = data.buyer || 'Cliente Moonshop';
+          document.getElementById('remT-item').innerText = (data.category || 'Robux') + " (" + (data.dynamicValue || '') + ")";
+          document.getElementById('remT-price').innerText = data.price || '$0.00 USD';
+          generateBarcode(cleanCode, 'remT-barcode');
+
+          if (data.rememberAnswer === 'SI') {
+            document.getElementById('interactiveChoiceBox').style.display = 'block';
+            document.getElementById('screen-chk-yes').classList.add('checked');
+            document.getElementById('screen-chk-yes').innerText = '✓';
+            document.getElementById('remT-chk-yes').classList.add('checked');
+            document.getElementById('remT-chk-yes').innerText = '✓';
+          } else if (data.rememberAnswer === 'NO' && !isTest) {
+            document.getElementById('interactiveChoiceBox').style.display = 'block';
+            document.getElementById('screen-chk-no').classList.add('checked');
+            document.getElementById('screen-chk-no').innerText = '✓';
+            document.getElementById('remT-chk-no').classList.add('checked');
+            document.getElementById('remT-chk-no').innerText = '✓';
+          } else {
+            document.getElementById('interactiveChoiceBox').style.display = 'none';
+          }
+
+          resultBox.style.display = 'block';
+        } else {
+          alert('No existe ningún ticket registrado con el código #' + cleanCode);
+          resultBox.style.display = 'none';
+        }
+      });
+    }
+
+    function downloadInitialEmptyRememberTicket() {
+      playBubbleSound();
+      if (!activeRememberCode) return;
+
+      showMoonToast();
+      const rememberTicketEl = document.getElementById('rememberTicketTemplate');
+
+      html2canvas(rememberTicketEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageBase64;
+        downloadLink.download = `Ticket-Recordatorio-Papel-MOON-${activeRememberCode}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        document.getElementById('interactiveChoiceBox').style.display = 'block';
+        document.getElementById('interactiveChoiceBox').scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    function handleRememberChoice(isYesChoice) {
+      playBubbleSound();
+      if (!activeRememberCode) return;
+
+      let isTest = (activeRememberCode === '1234');
+
+      if (isYesChoice) {
+        document.getElementById('screen-chk-yes').classList.add('checked');
+        document.getElementById('screen-chk-yes').innerText = '✓';
+        document.getElementById('screen-chk-no').classList.remove('checked');
+        document.getElementById('screen-chk-no').innerText = '';
+
+        document.getElementById('remT-chk-yes').classList.add('checked');
+        document.getElementById('remT-chk-yes').innerText = '✓';
+        document.getElementById('remT-chk-no').classList.remove('checked');
+        document.getElementById('remT-chk-no').innerText = '';
+
+        const msgText = document.getElementById('remT-msgText');
+        msgText.innerText = isTest ? '🛡️ [PRUEBA] ¡Compra continuada con éxito (Sin alterar estado)!' : '¡Tu compra ha sido continuada exitosamente!';
+        msgText.style.color = '#2e7d32';
+        msgText.style.display = 'block';
+
+        if (!isTest) {
+          db.ref('tickets/' + activeRememberCode).update({ rememberAnswer: 'SI', status: 'PENDIENTE' });
+        }
+
+        downloadRememberImageAndContinue('Sí');
+      } else {
+        document.getElementById('moonConfirmModal').style.display = 'flex';
+      }
+    }
+
+    function closeConfirmModal() {
+      playBubbleSound();
+      document.getElementById('moonConfirmModal').style.display = 'none';
+    }
+
+    function confirmCancelTicketAction() {
+      playBubbleSound();
+      document.getElementById('moonConfirmModal').style.display = 'none';
+
+      let code = activeRememberCode;
+      let isTest = (code === '1234');
+
+      document.getElementById('screen-chk-no').classList.add('checked');
+      document.getElementById('screen-chk-no').innerText = '✓';
+      document.getElementById('screen-chk-yes').classList.remove('checked');
+      document.getElementById('screen-chk-yes').innerText = '';
+
+      document.getElementById('remT-chk-no').classList.add('checked');
+      document.getElementById('remT-chk-no').innerText = '✓';
+      document.getElementById('remT-chk-yes').classList.remove('checked');
+      document.getElementById('remT-chk-yes').innerText = '';
+
+      const msgText = document.getElementById('remT-msgText');
+      msgText.innerText = isTest ? '🛡️ [PRUEBA] Simulación de cierre exitosa. ¡El ticket #1234 sigue activo!' : 'Este ticket ha sido cerrado por el cliente.';
+      msgText.style.color = isTest ? '#0277bd' : '#c62828';
+      msgText.style.display = 'block';
+
+      if (isTest) {
+        downloadRememberImageAndContinue('No');
+      } else {
+        db.ref('tickets/' + code).update({ rememberAnswer: 'NO', status: 'COMPLETADO' }, (error) => {
+          if (!error) {
+            pendingTicketsList = pendingTicketsList.filter(c => c !== code);
+            savePendingToStorage();
+            document.getElementById('remStatusLbl').innerText = 'COMPLETADO';
+            downloadRememberImageAndContinue('No');
+          }
+        });
+      }
+    }
+
+    function downloadRememberImageAndContinue(choiceType) {
+      showMoonToast();
+      const rememberTicketEl = document.getElementById('rememberTicketTemplate');
+
+      html2canvas(rememberTicketEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageBase64;
+        downloadLink.download = `Ticket-Recordatorio-Firmado-MOON-${activeRememberCode}-${choiceType}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        if (choiceType === 'Sí') {
+          setTimeout(() => {
+            alert("¡Prueba de continuación completada con éxito!");
+            loadTicketIntoSearch(activeRememberCode);
+          }, 800);
+        } else {
+          setTimeout(() => {
+            if (activeRememberCode === '1234') {
+              alert("🛡️ [TICKET DE PRUEBA #1234]: El ticket no se cerró en la base de datos para que puedas seguir haciendo pruebas.");
+            } else {
+              alert(`El ticket #${activeRememberCode} ha sido registrado como CERRADO con éxito.`);
+            }
+          }, 800);
+        }
+      });
+    }
+
+    function addPendingTicket() {
+      playBubbleSound();
+      let val = document.getElementById('pendingInputCode').value.trim();
+      if (!val) {
+        alert("Ingresa el código del ticket.");
+        return;
+      }
+      let code = val.padStart(4, '0');
+      if (allTicketsCache[code]) {
+        if (!pendingTicketsList.includes(code)) {
+          pendingTicketsList.push(code);
+          savePendingToStorage();
+          document.getElementById('pendingInputCode').value = '';
+          renderPendingTickets();
+          alert(`Ticket #${code} añadido a pendientes.`);
+        } else {
+          alert(`El ticket #${code} ya está en la lista de pendientes.`);
+        }
+      } else {
+        alert(`No existe ningún ticket con el código #${code} en la base de datos.`);
+      }
+    }
+
+    function addToPendingList(code) {
+      playBubbleSound();
+      if (!pendingTicketsList.includes(code)) {
+        pendingTicketsList.push(code);
+        savePendingToStorage();
+        renderPendingTickets();
+        alert(`Ticket #${code} añadido a pendientes.`);
+      } else {
+        alert(`El ticket #${code} ya está en la lista de pendientes.`);
+      }
+    }
+
+    function savePendingToStorage() {
+      localStorage.setItem('moonshop_pending_tickets', JSON.stringify(pendingTicketsList));
+    }
+
+    function renderPendingTickets() {
+      const container = document.getElementById('pendingTicketsContainer');
+      const query = document.getElementById('pendingFilterInput') ? document.getElementById('pendingFilterInput').value.toLowerCase().trim() : '';
+      container.innerHTML = '';
+
+      let filteredCodes = pendingTicketsList.filter(code => {
+        let t = allTicketsCache[code];
+        if (!t) return false;
+        let matchCode = code.includes(query);
+        let matchBuyer = (t.buyer || '').toLowerCase().includes(query);
+        return !query || matchCode || matchBuyer;
+      });
+
+      if (filteredCodes.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.85rem; color: #78909c; text-align: center; grid-column: span 2;">No hay tickets pendientes que coincidan.</p>';
+        return;
+      }
+
+      filteredCodes.forEach((code) => {
+        let data = allTicketsCache[code];
+        if (!data) return;
+        let isTest = (code === '1234');
+
+        let card = document.createElement('div');
+        card.className = 'history-card-item';
+        card.innerHTML = `
+          <div class="history-card-top">
+            <span style="color: #0277bd; font-family: 'JetBrains Mono'; font-size: 0.82rem;">#MOON-${code} ${isTest ? '🛡️' : ''}</span>
+            <span style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: #e8f5e9; color: #2e7d32;">PENDIENTE</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #37474f;">
+            <b>Comprador:</b> ${data.buyer || '-'}<br>
+            <b>Ítem:</b> ${data.dynamicValue || '-'}<br>
+            <b>Total:</b> ${data.price || '$0.00'}
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 4px;">
+            <button class="btn-scan" style="margin-top: 0; padding: 4px 8px; font-size: 0.7rem;" onclick="loadTicketIntoSearch('${code}')">Atender</button>
+            <button class="btn-delete-item" style="float:none; margin:0; padding:4px 8px; font-size: 0.7rem;" onclick="removePendingTicket('${code}')">Quitar</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removePendingTicket(code) {
+      playBubbleSound();
+      pendingTicketsList = pendingTicketsList.filter(c => c !== code);
+      savePendingToStorage();
+      renderPendingTickets();
+    }
+
+    function loadTicketIntoSearch(code) {
+      switchSection('search');
+      document.getElementById('searchCode').value = code;
+      searchTicketOnly();
+    }
+
+    function handleLogout() {
+      playBubbleSound();
+      localStorage.removeItem('moonshop_auth');
+      localStorage.removeItem('moonshop_admin');
+      isUserAuthenticated = false;
+      isAdminLoggedIn = false;
+
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+      document.getElementById('authUserName').value = '';
+      document.getElementById('authUserCode').value = '';
+      document.getElementById('loginOverlay').style.display = 'flex';
+      document.getElementById('userAuthOverlay').style.display = 'none';
+      
+      document.getElementById('startWorkWrapper').style.display = 'block';
+      document.getElementById('instructionsContainer').style.display = 'none';
+    }
+
+    function switchSection(secTarget) {
+      playBubbleSound();
+      if (secTarget !== 'welcome' && secTarget !== 'devices' && !isUserAuthenticated) {
+        alert("Debes hacer clic en el botón 'Comenzar a trabajar' e ingresar tu usuario y código.");
+        openUserAuthModal();
+        return;
+      }
+
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.pc-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById('sec-' + secTarget).classList.add('active');
+      const pcTargetBtn = document.getElementById('pc-tab-' + secTarget);
+      if (pcTargetBtn) pcTargetBtn.classList.add('active');
+
+      document.getElementById('appHeader').classList.remove('menu-open');
+      document.getElementById('appHeader').classList.remove('hamburger-open');
+    }
+
+    function searchTicketOnly() {
+      let inputVal = document.getElementById('searchCode').value.trim();
+      let closedBanner = document.getElementById('searchClosedBanner');
+      let resultContainer = document.getElementById('searchOnlyResult');
+
+      if (!inputVal) {
+        alert("Escribe los 4 dígitos del código.");
+        return;
+      }
+
+      let cleanCode = inputVal.padStart(4, '0');
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          let isTest = (cleanCode === '1234');
+
+          if (data.status === 'COMPLETADO' && !isTest) {
+            closedBanner.style.display = 'block';
+          } else {
+            closedBanner.style.display = 'none';
+          }
+
+          document.getElementById('only-code').innerText = cleanCode + (isTest ? ' 🛡️ [PRUEBA]' : '');
+          document.getElementById('only-category').innerText = data.category || 'Robux';
+          document.getElementById('only-item-value').innerText = data.dynamicValue || '-';
+          document.getElementById('only-social').innerText = (data.platform || 'TikTok') + ' (' + (data.socialUser || '@usuario') + ')';
+          document.getElementById('only-buyer').innerText = data.buyer || '-';
+          document.getElementById('only-seller').innerText = data.seller || '-';
+          document.getElementById('only-price').innerText = data.price || '$0.00 USD';
+          document.getElementById('only-refund').innerText = (data.refund === 'SI') ? 'Sí Aplica' : 'No Aplica';
+          document.getElementById('only-date').innerText = data.date || '-';
+          
+          if (data.image) {
+            currentSearchOnlyImageBase64 = data.image;
+            document.getElementById('only-img').src = data.image;
+          }
+
+          resultContainer.classList.add('active');
+        } else {
+          alert('No existe ningún ticket guardado con el código: #' + cleanCode);
+          closedBanner.style.display = 'none';
+          resultContainer.classList.remove('active');
+        }
+      });
+    }
+
+    function downloadOnlyTicketImage() {
+      if (currentSearchOnlyImageBase64) {
+        showMoonToast();
+        let code = document.getElementById('only-code').innerText;
+        const link = document.createElement('a');
+        link.href = currentSearchOnlyImageBase64;
+        link.download = `Ticket-MOON-${code}.png`;
+        link.click();
+      }
+    }
+
+    function checkNequiCode() {
+      playBubbleSound();
+      let inputVal = document.getElementById('nequiSearchCode').value.trim();
+      let resultBox = document.getElementById('nequiResultBox');
+      let title = document.getElementById('nequiResultTitle');
+      let text = document.getElementById('nequiResultText');
+      let fullPanel = document.getElementById('nequiFullConfigPanel');
+      let closedBanner = document.getElementById('nequiClosedBanner');
+
+      if (!inputVal) {
+        alert("Ingresa los 4 dígitos del código.");
+        return;
+      }
+
+      let cleanCode = inputVal.padStart(4, '0');
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          let isTest = (cleanCode === '1234');
+
+          if (data.status === 'COMPLETADO' && !isTest) {
+            closedBanner.style.display = 'block';
+            resultBox.style.display = 'none';
+            fullPanel.style.display = 'none';
+            return;
+          }
+
+          closedBanner.style.display = 'none';
+          resultBox.style.display = 'block';
+          resultBox.className = "module-result-box success";
+          title.innerText = isTest ? "🛡️ ¡Ticket de Prueba Encontrado!" : "¡Ticket Encontrado!";
+          text.innerText = `Código: #MOON-${cleanCode} | Categoría: ${data.category || 'Robux'} | Comprador: ${data.buyer || 'Cliente'}`;
+
+          document.getElementById('sec2TicketCodeLbl').innerText = '#MOON-' + cleanCode;
+          document.getElementById('sec2DescInput').value = data.category + ": " + (data.dynamicValue || '');
+          document.getElementById('sec2PriceInput').value = data.price || "$0.00 USD";
+
+          renderNequiTicket();
+          generateBarcodeNequi(cleanCode);
+          fullPanel.style.display = "block";
+        } else {
+          closedBanner.style.display = 'none';
+          resultBox.style.display = 'block';
+          resultBox.className = "module-result-box error";
+          title.innerText = "Ticket no encontrado";
+          text.innerText = `No existe registro con el código #MOON-${cleanCode}.`;
+          fullPanel.style.display = "none";
+        }
+      });
+    }
+
+    function checkProofCode() {
+      playBubbleSound();
+      let inputVal = document.getElementById('proofSearchCode').value.trim();
+      let resultBox = document.getElementById('proofResultBox');
+      let title = document.getElementById('proofResultTitle');
+      let text = document.getElementById('proofResultText');
+      let fullPanel = document.getElementById('proofFullConfigPanel');
+      let closedBanner = document.getElementById('proofClosedBanner');
+
+      if (!inputVal) {
+        alert("Ingresa los 4 dígitos del código.");
+        return;
+      }
+
+      let cleanCode = inputVal.padStart(4, '0');
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          let isTest = (cleanCode === '1234');
+
+          if (data.status === 'COMPLETADO' && !isTest) {
+            closedBanner.style.display = 'block';
+            resultBox.style.display = 'none';
+            fullPanel.style.display = 'none';
+            return;
+          }
+
+          closedBanner.style.display = 'none';
+          resultBox.style.display = 'block';
+          resultBox.className = "module-result-box success";
+          title.innerText = isTest ? "🛡️ ¡Ticket de Prueba Válido!" : "¡Ticket Válido para Comprobante!";
+          text.innerText = `Código: #MOON-${cleanCode} | Comprador: ${data.buyer || 'Cliente'}`;
+
+          if (data.proofPhone) document.getElementById('sec3PhoneInput').value = data.proofPhone;
+          if (data.proofTime) document.getElementById('sec3TimeInput').value = data.proofTime;
+          if (data.proofImage) {
+            proofBase64 = data.proofImage;
+            document.getElementById('sec3ProofImg').src = data.proofImage;
+            document.getElementById('sec3ProofImgBox').style.display = 'block';
+          }
+
+          fullPanel.style.display = "block";
+        } else {
+          closedBanner.style.display = 'none';
+          resultBox.style.display = 'block';
+          resultBox.className = "module-result-box error";
+          title.innerText = "Ticket no encontrado";
+          text.innerText = `No existe registro con el código #MOON-${cleanCode}.`;
+          fullPanel.style.display = "none";
+        }
+      });
+    }
+
+    function checkSurveyCode() {
+      playBubbleSound();
+      let inputVal = document.getElementById('surveySearchCode').value.trim();
+      let resultBox = document.getElementById('surveyResultBox');
+      let title = document.getElementById('surveyResultTitle');
+      let text = document.getElementById('surveyResultText');
+      let fullPanel = document.getElementById('surveyFullConfigPanel');
+      let lockBanner = document.getElementById('lockBanner');
+
+      if (!inputVal) {
+        alert("Ingresa los 4 dígitos del código.");
+        return;
+      }
+
+      let cleanCode = inputVal.padStart(4, '0');
+
+      db.ref('tickets/' + cleanCode).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+          let data = snapshot.val();
+          currentTicketRefundData = data.refund || 'NO';
+          currentTicketTimestamp = data.timestamp || Date.now();
+          activeSurveyCode = cleanCode;
+          let isTest = (cleanCode === '1234');
+
+          if (data.status === 'COMPLETADO' && !isTest) {
+            lockBanner.style.display = 'block';
+            resultBox.style.display = 'none';
+            fullPanel.style.display = "none";
+          } else {
+            lockBanner.style.display = 'none';
+            resultBox.style.display = 'block';
+            resultBox.className = "module-result-box success";
+            title.innerText = isTest ? "🛡️ ¡Ticket de Prueba Listo para Evaluar!" : "¡Ticket Listo para Evaluación!";
+            text.innerText = `Código: #MOON-${cleanCode} | Categoría: ${data.category || 'Robux'}`;
+            fullPanel.style.display = "block";
+          }
+        } else {
+          resultBox.style.display = 'block';
+          resultBox.className = "module-result-box error";
+          title.innerText = "Ticket no encontrado";
+          text.innerText = `No existe registro con el código #MOON-${cleanCode}.`;
+          fullPanel.style.display = "none";
+          lockBanner.style.display = 'none';
+        }
+      });
+    }
+
+    function playBubbleSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {}
+    }
+
+    function showMoonToast() {
+      const toast = document.getElementById('moonToast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function setRating(starsCount) {
+      playBubbleSound();
+      currentStarRating = starsCount;
+      const stars = document.querySelectorAll('.star');
+      const descLabel = document.getElementById('starsLabelDesc');
+
+      stars.forEach((star, index) => {
+        if (index < starsCount) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
+      });
+
+      const descriptions = { 1: "Malo", 2: "Malo todavía", 3: "Medio", 4: "Bueno", 5: "Excelente" };
+      descLabel.innerText = descriptions[starsCount] || "";
+    }
+
+    function checkSurveyLogic(selectId, divId) {
+      const val = document.getElementById(selectId).value;
+      const div = document.getElementById(divId);
+      let isNegative = (selectId === 'q4' || selectId === 'q5') ? (val === 'SI') : (val === 'NO');
+
+      if (isNegative) {
+        div.classList.add('active');
+      } else {
+        div.classList.remove('active');
+        div.querySelector('input').value = '';
+      }
+    }
+
+    function loadDefaultBackground() {
+      const storeImageLink = "https://kommodo.ai/i/SnliSX0qytsT3NILOcrH";
+      document.getElementById('ticket').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('nequiTicketRender').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('surveyTicketTemplate').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('rememberTicketTemplate').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('calcRobuxTicketBox').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('calcMm2TicketBox').style.backgroundImage = `url("${storeImageLink}")`;
+      document.getElementById('calcAdoptTicketBox').style.backgroundImage = `url("${storeImageLink}")`;
+    }
+
+    function generateRandomCode() {
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('code').value = randomNum;
+      updateTicket();
+      generateBarcode(randomNum.toString(), 'dynamicBarcode');
+    }
+
+    function generateBarcode(codeStr, elementId) {
+      const barcodeContainer = document.getElementById(elementId);
+      if (!barcodeContainer) return;
+      barcodeContainer.innerHTML = '';
+      
+      for (let i = 0; i < codeStr.length; i++) {
+        let digit = parseInt(codeStr[i]);
+        let barsCount = 3 + (digit % 4);
+        for (let j = 0; j < barsCount; j++) {
+          let bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.width = ((j % 2 === 0) ? 2 : 4) + 'px';
+          bar.style.marginRight = '2px';
+          barcodeContainer.appendChild(bar);
+        }
+        let space = document.createElement('div');
+        space.style.width = '6px';
+        barcodeContainer.appendChild(space);
+      }
+      for (let i = 0; i < 15; i++) {
+        let bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = (i % 3 === 0 ? 3 : 2) + 'px';
+        bar.style.marginRight = '2px';
+        barcodeContainer.appendChild(bar);
+      }
+    }
+
+    function generateBarcodeNequi(codeStr) {
+      generateBarcode(codeStr, 'nequiBarcode');
+    }
+
+    function setTicketDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      const dateStr = 'FECHA: ' + now.toLocaleDateString('es-ES', options);
+      document.getElementById('lbl-date').innerText = dateStr;
+      document.getElementById('calcRobuxDateLbl').innerText = dateStr;
+      document.getElementById('calcMm2DateLbl').innerText = dateStr;
+      document.getElementById('calcAdoptDateLbl').innerText = dateStr;
+    }
+
+    function handleAvatarUpload(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarBase64 = e.target.result;
+          document.getElementById('lbl-avatar').src = avatarBase64;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function updateTicket() {
+      let codeInput = document.getElementById('code').value.trim().padStart(4, '0');
+      let dynamicVal = document.getElementById('dynamicFieldInput').value.trim();
+      let platformInput = document.getElementById('socialPlatform').value;
+      let userInput = document.getElementById('socialUser').value.trim();
+      let priceUsdInput = parseFloat(document.getElementById('priceUsd').value) || 0;
+      let buyerInput = document.getElementById('buyer').value.trim();
+      let sellerInput = document.getElementById('seller').value.trim();
+      let refundValue = document.getElementById('refund').value;
+
+      document.getElementById('lbl-code').innerText = '#MOON-' + codeInput;
+      document.getElementById('lbl-platform').innerText = platformInput;
+      document.getElementById('lbl-handle').innerText = userInput || '@usuario';
+      document.getElementById('lbl-dynamic-value').innerText = dynamicVal || '-';
+      document.getElementById('lbl-buyer').innerText = buyerInput || '-';
+      document.getElementById('lbl-seller').innerText = sellerInput || '-';
+      
+      const lblRefund = document.getElementById('lbl-refund');
+      if (refundValue === 'SI') {
+        lblRefund.innerText = 'SÍ APLICA';
+        lblRefund.className = 'badge-dev badge-si';
+      } else {
+        lblRefund.innerText = 'NO APLICA';
+        lblRefund.className = 'badge-dev badge-no';
+      }
+
+      document.getElementById('lbl-price').innerText = "$" + priceUsdInput.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " USD";
+    }
+
+    function resetFormToDefault() {
+      document.getElementById('productCategory').value = "Robux";
+      document.getElementById('dynamicFieldInput').value = "1000 Robux";
+      document.getElementById('priceUsd').value = "0.00";
+      document.getElementById('socialUser').value = "";
+      document.getElementById('buyer').value = "";
+      document.getElementById('seller').value = "";
+      document.getElementById('refund').value = "NO";
+      
+      avatarBase64 = "https://via.placeholder.com/100";
+      document.getElementById('lbl-avatar').src = avatarBase64;
+      document.getElementById('avatarFile').value = "";
+
+      generateRandomCode();
+      setTicketDate();
+      updateTicket();
+    }
+
+    function saveAndDownloadTicket() {
+      let code = document.getElementById('code').value.trim().padStart(4, '0');
+      const ticketElement = document.getElementById('ticket');
+      const category = document.getElementById('productCategory').value;
+
+      showMoonToast();
+
+      html2canvas(ticketElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const imageBase64 = canvas.toDataURL('image/png');
+
+        let ticketData = {
+          code: '#MOON-' + code,
+          category: category,
+          dynamicValue: document.getElementById('dynamicFieldInput').value.trim(),
+          platform: document.getElementById('socialPlatform').value,
+          socialUser: document.getElementById('socialUser').value.trim(),
+          avatarImage: avatarBase64,
+          bannerImage: document.getElementById('createTicketBanner').src,
+          price: document.getElementById('lbl-price').innerText,
+          buyer: document.getElementById('buyer').value.trim(),
+          seller: document.getElementById('seller').value.trim(),
+          refund: document.getElementById('refund').value,
+          date: document.getElementById('lbl-date').innerText.replace('FECHA: ', ''),
+          image: imageBase64,
+          status: 'PENDIENTE',
+          timestamp: Date.now()
+        };
+
+        db.ref('tickets/' + code).set(ticketData, (error) => {
+          if (error) {
+            alert("Error al guardar en Firebase: " + error.message);
+          } else {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageBase64;
+            downloadLink.download = `Moonshop-Ticket-MOON-${code}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            if (!pendingTicketsList.includes(code)) {
+              pendingTicketsList.push(code);
+              savePendingToStorage();
+              renderPendingTickets();
+            }
+
+            resetFormToDefault();
+          }
+        });
+      });
+    }
+
+    function renderNequiTicket() {
+      const desc = document.getElementById('sec2DescInput').value;
+      const phone = document.getElementById('sec2PhoneInput').value;
+      const holder = document.getElementById('sec2HolderInput').value;
+      const price = document.getElementById('sec2PriceInput').value;
+
+      document.getElementById('sec2DescLbl').innerText = desc || '-';
+      document.getElementById('sec2PhoneLbl').innerText = phone || '000 000 0000';
+      document.getElementById('sec2HolderLbl').innerText = holder || '-';
+      document.getElementById('sec2PriceLbl').innerText = price || '$0.00 USD';
+    }
+
+    function handleNequiQrFile(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          nequiQrBase64 = e.target.result;
+          document.getElementById('sec2QrImg').src = nequiQrBase64;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function downloadNequiTicket() {
+      const ticketNequiBox = document.getElementById('nequiTicketRender');
+      let code = activeNequiCode || "0000";
+
+      showMoonToast();
+
+      ticketNequiBox.style.transform = "none";
+      ticketNequiBox.style.margin = "0 auto";
+
+      html2canvas(ticketNequiBox, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Ficha-Nequi-MOON-${code}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }).catch(err => {
+        alert("Error al generar la imagen: " + err.message);
+      });
+    }
+
+    function handleProofFile(event) {
+      playBubbleSound();
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          proofBase64 = e.target.result;
+          document.getElementById('sec3ProofImg').src = proofBase64;
+          document.getElementById('sec3ProofImgBox').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function savePaymentProof() {
+      let code = activeProofCode;
+      let phone = document.getElementById('sec3PhoneInput').value.trim();
+      let time = document.getElementById('sec3TimeInput').value.trim();
+
+      if (!code) {
+        alert("Selecciona un código de ticket válido.");
+        return;
+      }
+
+      let proofData = {
+        proofPhone: phone,
+        proofTime: time,
+        proofImage: proofBase64
+      };
+
+      db.ref('tickets/' + code).update(proofData, (error) => {
+        if (error) {
+          alert("Error al publicar en Firebase: " + error.message);
+        } else {
+          alert("Comprobante guardado con éxito para el ticket #" + code);
+        }
+      });
+    }
+
+    function finishOrder() {
+      let code = activeSurveyCode;
+      if (!code) return;
+
+      let isTest = (code === '1234');
+
+      if (isTest) {
+        alert("🛡️ [TICKET DE PRUEBA #1234]: Simulación de finalización de pedido exitosa. El ticket no se bloqueará y podrás seguir probando la encuesta.");
+        return;
+      }
+
+      const now = Date.now();
+      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+      const timeElapsed = now - currentTicketTimestamp;
+
+      if (currentTicketRefundData === 'SI' && timeElapsed < threeDaysInMs) {
+        let daysLeft = Math.ceil((threeDaysInMs - timeElapsed) / (1000 * 60 * 60 * 24));
+        alert(`Este ticket TIENE APLICA DEVOLUCIÓN. Deben transcurrir 3 días para su cierre definitivo. Faltan aproximadamente ${daysLeft} día(s).`);
+        return;
+      }
+
+      let surveyData = {};
+      for (let i = 1; i <= 6; i++) {
+        let ans = document.getElementById('q' + i).value;
+        let just = document.getElementById('just' + i).value.trim();
+        let isNeg = (i === 4 || i === 5) ? (ans === 'SI') : (ans === 'NO');
+
+        if (isNeg && !just) {
+          alert(`Debes justificar la respuesta de la pregunta #${i} ya que fue marcada negativamente.`);
+          document.getElementById('just' + i).focus();
+          return;
+        }
+        surveyData['q' + i] = ans;
+        surveyData['just' + i] = just;
+      }
+
+      surveyData['stars'] = currentStarRating;
+      surveyData['starComment'] = document.getElementById('starJustification').value.trim();
+
+      showMoonToast();
+
+      const surveyTicketElement = document.getElementById('surveyTicketTemplate');
+      html2canvas(surveyTicketElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const surveyImageBase64 = canvas.toDataURL('image/png');
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = surveyImageBase64;
+        downloadLink.download = `Reseña-Encuesta-MOON-${code}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        let finalData = {
+          status: 'COMPLETADO',
+          survey: surveyData,
+          surveyImage: surveyImageBase64
+        };
+
+        db.ref('tickets/' + code).update(finalData, (error) => {
+          if (error) {
+            alert("Error al actualizar el estado: " + error.message);
+          } else {
+            pendingTicketsList = pendingTicketsList.filter(c => c !== code);
+            savePendingToStorage();
+            alert("¡Pedido realizado y cerrado con éxito! La ficha de encuesta se ha descargado y el ticket #" + code + " ha sido bloqueado.");
+            location.reload();
+          }
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
