@@ -1,0 +1,3371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MOONSHOP — Calculadora de Robux (COP), MM2, Ítems y Tickets</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, #0b8a97 0%, #0d96a3 55%, #0a7e8b 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .moon-card {
+      background: #ffffff;
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 0 56px rgba(103, 232, 249, 0.42),
+        0 24px 48px rgba(4, 52, 60, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .moon-input {
+      background-color: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      color: #0f172a;
+      font-size: 16px;
+      border-radius: 0.875rem;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .moon-input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .moon-input:focus {
+      outline: none;
+      background-color: #ffffff;
+      border-color: #1e88e5;
+      box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.14), 0 4px 12px rgba(30, 136, 229, 0.08);
+    }
+
+    .packages-accordion,
+    .weapons-accordion,
+    .profit-accordion,
+    .tutorial-accordion {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top center;
+      pointer-events: none;
+      margin-top: 0;
+      transition:
+        grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.24s ease,
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        margin-top 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .packages-accordion.is-open,
+    .weapons-accordion.is-open,
+    .profit-accordion.is-open,
+    .tutorial-accordion.is-open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      margin-top: 0.625rem;
+    }
+
+    .tutorial-accordion.is-open {
+      margin-top: 0.5rem;
+    }
+
+    .packages-accordion-inner,
+    .weapons-accordion-inner,
+    .profit-accordion-inner,
+    .tutorial-accordion-inner {
+      overflow: hidden;
+    }
+
+    .tabs-viewport {
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .tabs-track {
+      display: flex;
+      align-items: flex-start;
+      width: 400%;
+      transform: translateX(0%);
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+    }
+
+    .tabs-track.show-mm2 {
+      transform: translateX(-25%);
+    }
+
+    .tabs-track.show-items {
+      transform: translateX(-50%);
+    }
+
+    .tabs-track.show-tickets {
+      transform: translateX(-75%);
+    }
+
+    .tab-slide {
+      width: 25%;
+      min-width: 25%;
+      max-width: 25%;
+      flex: 0 0 25%;
+      max-height: 72vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      transition: opacity 0.28s ease;
+    }
+
+    .tab-slide::-webkit-scrollbar,
+    .mm2-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tab-slide::-webkit-scrollbar-track,
+    .mm2-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+
+    .tab-slide::-webkit-scrollbar-thumb,
+    .mm2-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+
+    .tab-pill-indicator {
+      transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .route-barcode-svg {
+      display: block;
+      height: 40px;
+      width: auto;
+      filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.08));
+    }
+
+    @keyframes scanLaserSweep {
+      0% {
+        top: 6%;
+        opacity: 0.35;
+      }
+      50% {
+        top: 90%;
+        opacity: 1;
+      }
+      100% {
+        top: 6%;
+        opacity: 0.35;
+      }
+    }
+
+    @keyframes formalDataReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+        box-shadow: 0 0 0 0 rgba(30, 136, 229, 0.28);
+      }
+      45% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 5px rgba(30, 136, 229, 0.14);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(30, 136, 229, 0);
+      }
+    }
+
+    .scan-formal-reveal {
+      animation: formalDataReveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .scan-stage {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scan-laser-line {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      height: 2.5px;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, transparent, #06b6d4 20%, #10b981 50%, #06b6d4 80%, transparent);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.9), 0 0 18px rgba(16, 185, 129, 0.65);
+      animation: scanLaserSweep 1.15s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .scan-overlay-tint {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 182, 212, 0.08), rgba(16, 185, 129, 0.12));
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .logo-m1 { color: #3b82f6; }
+    .logo-o1 { color: #f59e0b; }
+    .logo-o2 { color: #ef4444; }
+    .logo-n  { color: #10b981; }
+    .logo-s  { color: #9333ea; }
+    .logo-h  { color: #ec4899; }
+    .logo-o3 { color: #2563eb; }
+    .logo-p  { color: #f97316; }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-200 selection:text-slate-900">
+  <!-- Vista estética y formal al escanear desde otro móvil o lector QR -->
+  <div
+    id="scannedDataModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="scannedModalTitle"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+  >
+    <div class="w-full max-w-md rounded-3xl border border-white/90 bg-white p-6 shadow-2xl space-y-4 scan-formal-reveal">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5">
+        <div>
+          <span id="scannedModalBadge" class="inline-block rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-[#1e88e5]">
+            Lectura QR · MOONSHOP
+          </span>
+          <h2 id="scannedModalTitle" class="mt-1 text-lg font-black text-slate-900 tracking-tight">
+            Ficha de código escaneado
+          </h2>
+        </div>
+        <button
+          type="button"
+          id="closeScannedModalBtn"
+          aria-label="Cerrar ficha escaneada"
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-black text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-4 space-y-2.5 text-xs">
+        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+          <span class="font-bold text-slate-500">Ítem / Producto</span>
+          <span id="scannedModalItem" class="font-black text-slate-900 text-right">—</span>
+        </div>
+        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+          <span class="font-bold text-slate-500">Precio</span>
+          <span id="scannedModalPrice" class="font-black text-[#1e88e5] text-sm text-right">—</span>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-bold text-slate-500">Código</span>
+          <span id="scannedModalCode" class="font-extrabold text-[#0c7a8a] text-right break-all">—</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+        <button
+          type="button"
+          id="scannedModalOpenTicketsBtn"
+          class="w-full sm:flex-1 rounded-xl bg-[#1e88e5] py-3 px-4 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
+        >
+          Continuar en Tickets
+        </button>
+        <button
+          type="button"
+          id="scannedModalKeepHereBtn"
+          class="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs font-extrabold text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          Ver calculadora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="min-h-screen w-full px-4 py-8 sm:px-6 sm:py-10 flex items-center justify-center">
+    <div class="w-full max-w-lg">
+
+      <section class="moon-card p-6 sm:p-8 space-y-6" aria-label="Calculadora MOONSHOP de Robux, MM2, Ítems y Tickets">
+        <header class="relative text-center space-y-2">
+          <div class="text-2xl sm:text-3xl font-black tracking-tight select-none" aria-label="MOONSHOP">
+            <span class="logo-m1">M</span><span class="logo-o1">O</span><span class="logo-o2">O</span><span class="logo-n">N</span><span class="logo-s">S</span><span class="logo-h">H</span><span class="logo-o3">O</span><span class="logo-p">P</span>
+          </div>
+
+          <div
+            id="minRobuxToast"
+            role="alert"
+            aria-live="polite"
+            class="pointer-events-none absolute left-1/2 top-9 sm:top-10 z-30 flex w-[92%] max-w-xs -translate-x-1/2 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white/95 px-3.5 py-2 text-slate-800 shadow-lg backdrop-blur-sm opacity-0 -translate-y-1.5 transition-all duration-200"
+          >
+            <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-100 text-[11px] font-black text-red-600">!</span>
+            <p class="text-xs font-bold leading-tight text-red-600">Mínimo 100 Robux</p>
+          </div>
+
+          <nav class="relative mt-3 grid grid-cols-4 rounded-2xl bg-slate-100 p-1.5" role="tablist" aria-label="Secciones de MOONSHOP">
+            <span
+              id="tabPillIndicator"
+              aria-hidden="true"
+              class="tab-pill-indicator pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(25%-0.225rem)] rounded-xl bg-white shadow-sm"
+            ></span>
+            <button type="button" id="tabRobuxBtn" role="tab" aria-selected="true" aria-controls="panelRobux" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-[#1e88e5]">
+              Robux
+            </button>
+            <button type="button" id="tabMm2Btn" role="tab" aria-selected="false" aria-controls="panelMm2" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              MM2
+            </button>
+            <button type="button" id="tabItemsBtn" role="tab" aria-selected="false" aria-controls="panelItems" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              Ítems
+            </button>
+            <button type="button" id="tabTicketsBtn" role="tab" aria-selected="false" aria-controls="panelTickets" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              Tickets
+            </button>
+          </nav>
+
+          <h1 id="sectionTitle" class="pt-2 text-xl sm:text-2xl font-extrabold text-[#1e88e5] tracking-tight transition-all duration-300">
+            Calculadora de Robux
+          </h1>
+          <p id="sectionSubtitle" class="text-xs font-medium text-slate-400">
+            Calcula precios en COP, ganancias y valor del Game Pass
+          </p>
+        </header>
+
+        <div class="tabs-viewport">
+          <div id="tabsTrack" class="tabs-track">
+
+            <!-- Panel 1: Robux -->
+            <div id="panelRobux" role="tabpanel" aria-labelledby="tabRobuxBtn" class="tab-slide px-0.5">
+              <form id="robuxOrderForm" novalidate class="space-y-4">
+                <div id="robuxFieldWrapper" class="space-y-1.5">
+                  <label for="robuxAmount" class="block text-sm font-bold text-slate-800">
+                    Código robux
+                  </label>
+                  <div class="relative flex items-center">
+                    <input
+                      type="text"
+                      id="robuxAmount"
+                      name="robuxAmount"
+                      inputmode="text"
+                      placeholder="Ej. RBX-00100-xxxx o 100"
+                      class="moon-input w-full rounded-xl py-3 pl-4 pr-24 text-base font-semibold uppercase"
+                    />
+                    <button
+                      type="button"
+                      id="clearRobuxInputBtn"
+                      aria-label="Limpiar código Robux"
+                      class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      id="togglePackagesBtn"
+                      aria-expanded="false"
+                      aria-controls="quickPackagesMenu"
+                      aria-label="Añadir foto del código de barras o QR"
+                      class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                    >
+                      <svg id="plusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p id="robuxDecodedInfo" class="text-[11px] font-semibold text-[#0c7a8a]">
+                    Pega o escribe el código generado en Ítems (100 R$ = $3.800 COP)
+                  </p>
+                  <div id="robuxScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                    <span>Lectura completada · Datos cargados</span>
+                  </div>
+
+                  <div id="quickPackagesMenu" aria-hidden="true" class="packages-accordion">
+                    <div class="packages-accordion-inner">
+                      <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
+                        <div class="flex items-center justify-between px-1">
+                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
+                          <span id="robuxScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                        </div>
+                        <label
+                          for="robuxBarcodePhotoInput"
+                          class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                        >
+                          <div id="robuxScanTint" class="scan-overlay-tint hidden"></div>
+                          <div id="robuxScanLaser" class="scan-laser-line hidden"></div>
+                          <img
+                            id="robuxBarcodePhotoPreview"
+                            alt="Foto del código de barras o QR"
+                            class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                          />
+                          <span id="robuxBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                            Añadir foto del código de barras o QR
+                          </span>
+                          <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
+                          <input type="file" id="robuxBarcodePhotoInput" accept="image/*" class="sr-only" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="robuxPriceSummaryCard" class="rounded-xl border border-sky-200 bg-sky-50/70 px-4 py-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-slate-700">Precio en COP</span>
+                    <span id="priceCopDisplay" class="text-base sm:text-lg font-black text-[#1e88e5]">$0 COP</span>
+                  </div>
+                  <div class="flex items-center justify-between border-t border-sky-200/70 pt-2">
+                    <label for="toggleCustomPackagePrice" class="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                      ¿Deseas cambiar el precio del paquete?
+                    </label>
+                    <input
+                      type="checkbox"
+                      id="toggleCustomPackagePrice"
+                      class="h-4 w-4 rounded border-slate-300 text-[#1e88e5] focus:ring-[#1e88e5] cursor-pointer"
+                    />
+                  </div>
+                  <div id="customPackagePriceBox" class="hidden pt-1 space-y-1">
+                    <label for="customPackagePriceInput" class="block text-[11px] font-bold text-slate-600">
+                      Nuevo precio del paquete en COP
+                    </label>
+                    <div class="relative flex items-center">
+                      <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
+                      <input
+                        type="number"
+                        id="customPackagePriceInput"
+                        min="0"
+                        step="100"
+                        inputmode="numeric"
+                        placeholder="Ej. 4000"
+                        class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div id="robuxQuoteQrBox" class="hidden rounded-2xl border border-cyan-200 bg-gradient-to-b from-cyan-50/70 to-white p-3.5 space-y-2.5 shadow-2xs">
+                  <div class="flex items-center justify-between gap-2">
+                    <div>
+                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Código y QR de precio Robux</span>
+                      <span id="robuxQuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
+                    </div>
+                    <span id="robuxQuotePriceBadge" class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">$0 COP</span>
+                  </div>
+                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 space-y-2">
+                    <div id="robuxQuoteQrContainer" class="rounded-lg border border-slate-200 bg-white p-1.5"></div>
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                      <button type="button" id="copyRobuxQuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                        Copiar código
+                      </button>
+                      <button type="button" id="downloadRobuxQuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                        Descargar QR
+                      </button>
+                      <button type="button" id="openRobuxQuoteInTicketsBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
+                        Abrir en Tickets
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-slate-700">Ganancia (base $28/R$)</span>
+                    <span id="robuxProfitBaseDisplay" class="text-base sm:text-lg font-black text-emerald-700">$0 COP</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+                    <span>Margen vs. venta ($38/R$)</span>
+                    <span id="robuxProfitMarginDisplay" class="font-extrabold text-emerald-800">+$0 COP</span>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label for="gamepassAmountDisplay" class="block text-sm font-bold text-slate-800">
+                    ¿De cuánto debe ser el game pass?
+                  </label>
+                  <input
+                    type="text"
+                    id="gamepassAmountDisplay"
+                    readonly
+                    value="0 Robux"
+                    class="w-full rounded-xl px-4 py-3 text-base font-extrabold text-[#0c7a8a] bg-cyan-50/70 border border-cyan-200 cursor-default focus:outline-none"
+                  />
+                </div>
+
+                <div class="pt-0.5">
+                  <button
+                    type="button"
+                    id="toggleTutorialBtn"
+                    aria-expanded="false"
+                    aria-controls="tutorialCollapseBox"
+                    class="w-full flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/90 px-4 py-2.5 text-left transition-all duration-200 hover:border-[#1e88e5] hover:bg-sky-50/60 active:scale-[0.99]"
+                  >
+                    <span id="toggleTutorialLabel" class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Ver tutorial</span>
+                    <span class="inline-flex items-center gap-1.5">
+                      <span class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[11px] font-extrabold text-[#0c7a8a]">
+                        Pass: <span id="tutorialPassAmount">0</span> R$
+                      </span>
+                      <svg id="tutorialChevronIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </button>
+
+                  <div id="tutorialCollapseBox" aria-hidden="true" class="tutorial-accordion">
+                    <div class="tutorial-accordion-inner">
+                      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Mini tutorial Game Pass</span>
+                          <button
+                            type="button"
+                            id="copyTutorialBtn"
+                            class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-extrabold text-slate-700 shadow-2xs transition-all hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95"
+                          >
+                            Copiar
+                          </button>
+                        </div>
+                        <ol id="tutorialStepsList" class="list-decimal list-inside space-y-1.5 text-xs font-medium text-slate-600 leading-relaxed">
+                          <li>Inicia sesión en <a href="https://create.roblox.com/dashboard/creations" target="_blank" rel="noopener noreferrer" class="font-bold text-[#1e88e5] underline decoration-[#1e88e5]/50 underline-offset-2 hover:text-[#1565c0]">Creaciones de Roblox</a> y selecciona tu experiencia.</li>
+                          <li>Dentro de tu experiencia, abre el menú lateral y entra a <strong>Monetización &gt; Pases</strong>.</li>
+                          <li>Haz clic en <strong>Crear un pase</strong> para hacer uno nuevo o entra a un pase existente.</li>
+                          <li>Configura nombre, imagen y guarda; luego abre el pase y entra a <strong>Ventas</strong>.</li>
+                          <li>Activa <strong>A la venta</strong> (<em>Item for Sale</em>) para habilitar la compra.</li>
+                          <li>Escribe como precio exacto <span id="tutorialPassPriceText" class="font-extrabold text-[#0c7a8a]">0 Robux</span> y guarda; recibirás <span id="tutorialReceivedRobuxText" class="font-extrabold text-[#1e88e5]">0 Robux</span> tras la comisión del 30%.</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Panel 2: MM2 -->
+            <div id="panelMm2" role="tabpanel" aria-labelledby="tabMm2Btn" class="tab-slide px-0.5 space-y-4">
+              <div id="mm2WeaponFieldWrapper" class="space-y-1.5">
+                <label for="mm2WeaponInput" class="block text-sm font-bold text-slate-800">
+                  Código de arma
+                </label>
+                <div class="relative flex items-center">
+                  <input
+                    type="text"
+                    id="mm2WeaponInput"
+                    name="mm2WeaponInput"
+                    placeholder="Ej. MM2-GOD-xxxx-xxxx o 1000"
+                    class="moon-input w-full rounded-xl py-3 pl-4 pr-24 text-base font-semibold uppercase"
+                  />
+                  <button
+                    type="button"
+                    id="clearMm2InputBtn"
+                    aria-label="Limpiar código de arma"
+                    class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    type="button"
+                    id="toggleMm2WeaponsBtn"
+                    aria-expanded="false"
+                    aria-controls="mm2WeaponsMenu"
+                    aria-label="Añadir foto del código de barras o QR del arma"
+                    class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                  >
+                    <svg id="mm2PlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <p id="mm2DecodedInfo" class="text-[11px] font-semibold text-[#0c7a8a]">
+                  Escribe o pega el código generado en Ítems (o sube la foto desde +)
+                </p>
+                <div id="mm2ScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                  <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                  <span>Lectura completada · Datos cargados</span>
+                </div>
+
+                <div id="mm2WeaponsMenu" aria-hidden="true" class="weapons-accordion">
+                  <div class="weapons-accordion-inner">
+                    <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
+                      <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
+                        <span id="mm2ScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                      </div>
+                      <label
+                        for="mm2BarcodePhotoInput"
+                        class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                      >
+                        <div id="mm2ScanTint" class="scan-overlay-tint hidden"></div>
+                        <div id="mm2ScanLaser" class="scan-laser-line hidden"></div>
+                        <img
+                          id="mm2BarcodePhotoPreview"
+                          alt="Foto del código de barras o QR del arma"
+                          class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                        />
+                        <span id="mm2BarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                          Añadir foto del código de barras o QR
+                        </span>
+                        <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
+                        <input type="file" id="mm2BarcodePhotoInput" accept="image/*" class="sr-only" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="mm2WeaponCodeDisplay" class="block text-sm font-bold text-slate-800">
+                  Arma detectada
+                </label>
+                <div id="mm2DetectedWeaponCard" class="flex items-center justify-between gap-2 rounded-xl border border-cyan-200 bg-cyan-50/70 px-4 py-3">
+                  <div class="w-full">
+                    <span id="mm2WeaponCategoryLabel" class="block text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Sin rareza</span>
+                    <input
+                      type="text"
+                      id="mm2WeaponCodeDisplay"
+                      readonly
+                      value="—"
+                      class="w-full bg-transparent text-base font-black text-[#0c7a8a] cursor-default focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div id="mm2ProfitFieldWrapper" class="space-y-1.5">
+                <label for="mm2ProfitDisplayInput" class="block text-sm font-bold text-slate-800">
+                  Ganancia
+                </label>
+                <div class="relative flex items-center">
+                  <input
+                    type="text"
+                    id="mm2ProfitDisplayInput"
+                    readonly
+                    value="$0 COP"
+                    class="moon-input w-full rounded-xl py-3 pl-4 pr-14 text-base font-extrabold text-emerald-700 bg-emerald-50/50 border-emerald-200 cursor-default"
+                  />
+                  <button
+                    type="button"
+                    id="toggleMm2ProfitBtn"
+                    aria-expanded="false"
+                    aria-controls="mm2ProfitMenu"
+                    aria-label="Ver opciones de ganancia"
+                    class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                  >
+                    <svg id="mm2ProfitPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div id="mm2ProfitMenu" aria-hidden="true" class="profit-accordion">
+                  <div class="profit-accordion-inner">
+                    <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
+                      <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Opciones de ganancia</span>
+                        <span class="text-[11px] font-semibold text-[#1e88e5]">Pesos COP</span>
+                      </div>
+
+                      <div class="grid grid-cols-3 gap-2">
+                        <button type="button" data-profit-preset="1000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$1.000</button>
+                        <button type="button" data-profit-preset="2000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$2.000</button>
+                        <button type="button" data-profit-preset="3000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$3.000</button>
+                        <button type="button" data-profit-preset="4000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$4.000</button>
+                        <button type="button" data-profit-preset="5000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$5.000</button>
+                        <button type="button" data-profit-preset="6000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$6.000</button>
+                      </div>
+
+                      <button type="button" id="customProfitToggleBtn" class="w-full rounded-xl border border-dashed border-[#1e88e5] bg-sky-50/70 px-3 py-2 text-xs font-extrabold text-[#1e88e5] transition-colors hover:bg-sky-100/80 active:scale-[0.99]">
+                        Ganancia personalizada
+                      </button>
+
+                      <div id="customProfitBox" class="hidden pt-1 space-y-1.5">
+                        <label for="mm2CustomProfitInput" class="block text-[11px] font-bold text-slate-600">
+                          Escribe tu ganancia en pesos (COP)
+                        </label>
+                        <div class="relative flex items-center">
+                          <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
+                          <input type="number" id="mm2CustomProfitInput" min="0" step="100" inputmode="numeric" placeholder="Ej. 3500" class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5">
+                  <span class="text-xs font-bold text-slate-700">Total con ganancia (COP)</span>
+                  <span id="mm2FinalPriceWithProfitCop" class="text-sm sm:text-base font-black text-emerald-700">$0 COP</span>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label for="mm2ForeignPriceInput" class="text-xs font-extrabold uppercase tracking-wide text-slate-600">
+                    Precio base (USD)
+                  </label>
+                  <span class="text-[11px] font-semibold text-slate-500">Comisión 5.4% + $0.22</span>
+                </div>
+                <div class="relative flex items-center">
+                  <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">USD $</span>
+                  <input type="number" id="mm2ForeignPriceInput" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 2.50" class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold" />
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
+                    <span class="block text-[10px] font-bold text-slate-400">Comisión</span>
+                    <span id="mm2CommissionDisplay" class="text-xs font-extrabold text-slate-800">$0.00</span>
+                  </div>
+                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
+                    <span class="block text-[10px] font-bold text-slate-400">Total USD</span>
+                    <span id="mm2TotalForeignDisplay" class="text-xs font-extrabold text-[#1e88e5]">$0.00</span>
+                  </div>
+                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
+                    <span class="block text-[10px] font-bold text-slate-400">Base COP</span>
+                    <span id="mm2TotalForeignCopDisplay" class="text-xs font-extrabold text-[#0c7a8a]">$0 COP</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="mm2QuoteQrBox" class="hidden rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50/70 to-white p-3.5 space-y-2.5 shadow-2xs">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <span class="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">Código y QR de precio MM2</span>
+                    <span id="mm2QuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
+                  </div>
+                  <span id="mm2QuotePriceBadge" class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-extrabold text-indigo-700">$0 COP</span>
+                </div>
+                <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 space-y-2">
+                  <div id="mm2QuoteQrContainer" class="rounded-lg border border-slate-200 bg-white p-1.5"></div>
+                  <div class="flex flex-wrap items-center justify-center gap-2">
+                    <button type="button" id="copyMm2QuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                      Copiar código
+                    </button>
+                    <button type="button" id="downloadMm2QuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                      Descargar QR
+                    </button>
+                    <button type="button" id="openMm2QuoteInTicketsBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
+                      Abrir en Tickets
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 3: Ítems -->
+            <div id="panelItems" role="tabpanel" aria-labelledby="tabItemsBtn" class="tab-slide px-0.5 space-y-4">
+              <div class="rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 to-white p-4 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xs font-extrabold uppercase tracking-wide text-slate-800">Robux</h2>
+                  <span class="rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">100 - 20.000</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <label for="robuxCodeAmountInput" class="block text-xs font-bold text-slate-700">
+                      Colocar cantidad de robux
+                    </label>
+                    <div class="inline-flex items-center gap-1">
+                      <button type="button" id="stepDownRobuxBtn" aria-label="Restar 1 Robux" class="h-6 w-6 rounded-md border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">-</button>
+                      <button type="button" id="stepUpRobuxBtn" aria-label="Sumar 1 Robux" class="h-6 w-6 rounded-md border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">+</button>
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    id="robuxCodeAmountInput"
+                    min="100"
+                    max="20000"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="Mín. 100 — Máx. 20.000"
+                    class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
+                  />
+                  <div class="flex items-center justify-between text-[11px] font-semibold">
+                    <span class="text-slate-500">Paquetes únicos: 100 a 20.000</span>
+                    <span id="robuxCodeRangeStatus" class="font-extrabold text-slate-400">Ingresa cantidad</span>
+                  </div>
+                </div>
+
+                <div id="robuxGeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 space-y-3 shadow-2xs">
+                  <div class="flex items-center justify-between gap-2">
+                    <div>
+                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código único del paquete</span>
+                      <span id="robuxGeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
+                    </div>
+                    <span id="robuxGeneratedAmountBadge" class="rounded-full bg-cyan-100 px-2.5 py-1 text-[11px] font-extrabold text-[#0c7a8a]">0 Robux</span>
+                  </div>
+
+                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 space-y-1.5">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
+                    <svg id="robuxBarcodeSvg" class="route-barcode-svg rounded bg-white px-2 py-1 border border-slate-200" aria-label="Código de barras de Robux"></svg>
+                    <span id="robuxBarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
+                    <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+                      <button type="button" id="copyRobuxCodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                        Copiar código
+                      </button>
+                      <button type="button" id="downloadRobuxBarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                        Descargar PNG
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 to-white p-4 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xs font-extrabold uppercase tracking-wide text-slate-800">Murder Mistery 2</h2>
+                  <span class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-extrabold text-indigo-700">MM2</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label for="itemsMm2SecondWeaponInput" class="block text-xs font-bold text-slate-700">
+                    Seleccionar arma
+                  </label>
+                  <div class="relative flex items-center">
+                    <input
+                      type="text"
+                      id="itemsMm2SecondWeaponInput"
+                      readonly
+                      placeholder="Presiona + para elegir un arma"
+                      class="moon-input w-full rounded-xl py-2.5 pl-3.5 pr-12 text-sm font-semibold cursor-pointer select-none"
+                    />
+                    <button
+                      type="button"
+                      id="toggleItemsMm2SecondBtn"
+                      aria-expanded="false"
+                      aria-controls="itemsMm2SecondMenu"
+                      aria-label="Ver listado de armas MM2"
+                      class="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
+                    >
+                      <svg id="itemsMm2SecondPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div id="itemsMm2SecondMenu" aria-hidden="true" class="weapons-accordion">
+                    <div class="weapons-accordion-inner">
+                      <div class="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-lg shadow-slate-900/5">
+                        <div class="mb-2 flex items-center justify-between px-1">
+                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Armas MM2</span>
+                          <span id="itemsMm2SecondCount" class="text-[11px] font-semibold text-[#1e88e5]"></span>
+                        </div>
+
+                        <div class="mb-2.5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Rarezas de armas MM2 en Ítems">
+                          <button type="button" data-second-rarity-tab="GODLY" role="tab" aria-selected="true" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all bg-white text-[#1e88e5] shadow-2xs">GODLY</button>
+                          <button type="button" data-second-rarity-tab="CHROMA" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">CHROMA</button>
+                          <button type="button" data-second-rarity-tab="ANCIENT" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">ANCIENT</button>
+                        </div>
+
+                        <div id="itemsMm2SecondList" class="mm2-scroll max-h-48 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="itemsMm2GeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 space-y-3 shadow-2xs">
+                  <div class="flex items-center justify-between gap-2">
+                    <div>
+                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código propio</span>
+                      <span id="itemsMm2GeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
+                    </div>
+                    <span id="itemsMm2GeneratedWeaponBadge" class="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700">—</span>
+                  </div>
+
+                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 space-y-1.5">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
+                    <svg id="itemsMm2BarcodeSvg" class="route-barcode-svg rounded bg-white px-2 py-1 border border-slate-200" aria-label="Código de barras del arma MM2"></svg>
+                    <span id="itemsMm2BarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
+                    <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+                      <button type="button" id="copyItemsMm2CodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                        Copiar código
+                      </button>
+                      <button type="button" id="downloadItemsMm2BarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                        Descargar PNG
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 4: Tickets -->
+            <div id="panelTickets" role="tabpanel" aria-labelledby="tabTicketsBtn" class="tab-slide px-0.5 space-y-4">
+              <form id="ticketCreatorForm" novalidate class="space-y-3.5">
+                <div class="space-y-1.5">
+                  <label for="ticketBarcodeInput" class="block text-sm font-bold text-slate-800">
+                    Código de barra / Código QR / Precio
+                  </label>
+                  <div class="relative flex items-center">
+                    <input
+                      type="text"
+                      id="ticketBarcodeInput"
+                      name="ticketBarcodeInput"
+                      inputmode="text"
+                      placeholder="Ej. QTE-RBX-..., QTE-MM2-..., RBX-... o MM2-..."
+                      class="moon-input w-full rounded-xl py-2.5 pl-3.5 pr-20 text-sm font-semibold uppercase"
+                    />
+                    <button
+                      type="button"
+                      id="clearTicketBarcodeBtn"
+                      aria-label="Limpiar código del ticket"
+                      class="hidden absolute right-10 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                    >
+                      ✕
+                    </button>
+                    <button
+                      type="button"
+                      id="toggleTicketScanBtn"
+                      aria-expanded="false"
+                      aria-controls="ticketScanMenu"
+                      aria-label="Subir foto de código de barras o QR para el ticket"
+                      class="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
+                    >
+                      <svg id="ticketPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div id="ticketScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                    <span>Lectura completada · Datos cargados</span>
+                  </div>
+
+                  <div id="ticketScanMenu" aria-hidden="true" class="packages-accordion">
+                    <div class="packages-accordion-inner">
+                      <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2">
+                        <div class="flex items-center justify-between px-1">
+                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Escanear imagen</span>
+                          <span id="ticketScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                        </div>
+                        <label
+                          for="ticketBarcodePhotoInput"
+                          class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-2.5 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                        >
+                          <div id="ticketScanTint" class="scan-overlay-tint hidden"></div>
+                          <div id="ticketScanLaser" class="scan-laser-line hidden"></div>
+                          <img
+                            id="ticketBarcodePhotoPreview"
+                            alt="Imagen escaneada para ticket"
+                            class="relative z-20 hidden mb-1.5 h-16 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                          />
+                          <span id="ticketBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                            Subir foto de código de barras o QR
+                          </span>
+                          <input type="file" id="ticketBarcodePhotoInput" accept="image/*" class="sr-only" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="ticketCodeInfoCard" class="rounded-xl border border-cyan-200 bg-cyan-50/70 px-4 py-3 space-y-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Información del código</span>
+                    <span id="ticketCodeTypeBadge" class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">Sin código</span>
+                  </div>
+                  <p id="ticketCodeSummaryText" class="text-sm font-black text-slate-800">—</p>
+                  <p id="ticketCodeDetailText" class="text-xs font-semibold text-slate-600">Ingresa o abre un código de Robux o MM2 para ver los detalles.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="space-y-1.5">
+                    <label for="ticketRobloxUserInput" class="block text-xs font-bold text-slate-800">
+                      User Roblox
+                    </label>
+                    <input
+                      type="text"
+                      id="ticketRobloxUserInput"
+                      name="ticketRobloxUserInput"
+                      placeholder="@usuario_roblox"
+                      class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
+                    />
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label for="ticketTiktokUserInput" class="block text-xs font-bold text-slate-800">
+                      User TikTok
+                    </label>
+                    <input
+                      type="text"
+                      id="ticketTiktokUserInput"
+                      name="ticketTiktokUserInput"
+                      placeholder="@usuario_tiktok"
+                      class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  id="createTicketBtn"
+                  class="w-full rounded-xl bg-[#1e88e5] py-3 px-4 text-xs sm:text-sm font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
+                >
+                  Generar Ticket con Código QR propio
+                </button>
+              </form>
+
+              <div id="activeTicketCard" class="hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50/70 to-white p-4 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <span class="block text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Ticket generado</span>
+                    <span id="activeTicketIdText" class="text-sm sm:text-base font-black text-slate-900">TKT-0000</span>
+                  </div>
+                  <span id="activeTicketDateText" class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">—</span>
+                </div>
+
+                <div class="rounded-xl border border-slate-200/90 bg-white p-3 space-y-1.5 text-xs">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-bold text-slate-500">Ítem / Robux:</span>
+                    <span id="activeTicketItemText" class="font-extrabold text-slate-900 text-right">—</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-bold text-slate-500">Código:</span>
+                    <span id="activeTicketCodeText" class="font-extrabold text-[#0c7a8a] text-right">—</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-bold text-slate-500">User Roblox:</span>
+                    <span id="activeTicketRobloxText" class="font-extrabold text-slate-800 text-right">—</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-bold text-slate-500">User TikTok:</span>
+                    <span id="activeTicketTiktokText" class="font-extrabold text-slate-800 text-right">—</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 space-y-2">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código QR propio del ticket</span>
+                  <div id="activeTicketQrContainer" class="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs"></div>
+                  <span id="activeTicketQrPayloadText" class="max-w-full truncate text-[10px] font-bold text-slate-500">—</span>
+                  <div class="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+                    <button type="button" id="copyTicketPayloadBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                      Copiar datos QR
+                    </button>
+                    <button type="button" id="downloadTicketQrBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                      Descargar QR PNG
+                    </button>
+                    <button type="button" id="downloadTicketFormBtn" class="rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700">
+                      Descargar formulario
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Tickets creados</span>
+                  <span id="ticketsSavedCountBadge" class="rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-extrabold text-slate-700">0</span>
+                </div>
+                <div id="ticketsHistoryList" class="mm2-scroll max-h-44 overflow-y-auto space-y-2">
+                  <p class="text-xs font-medium text-slate-400 text-center py-2">Aún no has creado tickets.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const ROBLOX_KEEP_RATIO = 0.70;
+    const COP_PER_ROBUX = 38;
+    const PROFIT_COP_PER_ROBUX = 28;
+    const MIN_ROBUX = 100;
+    const MAX_ROBUX_CODE = 20000;
+    const FOREIGN_FEE_RATE = 0.054;
+    const FOREIGN_FEE_FIXED = 0.22;
+    const USD_TO_COP = 3570.30;
+    const STORAGE_KEY_SIGNATURES = 'moonshop_visual_signatures_v1';
+    const STORAGE_KEY_LAST_CODES = 'moonshop_last_codes_v1';
+    const STORAGE_KEY_TICKETS = 'moonshop_tickets_v1';
+    const STORAGE_KEY_PRICE_CODES = 'moonshop_price_codes_v1';
+
+    const MM2_CATALOG_BY_RARITY = {
+      GODLY: [
+        'Alienbeam', 'Amerilaser', 'Australis', 'Bat', 'BattleAxe', 'BattleAxe II',
+        'Bauble', 'Beachy', 'Bioblade', 'Blaster', 'Blizzard', 'Bloom', 'Blossom',
+        'Blue Seer', 'Boneblade', 'Borealis', 'Candleflame', 'Candy', 'Chill',
+        'Clockwork', 'Constellation', 'Cookieblade', 'Cookiecane', 'Darkbringer',
+        'Darkshot', 'Darksword', 'Deathshard', 'Eggblade', 'Elderwood Blade',
+        'Elderwood Revolver', 'Embersickle', 'Eternal', 'Eternal II', 'Eternal III',
+        'Eternal IV', 'Eternalcane', 'Evergreen', 'Evergun', 'Fang', 'Flames',
+        'Flora', 'Flowerwood', 'Flowerwood Gun', 'Frostbite', 'Frostsaber',
+        'Gemstone', 'Ghostblade', 'Ginger Luger', 'Gingerblade', 'Gingermint',
+        'Green Luger', "Hallow's Blade", "Hallow's Edge", 'Hallowgun', 'Handsaw',
+        'Heart Wand', 'Heartblade', 'Heat', 'Ice Dragon', 'Ice Shard', 'Icebeam',
+        'Iceblaster', 'Icecream', 'Iceflake', 'Immortal', 'Jinglegun', 'Laser',
+        'Lightbringer', 'Luger', 'Lugercane', 'Makeshift', 'Minty', 'Mortal',
+        'Nebula', 'Nightblade', 'Ocean', 'Old Glory', 'Orange Seer', 'Ornament',
+        'Pearl', 'Pearlshine', 'Peppermint', 'Phantom', 'Pixel', 'Plasmabeam',
+        'Plasmablade', 'Prismatic', 'Pumpking', 'Purple Seer', 'Rainbow',
+        'Rainbow Gun', 'Raygun', 'Red Luger', 'Red Seer', 'Sakura', 'Sands',
+        'Saw', 'Seer', 'Shark', 'Slasher', 'Snow Dagger', 'Snowcannon',
+        'Snowflake', 'Snowstorm', 'Soul', 'Spectre', 'Spider', 'Spirit', 'Sugar',
+        'Sunrise', 'Sunset', 'Sweet', 'Swirly Blade', 'Swirly Gun', 'Tides',
+        "Traveler's Gun", 'Treat', 'Turkey', "Vampire's Edge", "Vampire's Gun",
+        'Virtual', 'Watergun', 'Waves', "Winter's Edge", 'Xenoknife', 'Xenoshot',
+        'Xmas', 'Yellow Seer'
+      ],
+      CHROMA: [
+        'Chroma Alienbeam', 'Chroma Bauble', 'Chroma Beachy', 'Chroma Blizzard',
+        'Chroma Boneblade', 'Chroma Candleflame', 'Chroma Constellation',
+        'Chroma Cookiecane', 'Chroma Darkbringer', 'Chroma Deathshard',
+        'Chroma Elderwood Blade', 'Chroma Embersickle', 'Chroma Emberbow',
+        'Chroma Emberscythe', 'Chroma Evergreen', 'Chroma Evergun', 'Chroma Fang',
+        'Chroma Gemstone', 'Chroma Gingerblade', 'Chroma Heart Wand', 'Chroma Heat',
+        'Chroma Icecream', 'Chroma Immortal', 'Chroma Laser', 'Chroma Lightbringer',
+        'Chroma Luger', 'Chroma Mortal', 'Chroma Ornament', 'Chroma Raygun',
+        'Chroma Sands', 'Chroma Saw', 'Chroma Seer', 'Chroma Shark',
+        'Chroma Slasher', 'Chroma Snow Dagger', 'Chroma Snowcannon',
+        'Chroma Snowstorm', 'Chroma Sunrise', 'Chroma Sunset', 'Chroma Sweet',
+        'Chroma Swirly Gun', 'Chroma Tides', "Chroma Traveler's Gun",
+        'Chroma Treat', "Chroma Vampire's Gun", 'Chroma Watergun'
+      ],
+      ANCIENT: [
+        'Batwing', 'Celestial', 'Elderwood Scythe', 'Emberbow', 'Emberscythe',
+        'Gingerscope', 'Gingerscythe', 'Hallowscythe', 'Harvester', 'Icebreaker',
+        'Icecrusher', 'Icepiercer', 'Icewing', 'Logchopper', "Nik's Scythe",
+        'Reaver', 'Swirly Axe', 'Synthwave', "Traveler's Axe", "Vampire's Axe"
+      ]
+    };
+
+    function buildUniqueWeaponsList(catalogByRarity) {
+      const seenNames = new Set();
+      const usedCodes = new Set();
+      const list = [];
+
+      Object.entries(catalogByRarity).forEach(([rarity, names], rIdx) => {
+        names.forEach((rawName, nIdx) => {
+          const cleanName = String(rawName).trim();
+          if (!cleanName || seenNames.has(cleanName)) return;
+          seenNames.add(cleanName);
+
+          let codeNum = 1000 + ((rIdx + 1) * 2311 + (nIdx + 1) * 379) % 8999;
+          while (usedCodes.has(codeNum)) {
+            codeNum = codeNum >= 9999 ? 1000 : codeNum + 1;
+          }
+          usedCodes.add(codeNum);
+
+          list.push({
+            name: cleanName,
+            rarity,
+            code: String(codeNum)
+          });
+        });
+      });
+
+      return list;
+    }
+
+    const MM2_WEAPONS = buildUniqueWeaponsList(MM2_CATALOG_BY_RARITY);
+
+    const robuxPackageCache = new Map();
+    const robuxCodeToAmountMap = new Map();
+    const mm2CodeToWeaponMap = new Map();
+    const visualSignatureToCodeMap = new Map();
+    const priceCodeMetaMap = new Map();
+
+    function buildScannableQrUrl(code, itemTitle, priceText) {
+      try {
+        const baseUrl = `${window.location.origin}${window.location.pathname}`;
+        if (!baseUrl || !baseUrl.startsWith('http')) {
+          return `MOONSHOP|CODE:${code}|ITEM:${itemTitle}|PRICE:${priceText}`;
+        }
+        const params = new URLSearchParams({
+          scan: String(code || ''),
+          item: String(itemTitle || ''),
+          price: String(priceText || '')
+        });
+        return `${baseUrl}?${params.toString()}`;
+      } catch (_) {
+        return `MOONSHOP|CODE:${code}|ITEM:${itemTitle}|PRICE:${priceText}`;
+      }
+    }
+
+    function loadPersistedPriceCodes() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_PRICE_CODES);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          Object.entries(parsed).forEach(([code, meta]) => {
+            if (code && meta && typeof meta === 'object') {
+              priceCodeMetaMap.set(String(code).toUpperCase(), meta);
+            }
+          });
+        }
+      } catch (_) {}
+    }
+
+    function registerPriceCode(code, meta) {
+      if (!code || !meta) return;
+      const upper = String(code).toUpperCase();
+      priceCodeMetaMap.set(upper, { ...meta, code: upper });
+      try {
+        const obj = {};
+        let count = 0;
+        for (const [k, v] of priceCodeMetaMap.entries()) {
+          obj[k] = v;
+          count++;
+          if (count >= 150) break;
+        }
+        localStorage.setItem(STORAGE_KEY_PRICE_CODES, JSON.stringify(obj));
+      } catch (_) {}
+    }
+
+    function loadPersistedSignatures() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_SIGNATURES);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          Object.entries(parsed).forEach(([sig, code]) => {
+            if (sig && code) visualSignatureToCodeMap.set(String(sig), String(code).toUpperCase());
+          });
+        }
+      } catch (_) {}
+    }
+
+    function persistVisualSignature(sig, code) {
+      if (!sig || !code) return;
+      const upper = String(code).toUpperCase();
+      visualSignatureToCodeMap.set(sig, upper);
+      try {
+        const obj = {};
+        let count = 0;
+        for (const [k, v] of visualSignatureToCodeMap.entries()) {
+          obj[k] = v;
+          count++;
+          if (count >= 200) break;
+        }
+        localStorage.setItem(STORAGE_KEY_SIGNATURES, JSON.stringify(obj));
+      } catch (_) {}
+    }
+
+    function persistLastCodes(partial = {}) {
+      try {
+        const currentRaw = localStorage.getItem(STORAGE_KEY_LAST_CODES);
+        const current = currentRaw ? JSON.parse(currentRaw) : {};
+        const merged = { ...current, ...partial };
+        localStorage.setItem(STORAGE_KEY_LAST_CODES, JSON.stringify(merged));
+      } catch (_) {}
+    }
+
+    function loadPersistedLastCodes() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_LAST_CODES);
+        return raw ? JSON.parse(raw) : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function loadPersistedTickets() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_TICKETS);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function savePersistedTickets(ticketsList) {
+      try {
+        localStorage.setItem(STORAGE_KEY_TICKETS, JSON.stringify(ticketsList.slice(0, 50)));
+      } catch (_) {}
+    }
+
+    function getRobuxPackage(qty) {
+      const n = Math.floor(Number(qty));
+      if (!Number.isFinite(n) || n < MIN_ROBUX || n > MAX_ROBUX_CODE) return null;
+      if (robuxPackageCache.has(n)) return robuxPackageCache.get(n);
+
+      const paddedQty = String(n).padStart(5, '0');
+      let hash = ((n * 2654435761) ^ 0x9e3779b9) >>> 0;
+      hash = ((hash ^ (hash >>> 16)) * 2246822519) >>> 0;
+      hash = ((hash ^ (hash >>> 13)) * 3266489917) >>> 0;
+      const uniqueSuffix = 1000 + ((hash >>> 0) % 9000);
+
+      const code = `RBX-${paddedQty}-${uniqueSuffix}`;
+      const barcodeDigits = `${paddedQty}${uniqueSuffix}`;
+      const pkg = {
+        robux: n,
+        code,
+        barcodeDigits,
+        priceCop: n * COP_PER_ROBUX
+      };
+
+      robuxPackageCache.set(n, pkg);
+      robuxCodeToAmountMap.set(code.toUpperCase(), n);
+      robuxCodeToAmountMap.set(barcodeDigits, n);
+      return pkg;
+    }
+
+    function registerMm2WeaponCodes(weapon, fullCode, barcodeDigits) {
+      if (!weapon) return;
+      if (fullCode) mm2CodeToWeaponMap.set(String(fullCode).toUpperCase(), weapon);
+      if (barcodeDigits) mm2CodeToWeaponMap.set(String(barcodeDigits).trim(), weapon);
+    }
+
+    MM2_WEAPONS.forEach((weapon) => {
+      const cleanCode = String(weapon.code || '').padStart(4, '0');
+      const rarityPrefix = String(weapon.rarity || 'MM2').slice(0, 3).toUpperCase();
+      const checksum = ((Number(cleanCode) * 29 + 1301) % 9000 + 1000);
+      const fullCode = `MM2-${rarityPrefix}-${cleanCode}-${checksum}`;
+      const barcodeDigits = `${cleanCode}${checksum}`;
+      registerMm2WeaponCodes(weapon, fullCode, barcodeDigits);
+    });
+
+    loadPersistedSignatures();
+    loadPersistedPriceCodes();
+    const initialPersistedCodes = loadPersistedLastCodes();
+    let ticketsHistory = loadPersistedTickets();
+    let activeTicketObj = ticketsHistory.length > 0 ? ticketsHistory[0] : null;
+
+    const scannedDataModal = document.getElementById('scannedDataModal');
+    const scannedModalBadge = document.getElementById('scannedModalBadge');
+    const scannedModalTitle = document.getElementById('scannedModalTitle');
+    const scannedModalItem = document.getElementById('scannedModalItem');
+    const scannedModalPrice = document.getElementById('scannedModalPrice');
+    const scannedModalCode = document.getElementById('scannedModalCode');
+    const closeScannedModalBtn = document.getElementById('closeScannedModalBtn');
+    const scannedModalOpenTicketsBtn = document.getElementById('scannedModalOpenTicketsBtn');
+    const scannedModalKeepHereBtn = document.getElementById('scannedModalKeepHereBtn');
+
+    const tabRobuxBtn = document.getElementById('tabRobuxBtn');
+    const tabMm2Btn = document.getElementById('tabMm2Btn');
+    const tabItemsBtn = document.getElementById('tabItemsBtn');
+    const tabTicketsBtn = document.getElementById('tabTicketsBtn');
+    const tabPillIndicator = document.getElementById('tabPillIndicator');
+    const tabsTrack = document.getElementById('tabsTrack');
+    const sectionTitle = document.getElementById('sectionTitle');
+    const sectionSubtitle = document.getElementById('sectionSubtitle');
+
+    const priceCopDisplay = document.getElementById('priceCopDisplay');
+    const toggleCustomPackagePrice = document.getElementById('toggleCustomPackagePrice');
+    const customPackagePriceBox = document.getElementById('customPackagePriceBox');
+    const customPackagePriceInput = document.getElementById('customPackagePriceInput');
+    const robuxInput = document.getElementById('robuxAmount');
+    const clearRobuxInputBtn = document.getElementById('clearRobuxInputBtn');
+    const robuxDecodedInfo = document.getElementById('robuxDecodedInfo');
+    const robuxScanFormalBanner = document.getElementById('robuxScanFormalBanner');
+    const robuxPriceSummaryCard = document.getElementById('robuxPriceSummaryCard');
+    const robuxBarcodePhotoInput = document.getElementById('robuxBarcodePhotoInput');
+    const robuxBarcodePhotoPreview = document.getElementById('robuxBarcodePhotoPreview');
+    const robuxBarcodePhotoLabel = document.getElementById('robuxBarcodePhotoLabel');
+    const robuxScanStatusBadge = document.getElementById('robuxScanStatusBadge');
+    const robuxScanTint = document.getElementById('robuxScanTint');
+    const robuxScanLaser = document.getElementById('robuxScanLaser');
+    const robuxProfitBaseDisplay = document.getElementById('robuxProfitBaseDisplay');
+    const robuxProfitMarginDisplay = document.getElementById('robuxProfitMarginDisplay');
+    const gamepassDisplay = document.getElementById('gamepassAmountDisplay');
+    const minRobuxToast = document.getElementById('minRobuxToast');
+    const tutorialPassAmount = document.getElementById('tutorialPassAmount');
+    const tutorialPassPriceText = document.getElementById('tutorialPassPriceText');
+    const tutorialReceivedRobuxText = document.getElementById('tutorialReceivedRobuxText');
+    const toggleTutorialBtn = document.getElementById('toggleTutorialBtn');
+    const toggleTutorialLabel = document.getElementById('toggleTutorialLabel');
+    const tutorialChevronIcon = document.getElementById('tutorialChevronIcon');
+    const tutorialCollapseBox = document.getElementById('tutorialCollapseBox');
+    const copyTutorialBtn = document.getElementById('copyTutorialBtn');
+    const tutorialStepsList = document.getElementById('tutorialStepsList');
+    const plusIcon = document.getElementById('plusIcon');
+    const togglePackagesBtn = document.getElementById('togglePackagesBtn');
+    const quickPackagesMenu = document.getElementById('quickPackagesMenu');
+
+    const robuxQuoteQrBox = document.getElementById('robuxQuoteQrBox');
+    const robuxQuoteCodeText = document.getElementById('robuxQuoteCodeText');
+    const robuxQuotePriceBadge = document.getElementById('robuxQuotePriceBadge');
+    const robuxQuoteQrContainer = document.getElementById('robuxQuoteQrContainer');
+    const copyRobuxQuoteCodeBtn = document.getElementById('copyRobuxQuoteCodeBtn');
+    const downloadRobuxQuoteQrBtn = document.getElementById('downloadRobuxQuoteQrBtn');
+    const openRobuxQuoteInTicketsBtn = document.getElementById('openRobuxQuoteInTicketsBtn');
+
+    const robuxCodeAmountInput = document.getElementById('robuxCodeAmountInput');
+    const stepDownRobuxBtn = document.getElementById('stepDownRobuxBtn');
+    const stepUpRobuxBtn = document.getElementById('stepUpRobuxBtn');
+    const robuxCodeRangeStatus = document.getElementById('robuxCodeRangeStatus');
+    const robuxGeneratedCodeBox = document.getElementById('robuxGeneratedCodeBox');
+    const robuxGeneratedCodeText = document.getElementById('robuxGeneratedCodeText');
+    const robuxGeneratedAmountBadge = document.getElementById('robuxGeneratedAmountBadge');
+    const robuxBarcodeSvg = document.getElementById('robuxBarcodeSvg');
+    const robuxBarcodeDigitsText = document.getElementById('robuxBarcodeDigitsText');
+    const copyRobuxCodeBtn = document.getElementById('copyRobuxCodeBtn');
+    const downloadRobuxBarcodeBtn = document.getElementById('downloadRobuxBarcodeBtn');
+
+    const itemsMm2SecondWeaponInput = document.getElementById('itemsMm2SecondWeaponInput');
+    const toggleItemsMm2SecondBtn = document.getElementById('toggleItemsMm2SecondBtn');
+    const itemsMm2SecondPlusIcon = document.getElementById('itemsMm2SecondPlusIcon');
+    const itemsMm2SecondMenu = document.getElementById('itemsMm2SecondMenu');
+    const itemsMm2SecondList = document.getElementById('itemsMm2SecondList');
+    const itemsMm2SecondCount = document.getElementById('itemsMm2SecondCount');
+    const itemsMm2SecondRarityTabs = Array.from(document.querySelectorAll('.items-mm2-second-rarity-tab'));
+    const itemsMm2GeneratedCodeBox = document.getElementById('itemsMm2GeneratedCodeBox');
+    const itemsMm2GeneratedCodeText = document.getElementById('itemsMm2GeneratedCodeText');
+    const itemsMm2GeneratedWeaponBadge = document.getElementById('itemsMm2GeneratedWeaponBadge');
+    const itemsMm2BarcodeSvg = document.getElementById('itemsMm2BarcodeSvg');
+    const itemsMm2BarcodeDigitsText = document.getElementById('itemsMm2BarcodeDigitsText');
+    const copyItemsMm2CodeBtn = document.getElementById('copyItemsMm2CodeBtn');
+    const downloadItemsMm2BarcodeBtn = document.getElementById('downloadItemsMm2BarcodeBtn');
+
+    const mm2WeaponInput = document.getElementById('mm2WeaponInput');
+    const clearMm2InputBtn = document.getElementById('clearMm2InputBtn');
+    const mm2DecodedInfo = document.getElementById('mm2DecodedInfo');
+    const mm2ScanFormalBanner = document.getElementById('mm2ScanFormalBanner');
+    const mm2DetectedWeaponCard = document.getElementById('mm2DetectedWeaponCard');
+    const mm2BarcodePhotoInput = document.getElementById('mm2BarcodePhotoInput');
+    const mm2BarcodePhotoPreview = document.getElementById('mm2BarcodePhotoPreview');
+    const mm2BarcodePhotoLabel = document.getElementById('mm2BarcodePhotoLabel');
+    const mm2ScanStatusBadge = document.getElementById('mm2ScanStatusBadge');
+    const mm2ScanTint = document.getElementById('mm2ScanTint');
+    const mm2ScanLaser = document.getElementById('mm2ScanLaser');
+    const mm2WeaponCodeDisplay = document.getElementById('mm2WeaponCodeDisplay');
+    const mm2WeaponCategoryLabel = document.getElementById('mm2WeaponCategoryLabel');
+    const toggleMm2WeaponsBtn = document.getElementById('toggleMm2WeaponsBtn');
+    const mm2PlusIcon = document.getElementById('mm2PlusIcon');
+    const mm2WeaponsMenu = document.getElementById('mm2WeaponsMenu');
+
+    const mm2ForeignPriceInput = document.getElementById('mm2ForeignPriceInput');
+    const mm2CommissionDisplay = document.getElementById('mm2CommissionDisplay');
+    const mm2TotalForeignDisplay = document.getElementById('mm2TotalForeignDisplay');
+    const mm2TotalForeignCopDisplay = document.getElementById('mm2TotalForeignCopDisplay');
+
+    const mm2ProfitDisplayInput = document.getElementById('mm2ProfitDisplayInput');
+    const toggleMm2ProfitBtn = document.getElementById('toggleMm2ProfitBtn');
+    const mm2ProfitPlusIcon = document.getElementById('mm2ProfitPlusIcon');
+    const mm2ProfitMenu = document.getElementById('mm2ProfitMenu');
+    const mm2ProfitPresetButtons = Array.from(document.querySelectorAll('.mm2-profit-preset'));
+    const customProfitToggleBtn = document.getElementById('customProfitToggleBtn');
+    const customProfitBox = document.getElementById('customProfitBox');
+    const mm2CustomProfitInput = document.getElementById('mm2CustomProfitInput');
+    const mm2FinalPriceWithProfitCop = document.getElementById('mm2FinalPriceWithProfitCop');
+
+    const mm2QuoteQrBox = document.getElementById('mm2QuoteQrBox');
+    const mm2QuoteCodeText = document.getElementById('mm2QuoteCodeText');
+    const mm2QuotePriceBadge = document.getElementById('mm2QuotePriceBadge');
+    const mm2QuoteQrContainer = document.getElementById('mm2QuoteQrContainer');
+    const copyMm2QuoteCodeBtn = document.getElementById('copyMm2QuoteCodeBtn');
+    const downloadMm2QuoteQrBtn = document.getElementById('downloadMm2QuoteQrBtn');
+    const openMm2QuoteInTicketsBtn = document.getElementById('openMm2QuoteInTicketsBtn');
+
+    const ticketCreatorForm = document.getElementById('ticketCreatorForm');
+    const ticketBarcodeInput = document.getElementById('ticketBarcodeInput');
+    const clearTicketBarcodeBtn = document.getElementById('clearTicketBarcodeBtn');
+    const toggleTicketScanBtn = document.getElementById('toggleTicketScanBtn');
+    const ticketPlusIcon = document.getElementById('ticketPlusIcon');
+    const ticketScanMenu = document.getElementById('ticketScanMenu');
+    const ticketScanFormalBanner = document.getElementById('ticketScanFormalBanner');
+    const ticketBarcodePhotoInput = document.getElementById('ticketBarcodePhotoInput');
+    const ticketBarcodePhotoPreview = document.getElementById('ticketBarcodePhotoPreview');
+    const ticketBarcodePhotoLabel = document.getElementById('ticketBarcodePhotoLabel');
+    const ticketScanStatusBadge = document.getElementById('ticketScanStatusBadge');
+    const ticketScanTint = document.getElementById('ticketScanTint');
+    const ticketScanLaser = document.getElementById('ticketScanLaser');
+    const ticketCodeTypeBadge = document.getElementById('ticketCodeTypeBadge');
+    const ticketCodeSummaryText = document.getElementById('ticketCodeSummaryText');
+    const ticketCodeDetailText = document.getElementById('ticketCodeDetailText');
+    const ticketRobloxUserInput = document.getElementById('ticketRobloxUserInput');
+    const ticketTiktokUserInput = document.getElementById('ticketTiktokUserInput');
+    const activeTicketCard = document.getElementById('activeTicketCard');
+    const activeTicketIdText = document.getElementById('activeTicketIdText');
+    const activeTicketDateText = document.getElementById('activeTicketDateText');
+    const activeTicketItemText = document.getElementById('activeTicketItemText');
+    const activeTicketCodeText = document.getElementById('activeTicketCodeText');
+    const activeTicketRobloxText = document.getElementById('activeTicketRobloxText');
+    const activeTicketTiktokText = document.getElementById('activeTicketTiktokText');
+    const activeTicketQrContainer = document.getElementById('activeTicketQrContainer');
+    const activeTicketQrPayloadText = document.getElementById('activeTicketQrPayloadText');
+    const copyTicketPayloadBtn = document.getElementById('copyTicketPayloadBtn');
+    const downloadTicketQrBtn = document.getElementById('downloadTicketQrBtn');
+    const downloadTicketFormBtn = document.getElementById('downloadTicketFormBtn');
+    const ticketsSavedCountBadge = document.getElementById('ticketsSavedCountBadge');
+    const ticketsHistoryList = document.getElementById('ticketsHistoryList');
+
+    let toastTimeout = null;
+    let totalForeignCopValue = 0;
+    let selectedProfitCop = 0;
+    let currentRobuxAmount = Number(initialPersistedCodes.robuxAmount) || 0;
+    let currentRobuxCode = String(initialPersistedCodes.robuxCode || '');
+    let currentRobuxDigits = String(initialPersistedCodes.robuxDigits || '');
+    let currentItemsMm2Code = String(initialPersistedCodes.mm2Code || '');
+    let currentItemsMm2Digits = String(initialPersistedCodes.mm2Digits || '');
+    let currentRobuxQuoteCode = '';
+    let currentRobuxQuotePayload = '';
+    let currentMm2QuoteCode = '';
+    let currentMm2QuotePayload = '';
+    let pendingModalCode = '';
+    let audioCtxInstance = null;
+
+    function openFormalScanModal({ code, item, price, badge }) {
+      if (!scannedDataModal) return;
+      const cleanCode = String(code || '').trim().toUpperCase();
+      if (!cleanCode) return;
+
+      pendingModalCode = cleanCode;
+      if (scannedModalBadge) scannedModalBadge.textContent = badge || 'Lectura QR · MOONSHOP';
+      if (scannedModalItem) scannedModalItem.textContent = item || cleanCode;
+      if (scannedModalPrice) scannedModalPrice.textContent = price || '—';
+      if (scannedModalCode) scannedModalCode.textContent = cleanCode;
+
+      scannedDataModal.classList.remove('hidden');
+      scannedDataModal.classList.add('flex');
+      playScanSound('done');
+    }
+
+    function closeFormalScanModal() {
+      if (!scannedDataModal) return;
+      scannedDataModal.classList.add('hidden');
+      scannedDataModal.classList.remove('flex');
+    }
+
+    function playScanSound(kind = 'scan') {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtxInstance) {
+          audioCtxInstance = new AudioContextClass();
+        }
+        if (audioCtxInstance.state === 'suspended') {
+          audioCtxInstance.resume().catch(() => {});
+        }
+
+        const now = audioCtxInstance.currentTime;
+        if (kind === 'scan') {
+          const osc = audioCtxInstance.createOscillator();
+          const gain = audioCtxInstance.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1180, now);
+          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.14);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.exponentialRampToValueAtTime(0.09, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.16);
+          osc.connect(gain);
+          gain.connect(audioCtxInstance.destination);
+          osc.start(now);
+          osc.stop(now + 0.17);
+        } else {
+          const notes = [1320, 1980];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtxInstance.createOscillator();
+            const gain = audioCtxInstance.createGain();
+            const start = now + idx * 0.085;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.001, start);
+            gain.gain.exponentialRampToValueAtTime(0.11, start + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0008, start + 0.11);
+            osc.connect(gain);
+            gain.connect(audioCtxInstance.destination);
+            osc.start(start);
+            osc.stop(start + 0.12);
+          });
+        }
+      } catch (_) {}
+    }
+
+    function presentScannedDataFormally(mode = 'robux') {
+      const targetBanner = mode === 'mm2'
+        ? mm2ScanFormalBanner
+        : (mode === 'tickets' ? ticketScanFormalBanner : robuxScanFormalBanner);
+      const targetCards = mode === 'mm2'
+        ? [mm2DetectedWeaponCard, mm2QuoteQrBox]
+        : (mode === 'tickets'
+          ? [document.getElementById('ticketCodeInfoCard')]
+          : [robuxPriceSummaryCard, robuxQuoteQrBox]);
+
+      if (targetBanner) {
+        targetBanner.classList.remove('hidden');
+        targetBanner.classList.add('flex');
+        targetBanner.classList.remove('scan-formal-reveal');
+        void targetBanner.offsetWidth;
+        targetBanner.classList.add('scan-formal-reveal');
+        setTimeout(() => {
+          targetBanner.classList.add('opacity-75');
+        }, 1800);
+      }
+
+      targetCards.forEach((el) => {
+        if (!el || el.classList.contains('hidden')) return;
+        el.classList.remove('scan-formal-reveal');
+        void el.offsetWidth;
+        el.classList.add('scan-formal-reveal');
+      });
+    }
+
+    function computeCanvasVisualSignature(canvas) {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return '';
+      const w = canvas.width;
+      const h = canvas.height;
+      if (w < 8 || h < 8) return '';
+
+      const sampleW = 64;
+      const sampleH = 16;
+      const tmp = document.createElement('canvas');
+      tmp.width = sampleW;
+      tmp.height = sampleH;
+      const tctx = tmp.getContext('2d');
+      if (!tctx) return '';
+      tctx.drawImage(canvas, 0, Math.floor(h * 0.2), w, Math.floor(h * 0.6), 0, 0, sampleW, sampleH);
+      const data = tctx.getImageData(0, 0, sampleW, sampleH).data;
+
+      let bits = '';
+      for (let x = 0; x < sampleW; x++) {
+        let darkCount = 0;
+        for (let y = 0; y < sampleH; y++) {
+          const idx = (y * sampleW + x) * 4;
+          const lum = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+          if (lum < 140) darkCount++;
+        }
+        bits += darkCount >= Math.floor(sampleH * 0.45) ? '1' : '0';
+      }
+      return bits;
+    }
+
+    function buildBarcodePngDataUrl(svgEl, codeText, digitsText) {
+      const viewBox = svgEl.getAttribute('viewBox') || '0 0 200 36';
+      const parts = viewBox.split(/\s+/).map(Number);
+      const vbW = Number.isFinite(parts[2]) && parts[2] > 0 ? parts[2] : 200;
+      const vbH = Number.isFinite(parts[3]) && parts[3] > 0 ? parts[3] : 36;
+
+      const scale = 3;
+      const padX = 28;
+      const padTop = 24;
+      const barAreaH = 84;
+      const barAreaW = Math.max(220, vbW * scale);
+      const canvasW = barAreaW + padX * 2;
+      const canvasH = padTop + barAreaH + 54;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      if (codeText) {
+        ctx.fillText(String(codeText), canvasW / 2, 16);
+      }
+
+      const svgMarkup = `<svg xmlns="http://www.w3.org/2000/svg" width="${barAreaW}" height="${barAreaH}" viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="none">${svgEl.innerHTML}</svg>`;
+      return { canvas, ctx, svgMarkup, canvasW, padX, padTop, barAreaW, barAreaH, digitsText };
+    }
+
+    function registerVisualSignatureForCode(svgEl, codeText, digitsText) {
+      try {
+        if (!svgEl || !svgEl.innerHTML.trim() || !codeText) return;
+        const built = buildBarcodePngDataUrl(svgEl, codeText, digitsText);
+        if (!built) return;
+        const svgBlob = new Blob([built.svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          built.ctx.drawImage(img, built.padX, built.padTop, built.barAreaW, built.barAreaH);
+          const sig = computeCanvasVisualSignature(built.canvas);
+          if (sig) {
+            persistVisualSignature(sig, codeText);
+          }
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = () => URL.revokeObjectURL(url);
+        img.src = url;
+      } catch (_) {}
+    }
+
+    function matchVisualSignature(sig) {
+      if (!sig || visualSignatureToCodeMap.size === 0) return '';
+      if (visualSignatureToCodeMap.has(sig)) {
+        return visualSignatureToCodeMap.get(sig);
+      }
+      let bestCode = '';
+      let bestDiff = Infinity;
+      for (const [knownSig, codeVal] of visualSignatureToCodeMap.entries()) {
+        if (knownSig.length !== sig.length) continue;
+        let diff = 0;
+        for (let i = 0; i < sig.length; i++) {
+          if (knownSig[i] !== sig[i]) diff++;
+        }
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestCode = codeVal;
+        }
+      }
+      return bestDiff <= 10 ? bestCode : '';
+    }
+
+    function extractCodeFromQrOrText(rawText) {
+      const str = String(rawText || '').trim();
+      if (!str) return '';
+
+      try {
+        if (str.includes('?') || str.startsWith('http://') || str.startsWith('https://')) {
+          const parsedUrl = new URL(str);
+          const scanParam = parsedUrl.searchParams.get('scan');
+          const itemParam = parsedUrl.searchParams.get('item');
+          const priceParam = parsedUrl.searchParams.get('price');
+          if (scanParam) {
+            const upperCode = String(scanParam).trim().toUpperCase();
+            if (!priceCodeMetaMap.has(upperCode)) {
+              registerPriceCode(upperCode, {
+                type: upperCode.includes('MM2') ? 'MM2 · PRECIO' : 'ROBUX · PRECIO',
+                title: itemParam || upperCode,
+                detail: priceParam ? `Precio: ${priceParam} · Código: ${upperCode}` : `Código: ${upperCode}`
+              });
+            }
+            return upperCode;
+          }
+        }
+      } catch (_) {}
+
+      const upper = str.toUpperCase();
+      const qteMatch = upper.match(/(QTE-(?:RBX|MM2)-[A-Z0-9-]+)/);
+      if (qteMatch && qteMatch[1]) {
+        const matchedQte = qteMatch[1];
+        if (!priceCodeMetaMap.has(matchedQte)) {
+          const codePart = upper.match(/CODE:([^|]+)/);
+          const itemPart = upper.match(/ITEM:([^|]+)/);
+          const pricePart = upper.match(/PRICE:([^|]+)/);
+          if (codePart && codePart[1]) {
+            registerPriceCode(codePart[1].trim(), {
+              type: matchedQte.includes('MM2') ? 'MM2' : 'ROBUX',
+              title: itemPart ? itemPart[1].trim() : matchedQte,
+              detail: pricePart ? `Precio: ${pricePart[1].trim()} · Código: ${codePart[1].trim()}` : `Código: ${codePart[1].trim()}`
+            });
+          }
+        }
+        return matchedQte;
+      }
+      const stdMatch = upper.match(/(RBX-\d{5}-\d{4}|MM2-[A-Z]{3}-\d{4}-\d{4})/);
+      if (stdMatch && stdMatch[1]) return stdMatch[1];
+      return upper;
+    }
+
+    async function detectBarcodeFromImage(dataUrl, fileName, mode = 'robux') {
+      const cleanName = String(fileName || '').toUpperCase();
+
+      const explicitCodeMatch = cleanName.match(/(QTE-(?:RBX|MM2)-[A-Z0-9-]+|RBX-\d{5}-\d{4}|MM2-[A-Z]{3}-\d{4}-\d{4})/);
+      if (explicitCodeMatch && explicitCodeMatch[1]) {
+        return explicitCodeMatch[1].toUpperCase();
+      }
+
+      if (dataUrl) {
+        try {
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = dataUrl;
+          });
+
+          const scanCanvas = document.createElement('canvas');
+          scanCanvas.width = Math.min(800, img.naturalWidth || img.width || 400);
+          scanCanvas.height = Math.min(800, img.naturalHeight || img.height || 400);
+          const sctx = scanCanvas.getContext('2d');
+          if (sctx) {
+            sctx.drawImage(img, 0, 0, scanCanvas.width, scanCanvas.height);
+
+            if (typeof window.jsQR === 'function') {
+              try {
+                const imgData = sctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+                const qrResult = window.jsQR(imgData.data, scanCanvas.width, scanCanvas.height, {
+                  inversionAttempts: 'attemptBoth'
+                });
+                if (qrResult && qrResult.data) {
+                  return extractCodeFromQrOrText(qrResult.data);
+                }
+              } catch (_) {}
+            }
+
+            if (typeof window.BarcodeDetector === 'function') {
+              try {
+                const detector = new window.BarcodeDetector({
+                  formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'itf', 'codabar']
+                });
+                const barcodes = await detector.detect(img);
+                if (Array.isArray(barcodes) && barcodes.length > 0 && barcodes[0].rawValue) {
+                  return extractCodeFromQrOrText(barcodes[0].rawValue);
+                }
+              } catch (_) {}
+            }
+
+            const sig = computeCanvasVisualSignature(scanCanvas);
+            const matched = matchVisualSignature(sig);
+            if (matched) return matched;
+          }
+        } catch (_) {}
+      }
+
+      const persisted = loadPersistedLastCodes();
+      if (mode === 'mm2' && (currentMm2QuoteCode || currentItemsMm2Code || persisted.mm2Code)) {
+        return String(currentMm2QuoteCode || currentItemsMm2Code || persisted.mm2Code).toUpperCase();
+      }
+      if (mode === 'robux' && (currentRobuxQuoteCode || currentRobuxCode || persisted.robuxCode)) {
+        return String(currentRobuxQuoteCode || currentRobuxCode || persisted.robuxCode).toUpperCase();
+      }
+
+      return '';
+    }
+
+    function downloadBarcodePng(svgEl, codeText, digitsText, filePrefix) {
+      try {
+        if (!svgEl || !svgEl.innerHTML.trim()) return;
+        const built = buildBarcodePngDataUrl(svgEl, codeText, digitsText);
+        if (!built) return;
+        const { canvas, ctx, svgMarkup, canvasW, padX, padTop, barAreaW, barAreaH } = built;
+        const canvasH = padTop + barAreaH + 54;
+
+        const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, padX, padTop, barAreaW, barAreaH);
+
+          ctx.fillStyle = '#334155';
+          ctx.font = 'bold 14px Inter, sans-serif';
+          if (digitsText) {
+            ctx.fillText(String(digitsText), canvasW / 2, padTop + barAreaH + 26);
+          }
+
+          const sig = computeCanvasVisualSignature(canvas);
+          if (sig && codeText) {
+            persistVisualSignature(sig, codeText);
+          }
+
+          const pngUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          const safeName = String(filePrefix || 'codigo-barras').replace(/[^a-zA-Z0-9-_]/g, '_');
+          link.download = `${safeName}.png`;
+          link.href = pngUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          playScanSound('done');
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = () => URL.revokeObjectURL(url);
+        img.src = url;
+      } catch (_) {}
+    }
+
+    function runBarcodeScanSequence({
+      file,
+      previewEl,
+      labelEl,
+      tintEl,
+      laserEl,
+      badgeEl,
+      mode = 'robux',
+      onComplete
+    }) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || '');
+        if (previewEl) {
+          previewEl.src = dataUrl;
+          previewEl.classList.remove('hidden');
+        }
+        if (labelEl) {
+          labelEl.textContent = `Escaneando ${file.name}...`;
+        }
+        if (tintEl) tintEl.classList.remove('hidden');
+        if (laserEl) laserEl.classList.remove('hidden');
+        if (badgeEl) {
+          badgeEl.textContent = 'Escaneando...';
+          badgeEl.className = 'rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 animate-pulse';
+        }
+
+        playScanSound('scan');
+
+        setTimeout(async () => {
+          if (tintEl) tintEl.classList.add('hidden');
+          if (laserEl) laserEl.classList.add('hidden');
+          if (labelEl) labelEl.textContent = file.name;
+          if (badgeEl) {
+            badgeEl.textContent = 'Escaneado';
+            badgeEl.className = 'rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700';
+          }
+          playScanSound('done');
+          if (typeof onComplete === 'function') {
+            const detected = await detectBarcodeFromImage(dataUrl, file.name, mode);
+            onComplete(file.name, detected);
+          }
+          presentScannedDataFormally(mode);
+        }, 700);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function formatCop(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num) || num <= 0) return '$0 COP';
+      return `$${Math.round(num).toLocaleString('es-CO')} COP`;
+    }
+
+    function formatUsd(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num) || num <= 0) return '$0.00';
+      return `$${num.toFixed(2)}`;
+    }
+
+    function showMinRobuxToast() {
+      if (!minRobuxToast) return;
+      minRobuxToast.classList.remove('opacity-0', '-translate-y-1.5');
+      minRobuxToast.classList.add('opacity-100', 'translate-y-0');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        minRobuxToast.classList.remove('opacity-100', 'translate-y-0');
+        minRobuxToast.classList.add('opacity-0', '-translate-y-1.5');
+      }, 2200);
+    }
+
+    function resolveRobuxAmountFromInput(rawVal) {
+      const normalized = String(rawVal || '').trim().toUpperCase();
+      if (!normalized) return 0;
+
+      if (robuxCodeToAmountMap.has(normalized)) {
+        return robuxCodeToAmountMap.get(normalized);
+      }
+
+      const rbxMatch = normalized.match(/^RBX-0*(\d{1,6})(?:-\d+)?$/);
+      if (rbxMatch) {
+        const parsedFromCode = Number(rbxMatch[1]);
+        if (Number.isFinite(parsedFromCode) && parsedFromCode > 0) {
+          const qty = Math.round(parsedFromCode);
+          if (qty >= MIN_ROBUX && qty <= MAX_ROBUX_CODE) getRobuxPackage(qty);
+          return qty;
+        }
+      }
+
+      if (/^0*(\d{5})(\d{4})$/.test(normalized)) {
+        const m = normalized.match(/^0*(\d{5})(\d{4})$/);
+        const candidateQty = Number(m[1]);
+        if (candidateQty >= MIN_ROBUX && candidateQty <= MAX_ROBUX_CODE) {
+          const pkg = getRobuxPackage(candidateQty);
+          if (pkg && pkg.barcodeDigits === `${m[1]}${m[2]}`) {
+            return candidateQty;
+          }
+        }
+      }
+
+      const digitsOnly = normalized.replace(/\D/g, '');
+      if (digitsOnly) {
+        const parsedNum = Number(digitsOnly);
+        if (Number.isFinite(parsedNum) && parsedNum > 0) {
+          return Math.round(parsedNum);
+        }
+      }
+
+      return 0;
+    }
+
+    function createQrCanvas(payloadText, sizePx = 148) {
+      if (!payloadText || typeof window.qrcode !== 'function') return null;
+      const qr = window.qrcode(0, 'M');
+      qr.addData(String(payloadText));
+      qr.make();
+
+      const moduleCount = qr.getModuleCount();
+      const marginModules = 2;
+      const totalModules = moduleCount + marginModules * 2;
+      const cellSize = Math.max(2, Math.floor(sizePx / totalModules));
+      const actualPx = cellSize * totalModules;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = actualPx;
+      canvas.height = actualPx;
+      canvas.className = 'block rounded-lg';
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, actualPx, actualPx);
+      ctx.fillStyle = '#0f172a';
+
+      for (let r = 0; r < moduleCount; r++) {
+        for (let c = 0; c < moduleCount; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(
+              (c + marginModules) * cellSize,
+              (r + marginModules) * cellSize,
+              cellSize,
+              cellSize
+            );
+          }
+        }
+      }
+      return canvas;
+    }
+
+    function renderQrIntoContainer(containerEl, payloadText, sizePx = 148) {
+      if (!containerEl || !payloadText) return;
+      containerEl.innerHTML = '';
+      const canvas = createQrCanvas(payloadText, sizePx);
+      if (canvas) {
+        containerEl.appendChild(canvas);
+      }
+    }
+
+    function downloadQrPayloadPng(payloadText, headerTitle, subtitleLine, filePrefix) {
+      if (!payloadText || typeof window.qrcode !== 'function') return;
+      try {
+        const qr = window.qrcode(0, 'M');
+        qr.addData(String(payloadText));
+        qr.make();
+
+        const moduleCount = qr.getModuleCount();
+        const marginModules = 3;
+        const totalModules = moduleCount + marginModules * 2;
+        const cellSize = 8;
+        const qrPx = totalModules * cellSize;
+        const canvasW = Math.max(320, qrPx + 48);
+        const canvasH = qrPx + 96;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasW, canvasH);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 14px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(headerTitle || 'MOONSHOP QR'), canvasW / 2, 24);
+
+        const qrOffsetX = Math.floor((canvasW - qrPx) / 2);
+        const qrOffsetY = 36;
+        ctx.fillStyle = '#0f172a';
+        for (let r = 0; r < moduleCount; r++) {
+          for (let c = 0; c < moduleCount; c++) {
+            if (qr.isDark(r, c)) {
+              ctx.fillRect(
+                qrOffsetX + (c + marginModules) * cellSize,
+                qrOffsetY + (r + marginModules) * cellSize,
+                cellSize,
+                cellSize
+              );
+            }
+          }
+        }
+
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.fillText(String(subtitleLine || payloadText), canvasW / 2, canvasH - 18);
+
+        const link = document.createElement('a');
+        const safeName = String(filePrefix || 'codigo-qr').replace(/[^a-zA-Z0-9-_]/g, '_');
+        link.download = `${safeName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        playScanSound('done');
+      } catch (_) {}
+    }
+
+    function drawRoundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+    }
+
+    function fitSingleLineText(ctx, text, maxWidth) {
+      const raw = String(text || '—');
+      if (ctx.measureText(raw).width <= maxWidth) return raw;
+      let trimmed = raw;
+      while (trimmed.length > 1 && ctx.measureText(`${trimmed}…`).width > maxWidth) {
+        trimmed = trimmed.slice(0, -1);
+      }
+      return `${trimmed}…`;
+    }
+
+    // Genera y descarga un formulario visual limpio con todos los datos del ticket y su código QR
+    function downloadTicketFormPng(ticket) {
+      if (!ticket) return;
+      try {
+        const width = 920;
+        const height = 560;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Fondo general suave
+        ctx.fillStyle = '#eef6f8';
+        ctx.fillRect(0, 0, width, height);
+
+        // Tarjeta principal del formulario
+        drawRoundRect(ctx, 28, 28, width - 56, height - 56, 26);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.stroke();
+
+        // Encabezado superior con acento MOONSHOP
+        drawRoundRect(ctx, 28, 28, width - 56, 86, 26);
+        ctx.fillStyle = '#0d96a3';
+        ctx.fill();
+        ctx.fillRect(28, 84, width - 56, 30);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 26px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('MOONSHOP · FORMULARIO DE TICKET', 56, 72);
+
+        ctx.font = '700 13px Inter, sans-serif';
+        ctx.fillStyle = '#cffafe';
+        ctx.fillText(`Registro oficial de orden · Hora: ${ticket.createdAt || '—'}`, 56, 98);
+
+        // Insignia de folio a la derecha en encabezado
+        drawRoundRect(ctx, width - 270, 48, 214, 44, 12);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 15px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ticket.id || 'TKT-0000', width - 163, 75);
+
+        // Columna izquierda: campos del formulario
+        const leftX = 56;
+        const fieldW = 510;
+        const fieldH = 62;
+        const gapY = 14;
+        const startY = 138;
+
+        const fields = [
+          { label: 'ÍTEM / PRODUCTO', value: ticket.itemSummary || '—', accent: '#0f172a' },
+          { label: 'CÓDIGO ASOCIADO', value: ticket.code || '—', accent: '#0c7a8a' },
+          { label: 'USER ROBLOX', value: ticket.robloxUser || '—', accent: '#1e88e5' },
+          { label: 'USER TIKTOK', value: ticket.tiktokUser || '—', accent: '#0f172a' }
+        ];
+
+        fields.forEach((f, idx) => {
+          const y = startY + idx * (fieldH + gapY);
+          drawRoundRect(ctx, leftX, y, fieldW, fieldH, 14);
+          ctx.fillStyle = '#f8fafc';
+          ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.stroke();
+
+          ctx.textAlign = 'left';
+          ctx.font = '800 10px Inter, sans-serif';
+          ctx.fillStyle = '#64748b';
+          ctx.fillText(f.label, leftX + 16, y + 21);
+
+          ctx.font = '800 16px Inter, sans-serif';
+          ctx.fillStyle = f.accent;
+          ctx.fillText(fitSingleLineText(ctx, f.value, fieldW - 32), leftX + 16, y + 46);
+        });
+
+        // Columna derecha: recuadro del código QR
+        const qrBoxX = 590;
+        const qrBoxY = 138;
+        const qrBoxW = 274;
+        const qrBoxH = 290;
+
+        drawRoundRect(ctx, qrBoxX, qrBoxY, qrBoxW, qrBoxH, 18);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#bae6fd';
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.font = '800 11px Inter, sans-serif';
+        ctx.fillStyle = '#0c7a8a';
+        ctx.fillText('CÓDIGO QR DEL TICKET', qrBoxX + qrBoxW / 2, qrBoxY + 26);
+
+        const qrCanvas = createQrCanvas(ticket.qrPayload || ticket.id, 184);
+        if (qrCanvas) {
+          drawRoundRect(ctx, qrBoxX + 41, qrBoxY + 38, qrCanvas.width + 16, qrCanvas.height + 16, 12);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.stroke();
+          ctx.drawImage(qrCanvas, qrBoxX + 49, qrBoxY + 46);
+        }
+
+        ctx.font = '700 10px Inter, sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.fillText(
+          fitSingleLineText(ctx, ticket.id || '', qrBoxW - 24),
+          qrBoxX + qrBoxW / 2,
+          qrBoxY + qrBoxH - 16
+        );
+
+        // Pie del formulario
+        ctx.textAlign = 'left';
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('Comprobante generado desde MOONSHOP · Conserva este formulario o su código QR.', 56, height - 48);
+
+        const link = document.createElement('a');
+        const safeName = String(ticket.id || 'formulario-ticket').replace(/[^a-zA-Z0-9-_]/g, '_');
+        link.download = `Formulario-${safeName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        playScanSound('done');
+      } catch (_) {}
+    }
+
+    function updateRobuxQuoteQr(robuxQty, finalCopPrice) {
+      if (!robuxQuoteQrBox) return;
+      if (!robuxQty || robuxQty < MIN_ROBUX) {
+        currentRobuxQuoteCode = '';
+        currentRobuxQuotePayload = '';
+        robuxQuoteQrBox.classList.add('hidden');
+        return;
+      }
+
+      const cleanPrice = Math.max(0, Math.round(Number(finalCopPrice) || 0));
+      const hashSeed = ((robuxQty * 7919 + cleanPrice * 104729) % 8999) + 1000;
+      const code = `QTE-RBX-${robuxQty}-${cleanPrice}-${hashSeed}`;
+      const title = `${robuxQty.toLocaleString('es-CO')} Robux`;
+      const priceStr = formatCop(cleanPrice);
+      const payload = buildScannableQrUrl(code, title, priceStr);
+
+      currentRobuxQuoteCode = code;
+      currentRobuxQuotePayload = payload;
+      registerPriceCode(code, {
+        type: 'ROBUX · PRECIO',
+        title,
+        detail: `Precio: ${priceStr} · Código: ${code}`
+      });
+
+      robuxQuoteQrBox.classList.remove('hidden');
+      if (robuxQuoteCodeText) robuxQuoteCodeText.textContent = code;
+      if (robuxQuotePriceBadge) robuxQuotePriceBadge.textContent = priceStr;
+      renderQrIntoContainer(robuxQuoteQrContainer, payload, 116);
+    }
+
+    function updateMm2QuoteQr(finalCopPrice) {
+      if (!mm2QuoteQrBox) return;
+      const cleanPrice = Math.max(0, Math.round(Number(finalCopPrice) || 0));
+      const weaponName = (mm2WeaponCodeDisplay && mm2WeaponCodeDisplay.value && mm2WeaponCodeDisplay.value !== '—')
+        ? mm2WeaponCodeDisplay.value.trim()
+        : 'Arma MM2';
+      const rarity = (mm2WeaponCategoryLabel && mm2WeaponCategoryLabel.textContent && mm2WeaponCategoryLabel.textContent !== 'Sin rareza')
+        ? mm2WeaponCategoryLabel.textContent.trim()
+        : 'MM2';
+
+      if (cleanPrice <= 0 && weaponName === 'Arma MM2') {
+        currentMm2QuoteCode = '';
+        currentMm2QuotePayload = '';
+        mm2QuoteQrBox.classList.add('hidden');
+        return;
+      }
+
+      const nameCode = weaponName.replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase() || 'ITEM';
+      const hashSeed = ((cleanPrice * 3571 + nameCode.length * 997) % 8999) + 1000;
+      const code = `QTE-MM2-${nameCode}-${cleanPrice}-${hashSeed}`;
+      const title = `${weaponName} (${rarity})`;
+      const priceStr = formatCop(cleanPrice);
+      const payload = buildScannableQrUrl(code, title, priceStr);
+
+      currentMm2QuoteCode = code;
+      currentMm2QuotePayload = payload;
+      registerPriceCode(code, {
+        type: `MM2 · ${rarity}`,
+        title,
+        detail: `Precio: ${priceStr} · Código: ${code}`
+      });
+
+      mm2QuoteQrBox.classList.remove('hidden');
+      if (mm2QuoteCodeText) mm2QuoteCodeText.textContent = code;
+      if (mm2QuotePriceBadge) mm2QuotePriceBadge.textContent = priceStr;
+      renderQrIntoContainer(mm2QuoteQrContainer, payload, 116);
+    }
+
+    function openCodeInTickets(codeToOpen) {
+      if (!codeToOpen) return;
+      if (ticketBarcodeInput) {
+        ticketBarcodeInput.value = String(codeToOpen).toUpperCase();
+      }
+      updateTicketCodeInfoPreview();
+      switchTab('tickets');
+      renderTicketsSection();
+      presentScannedDataFormally('tickets');
+      if (ticketRobloxUserInput) {
+        ticketRobloxUserInput.focus();
+      }
+    }
+
+    function inspectItemCode(rawVal) {
+      const normalized = String(rawVal || '').trim().toUpperCase();
+      if (!normalized) {
+        return {
+          valid: false,
+          type: 'Sin código',
+          title: '—',
+          detail: 'Ingresa o abre un código de Robux o MM2 para ver los detalles.',
+          normalizedCode: ''
+        };
+      }
+
+      if (priceCodeMetaMap.has(normalized)) {
+        const meta = priceCodeMetaMap.get(normalized);
+        return {
+          valid: true,
+          type: meta.type || 'PRECIO',
+          title: meta.title || normalized,
+          detail: meta.detail || `Código: ${normalized}`,
+          normalizedCode: normalized
+        };
+      }
+
+      const qteRobuxMatch = normalized.match(/^QTE-RBX-(\d+)-(\d+)-\d+$/);
+      if (qteRobuxMatch) {
+        const rQty = Number(qteRobuxMatch[1]);
+        const pCop = Number(qteRobuxMatch[2]);
+        return {
+          valid: true,
+          type: 'ROBUX · PRECIO',
+          title: `${rQty.toLocaleString('es-CO')} Robux`,
+          detail: `Precio: ${formatCop(pCop)} · Código: ${normalized}`,
+          normalizedCode: normalized
+        };
+      }
+
+      const qteMm2Match = normalized.match(/^QTE-MM2-([A-Z0-9]+)-(\d+)-\d+$/);
+      if (qteMm2Match) {
+        const wTag = qteMm2Match[1];
+        const pCop = Number(qteMm2Match[2]);
+        return {
+          valid: true,
+          type: 'MM2 · PRECIO',
+          title: `Arma MM2 (${wTag})`,
+          detail: `Precio: ${formatCop(pCop)} · Código: ${normalized}`,
+          normalizedCode: normalized
+        };
+      }
+
+      const robuxQty = resolveRobuxAmountFromInput(normalized);
+      const isExplicitRobux = normalized.startsWith('RBX-') || robuxCodeToAmountMap.has(normalized) || (/^\d{9}$/.test(normalized) && robuxQty >= MIN_ROBUX);
+      if (isExplicitRobux && robuxQty >= MIN_ROBUX) {
+        const pkg = getRobuxPackage(robuxQty);
+        const priceCop = pkg ? pkg.priceCop : robuxQty * COP_PER_ROBUX;
+        return {
+          valid: true,
+          type: 'ROBUX',
+          title: `${robuxQty.toLocaleString('es-CO')} Robux`,
+          detail: `Precio: ${formatCop(priceCop)} · Código: ${pkg ? pkg.code : normalized}`,
+          normalizedCode: pkg ? pkg.code : normalized
+        };
+      }
+
+      let weapon = mm2CodeToWeaponMap.get(normalized) || null;
+      if (!weapon) {
+        const partsMatch = normalized.match(/^MM2-[A-Z]{3}-(\d{4})-\d{4}$/);
+        const codeCandidate = partsMatch ? partsMatch[1] : (/^\d{8}$/.test(normalized) ? normalized.slice(0, 4) : '');
+        if (codeCandidate) {
+          weapon = MM2_WEAPONS.find((w) => w.code === codeCandidate) || null;
+        }
+      }
+      if (weapon) {
+        const cleanCode = String(weapon.code || '').padStart(4, '0');
+        const rarityPrefix = String(weapon.rarity || 'MM2').slice(0, 3).toUpperCase();
+        const checksum = ((Number(cleanCode) * 29 + 1301) % 9000 + 1000);
+        const fullCode = normalized.startsWith('MM2-') ? normalized : `MM2-${rarityPrefix}-${cleanCode}-${checksum}`;
+        return {
+          valid: true,
+          type: `MM2 · ${weapon.rarity}`,
+          title: `${weapon.name} (${weapon.rarity})`,
+          detail: `Arma #${weapon.code} · Código: ${fullCode}`,
+          normalizedCode: fullCode
+        };
+      }
+
+      return {
+        valid: false,
+        type: 'No reconocido',
+        title: normalized,
+        detail: 'Código no encontrado en paquetes Robux ni catálogo MM2.',
+        normalizedCode: normalized
+      };
+    }
+
+    function updateTicketCodeInfoPreview() {
+      const raw = ticketBarcodeInput ? String(ticketBarcodeInput.value || '').trim() : '';
+      if (clearTicketBarcodeBtn) {
+        clearTicketBarcodeBtn.classList.toggle('hidden', raw.length === 0);
+      }
+      const info = inspectItemCode(raw);
+      if (ticketCodeTypeBadge) {
+        ticketCodeTypeBadge.textContent = info.type;
+        ticketCodeTypeBadge.className = info.valid
+          ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800'
+          : 'rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]';
+      }
+      if (ticketCodeSummaryText) ticketCodeSummaryText.textContent = info.title;
+      if (ticketCodeDetailText) ticketCodeDetailText.textContent = info.detail;
+      return info;
+    }
+
+    function downloadTicketQrPng(ticket) {
+      if (!ticket || !ticket.qrPayload) return;
+      downloadQrPayloadPng(
+        ticket.qrPayload,
+        `MOONSHOP · ${ticket.id}`,
+        `${ticket.itemSummary} | RBX: ${ticket.robloxUser} | TT: ${ticket.tiktokUser}`,
+        `${ticket.id}-QR`
+      );
+    }
+
+    function renderTicketsSection() {
+      if (ticketsSavedCountBadge) {
+        ticketsSavedCountBadge.textContent = String(ticketsHistory.length);
+      }
+
+      if (activeTicketObj && activeTicketCard) {
+        activeTicketCard.classList.remove('hidden');
+        if (activeTicketIdText) activeTicketIdText.textContent = activeTicketObj.id;
+        if (activeTicketDateText) activeTicketDateText.textContent = activeTicketObj.createdAt;
+        if (activeTicketItemText) activeTicketItemText.textContent = activeTicketObj.itemSummary;
+        if (activeTicketCodeText) activeTicketCodeText.textContent = activeTicketObj.code;
+        if (activeTicketRobloxText) activeTicketRobloxText.textContent = activeTicketObj.robloxUser;
+        if (activeTicketTiktokText) activeTicketTiktokText.textContent = activeTicketObj.tiktokUser;
+        if (activeTicketQrPayloadText) activeTicketQrPayloadText.textContent = activeTicketObj.qrPayload;
+        renderQrIntoContainer(activeTicketQrContainer, activeTicketObj.qrPayload, 144);
+      } else if (activeTicketCard) {
+        activeTicketCard.classList.add('hidden');
+      }
+
+      if (!ticketsHistoryList) return;
+      if (ticketsHistory.length === 0) {
+        ticketsHistoryList.innerHTML = '<p class="text-xs font-medium text-slate-400 text-center py-2">Aún no has creado tickets.</p>';
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      ticketsHistory.forEach((tkt) => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-left transition-colors hover:border-[#1e88e5] hover:bg-sky-50/50';
+        row.innerHTML = `
+          <div class="min-w-0">
+            <span class="block text-xs font-black text-slate-900 truncate">${tkt.id} · ${tkt.itemSummary}</span>
+            <span class="block text-[10px] font-semibold text-slate-500 truncate">RBX: ${tkt.robloxUser} · TT: ${tkt.tiktokUser}</span>
+          </div>
+          <span class="shrink-0 rounded-lg bg-cyan-100 px-2 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">Ver QR</span>
+        `;
+        row.addEventListener('click', () => {
+          activeTicketObj = tkt;
+          renderTicketsSection();
+        });
+        fragment.appendChild(row);
+      });
+      ticketsHistoryList.replaceChildren(fragment);
+    }
+
+    function updateCalculation() {
+      const rawInput = robuxInput ? String(robuxInput.value || '').trim() : '';
+      if (clearRobuxInputBtn) {
+        clearRobuxInputBtn.classList.toggle('hidden', rawInput.length === 0);
+      }
+
+      const robuxQty = resolveRobuxAmountFromInput(rawInput);
+
+      if (!rawInput) {
+        if (robuxDecodedInfo) {
+          robuxDecodedInfo.textContent = 'Pega o escribe el código generado en Ítems (100 R$ = $3.800 COP)';
+          robuxDecodedInfo.className = 'text-[11px] font-semibold text-[#0c7a8a]';
+        }
+        if (priceCopDisplay) priceCopDisplay.textContent = '$0 COP';
+        if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = '$0 COP';
+        if (robuxProfitMarginDisplay) robuxProfitMarginDisplay.textContent = '+$0 COP';
+        if (gamepassDisplay) gamepassDisplay.value = '0 Robux';
+        if (tutorialPassAmount) tutorialPassAmount.textContent = '0';
+        if (tutorialPassPriceText) tutorialPassPriceText.textContent = '0 Robux';
+        if (tutorialReceivedRobuxText) tutorialReceivedRobuxText.textContent = '0 Robux';
+        updateRobuxQuoteQr(0, 0);
+        return;
+      }
+
+      if (robuxQty < MIN_ROBUX) {
+        showMinRobuxToast();
+        if (robuxDecodedInfo) {
+          robuxDecodedInfo.textContent = `Mínimo ${MIN_ROBUX} Robux para calcular`;
+          robuxDecodedInfo.className = 'text-[11px] font-semibold text-red-600';
+        }
+        if (priceCopDisplay) priceCopDisplay.textContent = '$0 COP';
+        if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = '$0 COP';
+        if (robuxProfitMarginDisplay) robuxProfitMarginDisplay.textContent = '+$0 COP';
+        if (gamepassDisplay) gamepassDisplay.value = '0 Robux';
+        if (tutorialPassAmount) tutorialPassAmount.textContent = '0';
+        if (tutorialPassPriceText) tutorialPassPriceText.textContent = '0 Robux';
+        if (tutorialReceivedRobuxText) tutorialReceivedRobuxText.textContent = '0 Robux';
+        updateRobuxQuoteQr(0, 0);
+        return;
+      }
+
+      const pkg = getRobuxPackage(robuxQty);
+      const defaultCopPrice = pkg ? pkg.priceCop : robuxQty * COP_PER_ROBUX;
+      const customPriceActive = Boolean(toggleCustomPackagePrice && toggleCustomPackagePrice.checked);
+      const customPriceVal = customPackagePriceInput ? Number(customPackagePriceInput.value) : 0;
+      const finalCopPrice = customPriceActive && Number.isFinite(customPriceVal) && customPriceVal >= 0
+        ? Math.round(customPriceVal)
+        : defaultCopPrice;
+
+      const baseProfitCop = robuxQty * PROFIT_COP_PER_ROBUX;
+      const saleMarginCop = finalCopPrice - baseProfitCop;
+      const requiredGamepassRobux = Math.ceil(robuxQty / ROBLOX_KEEP_RATIO);
+
+      if (robuxDecodedInfo) {
+        robuxDecodedInfo.textContent = pkg
+          ? `Paquete ${pkg.code}: ${robuxQty.toLocaleString('es-CO')} Robux`
+          : `Cantidad detectada: ${robuxQty.toLocaleString('es-CO')} Robux`;
+        robuxDecodedInfo.className = 'text-[11px] font-bold text-emerald-700';
+      }
+      if (priceCopDisplay) priceCopDisplay.textContent = formatCop(finalCopPrice);
+      if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = formatCop(baseProfitCop);
+      if (robuxProfitMarginDisplay) {
+        robuxProfitMarginDisplay.textContent = `${saleMarginCop >= 0 ? '+' : ''}${formatCop(saleMarginCop)}`;
+      }
+      if (gamepassDisplay) gamepassDisplay.value = `${requiredGamepassRobux.toLocaleString('es-CO')} Robux`;
+      if (tutorialPassAmount) tutorialPassAmount.textContent = requiredGamepassRobux.toLocaleString('es-CO');
+      if (tutorialPassPriceText) tutorialPassPriceText.textContent = `${requiredGamepassRobux.toLocaleString('es-CO')} Robux`;
+      if (tutorialReceivedRobuxText) tutorialReceivedRobuxText.textContent = `${robuxQty.toLocaleString('es-CO')} Robux`;
+
+      updateRobuxQuoteQr(robuxQty, finalCopPrice);
+    }
+
+    function setAccordionState(menuEl, btnEl, iconEl, shouldOpen, deg = 45) {
+      if (!menuEl || !btnEl) return;
+      menuEl.classList.toggle('is-open', shouldOpen);
+      menuEl.setAttribute('aria-hidden', String(!shouldOpen));
+      btnEl.setAttribute('aria-expanded', String(shouldOpen));
+      if (iconEl) {
+        iconEl.style.transform = shouldOpen ? `rotate(${deg}deg)` : 'rotate(0deg)';
+      }
+    }
+
+    function togglePackagesMenu(forceState) {
+      if (!quickPackagesMenu) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !quickPackagesMenu.classList.contains('is-open');
+      setAccordionState(quickPackagesMenu, togglePackagesBtn, plusIcon, shouldOpen, 45);
+    }
+
+    function toggleTicketScanMenu(forceState) {
+      if (!ticketScanMenu) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !ticketScanMenu.classList.contains('is-open');
+      setAccordionState(ticketScanMenu, toggleTicketScanBtn, ticketPlusIcon, shouldOpen, 45);
+    }
+
+    function toggleTutorialBox(forceState) {
+      if (!tutorialCollapseBox) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !tutorialCollapseBox.classList.contains('is-open');
+      setAccordionState(tutorialCollapseBox, toggleTutorialBtn, tutorialChevronIcon, shouldOpen, 180);
+      if (toggleTutorialLabel) {
+        toggleTutorialLabel.textContent = shouldOpen ? 'Ocultar tutorial' : 'Ver tutorial';
+      }
+    }
+
+    function copyTextToClipboard(text, btnEl, successLabel = '¡Copiado!') {
+      const value = String(text || '').trim();
+      if (!value) return;
+
+      const onSuccess = () => {
+        if (!btnEl) return;
+        const original = btnEl.textContent;
+        btnEl.textContent = successLabel;
+        setTimeout(() => {
+          btnEl.textContent = original;
+        }, 1500);
+      };
+
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(value).then(onSuccess).catch(() => {
+          fallbackCopy(value, onSuccess);
+        });
+      } else {
+        fallbackCopy(value, onSuccess);
+      }
+    }
+
+    function fallbackCopy(value, onSuccess) {
+      try {
+        const tempArea = document.createElement('textarea');
+        tempArea.value = value;
+        tempArea.setAttribute('readonly', '');
+        tempArea.style.position = 'fixed';
+        tempArea.style.opacity = '0';
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempArea);
+        onSuccess();
+      } catch (_) {}
+    }
+
+    function updateRobuxCodeGenerator() {
+      if (!robuxCodeAmountInput) return;
+      const raw = String(robuxCodeAmountInput.value || '').trim();
+      if (!raw) {
+        currentRobuxAmount = 0;
+        currentRobuxCode = '';
+        currentRobuxDigits = '';
+        if (robuxCodeRangeStatus) {
+          robuxCodeRangeStatus.textContent = 'Ingresa cantidad';
+          robuxCodeRangeStatus.className = 'font-extrabold text-slate-400';
+        }
+        if (robuxGeneratedCodeBox) robuxGeneratedCodeBox.classList.add('hidden');
+        return;
+      }
+
+      const qty = Math.floor(Number(raw));
+      const pkg = getRobuxPackage(qty);
+      if (!pkg) {
+        currentRobuxAmount = 0;
+        currentRobuxCode = '';
+        currentRobuxDigits = '';
+        if (robuxCodeRangeStatus) {
+          robuxCodeRangeStatus.textContent = 'Fuera de rango (100 - 20.000)';
+          robuxCodeRangeStatus.className = 'font-extrabold text-red-600';
+        }
+        if (robuxGeneratedCodeBox) robuxGeneratedCodeBox.classList.add('hidden');
+        return;
+      }
+
+      currentRobuxAmount = qty;
+      currentRobuxCode = pkg.code;
+      currentRobuxDigits = pkg.barcodeDigits;
+      persistLastCodes({
+        robuxAmount: qty,
+        robuxCode: pkg.code,
+        robuxDigits: pkg.barcodeDigits
+      });
+
+      if (robuxCodeRangeStatus) {
+        robuxCodeRangeStatus.textContent = 'Paquete válido';
+        robuxCodeRangeStatus.className = 'font-extrabold text-emerald-600';
+      }
+      if (robuxGeneratedCodeBox) robuxGeneratedCodeBox.classList.remove('hidden');
+      if (robuxGeneratedCodeText) robuxGeneratedCodeText.textContent = pkg.code;
+      if (robuxGeneratedAmountBadge) robuxGeneratedAmountBadge.textContent = `${qty.toLocaleString('es-CO')} Robux`;
+      if (robuxBarcodeDigitsText) robuxBarcodeDigitsText.textContent = pkg.barcodeDigits;
+      if (robuxBarcodeSvg) {
+        renderBarcodeSvg(robuxBarcodeSvg, pkg.barcodeDigits, 36);
+        registerVisualSignatureForCode(robuxBarcodeSvg, pkg.code, pkg.barcodeDigits);
+      }
+    }
+
+    function stepRobuxPackageAmount(delta) {
+      if (!robuxCodeAmountInput) return;
+      const currentVal = Math.floor(Number(robuxCodeAmountInput.value));
+      let nextVal = Number.isFinite(currentVal) && currentVal > 0 ? currentVal + delta : MIN_ROBUX;
+      if (nextVal < MIN_ROBUX) nextVal = MIN_ROBUX;
+      if (nextVal > MAX_ROBUX_CODE) nextVal = MAX_ROBUX_CODE;
+      robuxCodeAmountInput.value = String(nextVal);
+      updateRobuxCodeGenerator();
+    }
+
+    function toggleItemsMm2SecondMenu(forceState) {
+      if (!itemsMm2SecondMenu) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !itemsMm2SecondMenu.classList.contains('is-open');
+      setAccordionState(itemsMm2SecondMenu, toggleItemsMm2SecondBtn, itemsMm2SecondPlusIcon, shouldOpen, 45);
+    }
+
+    function applyItemsMm2WeaponCode(weapon) {
+      if (!weapon) return;
+      const cleanCode = String(weapon.code || '').padStart(4, '0');
+      const rarityPrefix = String(weapon.rarity || 'MM2').slice(0, 3).toUpperCase();
+      const checksum = ((Number(cleanCode) * 29 + 1301) % 9000 + 1000);
+      const fullCode = `MM2-${rarityPrefix}-${cleanCode}-${checksum}`;
+      const barcodeDigits = `${cleanCode}${checksum}`;
+
+      currentItemsMm2Code = fullCode;
+      currentItemsMm2Digits = barcodeDigits;
+      registerMm2WeaponCodes(weapon, fullCode, barcodeDigits);
+      persistLastCodes({
+        mm2Code: fullCode,
+        mm2Digits: barcodeDigits,
+        mm2WeaponName: weapon.name
+      });
+
+      if (itemsMm2SecondWeaponInput) itemsMm2SecondWeaponInput.value = weapon.name;
+      if (itemsMm2GeneratedCodeBox) itemsMm2GeneratedCodeBox.classList.remove('hidden');
+      if (itemsMm2GeneratedCodeText) itemsMm2GeneratedCodeText.textContent = fullCode;
+      if (itemsMm2GeneratedWeaponBadge) itemsMm2GeneratedWeaponBadge.textContent = `${weapon.name} · ${weapon.rarity}`;
+      if (itemsMm2BarcodeDigitsText) itemsMm2BarcodeDigitsText.textContent = barcodeDigits;
+      if (itemsMm2BarcodeSvg) {
+        renderBarcodeSvg(itemsMm2BarcodeSvg, barcodeDigits, 36);
+        registerVisualSignatureForCode(itemsMm2BarcodeSvg, fullCode, barcodeDigits);
+      }
+    }
+
+    function renderItemsMm2SecondWeapons(rarity = 'GODLY') {
+      itemsMm2SecondRarityTabs.forEach((tabBtn) => {
+        const isSelected = tabBtn.getAttribute('data-second-rarity-tab') === rarity;
+        tabBtn.setAttribute('aria-selected', String(isSelected));
+        tabBtn.classList.toggle('bg-white', isSelected);
+        tabBtn.classList.toggle('text-[#1e88e5]', isSelected);
+        tabBtn.classList.toggle('shadow-2xs', isSelected);
+        tabBtn.classList.toggle('text-slate-500', !isSelected);
+      });
+
+      if (!itemsMm2SecondList) return;
+      const filtered = MM2_WEAPONS.filter((w) => w.rarity === rarity);
+      if (itemsMm2SecondCount) itemsMm2SecondCount.textContent = `${filtered.length} armas`;
+
+      const fragment = document.createDocumentFragment();
+      filtered.forEach((weapon) => {
+        const rowBtn = document.createElement('button');
+        rowBtn.type = 'button';
+        rowBtn.className = 'w-full flex items-center justify-between px-3 py-2 text-left text-xs font-bold text-slate-700 transition-colors hover:bg-sky-50 hover:text-[#1e88e5]';
+        rowBtn.innerHTML = `
+          <span>${weapon.name}</span>
+          <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold text-slate-500">#${weapon.code}</span>
+        `;
+        rowBtn.addEventListener('click', () => {
+          applyItemsMm2WeaponCode(weapon);
+          toggleItemsMm2SecondMenu(false);
+        });
+        fragment.appendChild(rowBtn);
+      });
+      itemsMm2SecondList.replaceChildren(fragment);
+    }
+
+    function renderBarcodeSvg(svgEl, numericCode, barHeight = 24) {
+      if (!svgEl) return;
+      const clean = String(numericCode || '').replace(/\D/g, '');
+      if (!clean) {
+        svgEl.innerHTML = '';
+        return;
+      }
+
+      const patterns = {
+        '0': '111221',
+        '1': '211211',
+        '2': '121211',
+        '3': '221111',
+        '4': '112211',
+        '5': '212111',
+        '6': '122111',
+        '7': '111221',
+        '8': '211211',
+        '9': '121121'
+      };
+
+      let x = 2;
+      const rects = [`<rect x="0" y="0" width="2" height="${barHeight}" fill="#0f172a"/>`];
+      x += 3;
+
+      for (let i = 0; i < clean.length; i++) {
+        const digit = clean[i];
+        const pat = patterns[digit] || '121121';
+        for (let j = 0; j < pat.length; j++) {
+          const width = Number(pat[j]) * 1.35;
+          if (j % 2 === 0) {
+            rects.push(`<rect x="${x.toFixed(2)}" y="0" width="${width.toFixed(2)}" height="${barHeight}" fill="#0f172a"/>`);
+          }
+          x += width;
+        }
+        x += 1.5;
+      }
+
+      rects.push(`<rect x="${x.toFixed(2)}" y="0" width="2" height="${barHeight}" fill="#0f172a"/>`);
+      x += 2;
+
+      const finalW = Math.max(20, Math.ceil(x));
+      svgEl.setAttribute('viewBox', `0 0 ${finalW} ${barHeight}`);
+      svgEl.setAttribute('width', String(finalW));
+      svgEl.setAttribute('height', String(barHeight));
+      svgEl.innerHTML = rects.join('');
+    }
+
+    function switchTab(targetTab) {
+      const isMm2 = targetTab === 'mm2';
+      const isItems = targetTab === 'items';
+      const isTickets = targetTab === 'tickets';
+
+      if (tabsTrack) {
+        tabsTrack.classList.toggle('show-mm2', isMm2);
+        tabsTrack.classList.toggle('show-items', isItems);
+        tabsTrack.classList.toggle('show-tickets', isTickets);
+      }
+
+      if (tabPillIndicator) {
+        if (isTickets) {
+          tabPillIndicator.style.transform = 'translateX(300%)';
+        } else if (isItems) {
+          tabPillIndicator.style.transform = 'translateX(200%)';
+        } else if (isMm2) {
+          tabPillIndicator.style.transform = 'translateX(100%)';
+        } else {
+          tabPillIndicator.style.transform = 'translateX(0%)';
+        }
+      }
+
+      const tabs = [
+        { btn: tabRobuxBtn, active: !isMm2 && !isItems && !isTickets },
+        { btn: tabMm2Btn, active: isMm2 },
+        { btn: tabItemsBtn, active: isItems },
+        { btn: tabTicketsBtn, active: isTickets }
+      ];
+      tabs.forEach(({ btn, active }) => {
+        if (!btn) return;
+        btn.setAttribute('aria-selected', String(active));
+        btn.classList.toggle('text-[#1e88e5]', active);
+        btn.classList.toggle('text-slate-500', !active);
+      });
+
+      if (sectionTitle) {
+        if (isTickets) {
+          sectionTitle.textContent = 'Tickets';
+          if (sectionSubtitle) sectionSubtitle.textContent = 'Lee códigos, asigna usuarios de Roblox/TikTok y genera un QR único';
+        } else if (isItems) {
+          sectionTitle.textContent = 'Ítems';
+          if (sectionSubtitle) sectionSubtitle.textContent = 'Genera y descarga códigos de barras de Robux y armas MM2';
+        } else if (isMm2) {
+          sectionTitle.textContent = 'Calculadora de MM2';
+          if (sectionSubtitle) sectionSubtitle.textContent = 'Ingresa o escanea el código del arma y calcula su precio';
+        } else {
+          sectionTitle.textContent = 'Calculadora de Robux';
+          if (sectionSubtitle) sectionSubtitle.textContent = 'Calcula precios en COP, ganancias y valor del Game Pass';
+        }
+      }
+    }
+
+    function updateForeignPriceCalculation() {
+      try {
+        if (!mm2ForeignPriceInput) return;
+        const raw = Number(mm2ForeignPriceInput.value);
+        if (!Number.isFinite(raw) || raw <= 0) {
+          if (mm2CommissionDisplay) mm2CommissionDisplay.textContent = formatUsd(0);
+          if (mm2TotalForeignDisplay) mm2TotalForeignDisplay.textContent = formatUsd(0);
+          if (mm2TotalForeignCopDisplay) mm2TotalForeignCopDisplay.textContent = formatCop(0);
+          totalForeignCopValue = 0;
+          updateProfitDisplay();
+          return;
+        }
+
+        const grossWithRate = raw / (1 - FOREIGN_FEE_RATE);
+        const totalWithFee = Math.ceil((grossWithRate + FOREIGN_FEE_FIXED) * 100) / 100;
+        const commission = Math.max(0, Math.round((totalWithFee - raw) * 100) / 100);
+        const totalCop = Math.round(totalWithFee * USD_TO_COP);
+
+        if (mm2CommissionDisplay) mm2CommissionDisplay.textContent = formatUsd(commission);
+        if (mm2TotalForeignDisplay) mm2TotalForeignDisplay.textContent = formatUsd(totalWithFee);
+        if (mm2TotalForeignCopDisplay) mm2TotalForeignCopDisplay.textContent = formatCop(totalCop);
+
+        totalForeignCopValue = totalCop;
+        updateProfitDisplay();
+      } catch (_) {
+        totalForeignCopValue = 0;
+        updateProfitDisplay();
+      }
+    }
+
+    function toggleMm2Profit(forceState) {
+      if (!mm2ProfitMenu) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !mm2ProfitMenu.classList.contains('is-open');
+      setAccordionState(mm2ProfitMenu, toggleMm2ProfitBtn, mm2ProfitPlusIcon, shouldOpen, 45);
+    }
+
+    function updateProfitDisplay() {
+      if (mm2ProfitDisplayInput) mm2ProfitDisplayInput.value = formatCop(selectedProfitCop);
+      const finalCop = totalForeignCopValue + selectedProfitCop;
+      if (mm2FinalPriceWithProfitCop) mm2FinalPriceWithProfitCop.textContent = formatCop(finalCop);
+      updateMm2QuoteQr(finalCop);
+
+      mm2ProfitPresetButtons.forEach((btn) => {
+        const presetVal = Number(btn.getAttribute('data-profit-preset'));
+        const isCustomVisible = customProfitBox && !customProfitBox.classList.contains('hidden');
+        const active = !isCustomVisible && presetVal === selectedProfitCop;
+        btn.classList.toggle('border-[#1e88e5]', active);
+        btn.classList.toggle('bg-sky-50', active);
+        btn.classList.toggle('text-[#1e88e5]', active);
+      });
+    }
+
+    function toggleMm2Weapons(forceState) {
+      if (!mm2WeaponsMenu) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : !mm2WeaponsMenu.classList.contains('is-open');
+      setAccordionState(mm2WeaponsMenu, toggleMm2WeaponsBtn, mm2PlusIcon, shouldOpen, 45);
+    }
+
+    function handleMm2CodeInput() {
+      const rawVal = mm2WeaponInput ? String(mm2WeaponInput.value || '').trim().toUpperCase() : '';
+      if (clearMm2InputBtn) {
+        clearMm2InputBtn.classList.toggle('hidden', rawVal.length === 0);
+      }
+
+      if (!rawVal) {
+        if (mm2DecodedInfo) {
+          mm2DecodedInfo.textContent = 'Escribe o pega el código generado en Ítems (o sube la foto desde +)';
+          mm2DecodedInfo.className = 'text-[11px] font-semibold text-[#0c7a8a]';
+        }
+        if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = 'Sin rareza';
+        if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = '—';
+        updateMm2QuoteQr(totalForeignCopValue + selectedProfitCop);
+        return;
+      }
+
+      let found = mm2CodeToWeaponMap.get(rawVal) || null;
+      if (!found) {
+        const partsMatch = rawVal.match(/^MM2-[A-Z]{3}-(\d{4})-\d{4}$/);
+        const codeCandidate = partsMatch ? partsMatch[1] : rawVal.replace(/\D/g, '').slice(0, 4);
+        if (codeCandidate) {
+          found = MM2_WEAPONS.find((w) => w.code === codeCandidate) || null;
+        }
+      }
+      if (!found) {
+        found = MM2_WEAPONS.find((w) => w.name.toUpperCase() === rawVal || w.name.toUpperCase().includes(rawVal)) || null;
+      }
+
+      if (found) {
+        if (mm2DecodedInfo) {
+          mm2DecodedInfo.textContent = `Arma detectada: ${found.name} (${found.rarity})`;
+          mm2DecodedInfo.className = 'text-[11px] font-bold text-emerald-700';
+        }
+        if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = found.rarity;
+        if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = found.name;
+      } else {
+        if (mm2DecodedInfo) {
+          mm2DecodedInfo.textContent = 'Arma no reconocida';
+          mm2DecodedInfo.className = 'text-[11px] font-semibold text-amber-600';
+        }
+        if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = 'Sin rareza';
+        if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = '—';
+      }
+
+      updateMm2QuoteQr(totalForeignCopValue + selectedProfitCop);
+    }
+
+    if (closeScannedModalBtn) {
+      closeScannedModalBtn.addEventListener('click', closeFormalScanModal);
+    }
+    if (scannedModalKeepHereBtn) {
+      scannedModalKeepHereBtn.addEventListener('click', closeFormalScanModal);
+    }
+    if (scannedModalOpenTicketsBtn) {
+      scannedModalOpenTicketsBtn.addEventListener('click', () => {
+        const code = pendingModalCode;
+        closeFormalScanModal();
+        if (code) openCodeInTickets(code);
+      });
+    }
+
+    if (tabRobuxBtn) tabRobuxBtn.addEventListener('click', () => switchTab('robux'));
+    if (tabMm2Btn) tabMm2Btn.addEventListener('click', () => switchTab('mm2'));
+    if (tabItemsBtn) tabItemsBtn.addEventListener('click', () => switchTab('items'));
+    if (tabTicketsBtn) tabTicketsBtn.addEventListener('click', () => {
+      switchTab('tickets');
+      renderTicketsSection();
+    });
+
+    if (robuxInput) robuxInput.addEventListener('input', updateCalculation);
+    if (clearRobuxInputBtn) {
+      clearRobuxInputBtn.addEventListener('click', () => {
+        if (!robuxInput) return;
+        robuxInput.value = '';
+        updateCalculation();
+        robuxInput.focus();
+      });
+    }
+    if (toggleCustomPackagePrice) {
+      toggleCustomPackagePrice.addEventListener('change', () => {
+        if (customPackagePriceBox) {
+          customPackagePriceBox.classList.toggle('hidden', !toggleCustomPackagePrice.checked);
+        }
+        updateCalculation();
+      });
+    }
+    if (customPackagePriceInput) customPackagePriceInput.addEventListener('input', updateCalculation);
+    if (togglePackagesBtn) togglePackagesBtn.addEventListener('click', () => togglePackagesMenu());
+    if (robuxBarcodePhotoInput) {
+      robuxBarcodePhotoInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        runBarcodeScanSequence({
+          file,
+          previewEl: robuxBarcodePhotoPreview,
+          labelEl: robuxBarcodePhotoLabel,
+          tintEl: robuxScanTint,
+          laserEl: robuxScanLaser,
+          badgeEl: robuxScanStatusBadge,
+          mode: 'robux',
+          onComplete: (_fileName, detectedCode) => {
+            if (!robuxInput) return;
+            if (detectedCode) {
+              robuxInput.value = detectedCode;
+            }
+            updateCalculation();
+            if (detectedCode) {
+              const info = inspectItemCode(detectedCode);
+              openFormalScanModal({
+                code: info.normalizedCode || detectedCode,
+                item: info.title,
+                price: info.detail.replace(/^Precio:\s*/i, '').split('·')[0].trim(),
+                badge: info.type
+              });
+            }
+          }
+        });
+      });
+    }
+
+    if (copyRobuxQuoteCodeBtn) {
+      copyRobuxQuoteCodeBtn.addEventListener('click', () => {
+        copyTextToClipboard(currentRobuxQuoteCode, copyRobuxQuoteCodeBtn, '¡Copiado!');
+      });
+    }
+    if (downloadRobuxQuoteQrBtn) {
+      downloadRobuxQuoteQrBtn.addEventListener('click', () => {
+        downloadQrPayloadPng(
+          currentRobuxQuotePayload,
+          `MOONSHOP · ${currentRobuxQuoteCode}`,
+          currentRobuxQuoteCode,
+          currentRobuxQuoteCode || 'qr-robux'
+        );
+      });
+    }
+    if (openRobuxQuoteInTicketsBtn) {
+      openRobuxQuoteInTicketsBtn.addEventListener('click', () => {
+        openCodeInTickets(currentRobuxQuoteCode);
+      });
+    }
+
+    if (toggleTutorialBtn) toggleTutorialBtn.addEventListener('click', () => toggleTutorialBox());
+    if (copyTutorialBtn && tutorialStepsList) {
+      copyTutorialBtn.addEventListener('click', () => {
+        const items = Array.from(tutorialStepsList.querySelectorAll('li')).map((li, idx) => `${idx + 1}. ${li.innerText.trim()}`);
+        copyTextToClipboard(items.join('\n'), copyTutorialBtn, '¡Copiado!');
+      });
+    }
+
+    if (robuxCodeAmountInput) robuxCodeAmountInput.addEventListener('input', updateRobuxCodeGenerator);
+    if (stepDownRobuxBtn) stepDownRobuxBtn.addEventListener('click', () => stepRobuxPackageAmount(-1));
+    if (stepUpRobuxBtn) stepUpRobuxBtn.addEventListener('click', () => stepRobuxPackageAmount(1));
+    if (copyRobuxCodeBtn) {
+      copyRobuxCodeBtn.addEventListener('click', () => {
+        copyTextToClipboard(currentRobuxCode, copyRobuxCodeBtn, '¡Copiado!');
+      });
+    }
+    if (downloadRobuxBarcodeBtn) {
+      downloadRobuxBarcodeBtn.addEventListener('click', () => {
+        const inputNum = Math.floor(Number(robuxCodeAmountInput ? robuxCodeAmountInput.value : 0));
+        const robuxAmountForFile = currentRobuxAmount > 0
+          ? currentRobuxAmount
+          : (Number.isFinite(inputNum) && inputNum > 0 ? inputNum : 0);
+        const robuxFilePrefix = robuxAmountForFile > 0 ? String(robuxAmountForFile) : 'robux';
+        downloadBarcodePng(
+          robuxBarcodeSvg,
+          currentRobuxCode,
+          currentRobuxDigits,
+          robuxFilePrefix
+        );
+      });
+    }
+
+    if (toggleItemsMm2SecondBtn) toggleItemsMm2SecondBtn.addEventListener('click', () => toggleItemsMm2SecondMenu());
+    if (itemsMm2SecondWeaponInput) itemsMm2SecondWeaponInput.addEventListener('click', () => toggleItemsMm2SecondMenu());
+    itemsMm2SecondRarityTabs.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const r = btn.getAttribute('data-second-rarity-tab');
+        if (r) renderItemsMm2SecondWeapons(r);
+      });
+    });
+    if (copyItemsMm2CodeBtn) {
+      copyItemsMm2CodeBtn.addEventListener('click', () => {
+        copyTextToClipboard(currentItemsMm2Code, copyItemsMm2CodeBtn, '¡Copiado!');
+      });
+    }
+    if (downloadItemsMm2BarcodeBtn) {
+      downloadItemsMm2BarcodeBtn.addEventListener('click', () => {
+        downloadBarcodePng(
+          itemsMm2BarcodeSvg,
+          currentItemsMm2Code,
+          currentItemsMm2Digits,
+          currentItemsMm2Code || 'barras-mm2'
+        );
+      });
+    }
+
+    if (toggleMm2WeaponsBtn) toggleMm2WeaponsBtn.addEventListener('click', () => toggleMm2Weapons());
+    if (mm2WeaponInput) mm2WeaponInput.addEventListener('input', handleMm2CodeInput);
+    if (clearMm2InputBtn) {
+      clearMm2InputBtn.addEventListener('click', () => {
+        if (!mm2WeaponInput) return;
+        mm2WeaponInput.value = '';
+        handleMm2CodeInput();
+        mm2WeaponInput.focus();
+      });
+    }
+    if (mm2BarcodePhotoInput) {
+      mm2BarcodePhotoInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        runBarcodeScanSequence({
+          file,
+          previewEl: mm2BarcodePhotoPreview,
+          labelEl: mm2BarcodePhotoLabel,
+          tintEl: mm2ScanTint,
+          laserEl: mm2ScanLaser,
+          badgeEl: mm2ScanStatusBadge,
+          mode: 'mm2',
+          onComplete: (_fileName, detectedCode) => {
+            if (!mm2WeaponInput) return;
+            if (detectedCode) {
+              mm2WeaponInput.value = detectedCode;
+            }
+            handleMm2CodeInput();
+            if (detectedCode) {
+              const info = inspectItemCode(detectedCode);
+              const currentTotal = mm2FinalPriceWithProfitCop ? mm2FinalPriceWithProfitCop.textContent : '$0 COP';
+              openFormalScanModal({
+                code: info.normalizedCode || detectedCode,
+                item: info.title,
+                price: currentTotal !== '$0 COP' ? currentTotal : info.detail.replace(/^Precio:\s*/i, '').split('·')[0].trim(),
+                badge: info.type
+              });
+            }
+          }
+        });
+      });
+    }
+
+    if (mm2ForeignPriceInput) mm2ForeignPriceInput.addEventListener('input', updateForeignPriceCalculation);
+
+    if (toggleMm2ProfitBtn) toggleMm2ProfitBtn.addEventListener('click', () => toggleMm2Profit());
+
+    mm2ProfitPresetButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = Number(btn.getAttribute('data-profit-preset'));
+        if (customProfitBox) customProfitBox.classList.add('hidden');
+        if (mm2CustomProfitInput) mm2CustomProfitInput.value = '';
+        selectedProfitCop = Number.isFinite(val) ? val : 0;
+        updateProfitDisplay();
+        toggleMm2Profit(false);
+      });
+    });
+
+    if (customProfitToggleBtn && customProfitBox) {
+      customProfitToggleBtn.addEventListener('click', () => {
+        const willShow = customProfitBox.classList.contains('hidden');
+        customProfitBox.classList.toggle('hidden', !willShow);
+        if (willShow && mm2CustomProfitInput) {
+          const currentCustom = Number(mm2CustomProfitInput.value);
+          selectedProfitCop = Number.isFinite(currentCustom) && currentCustom > 0 ? currentCustom : 0;
+          updateProfitDisplay();
+          mm2CustomProfitInput.focus();
+        }
+      });
+    }
+
+    if (mm2CustomProfitInput) {
+      mm2CustomProfitInput.addEventListener('input', () => {
+        const val = Number(mm2CustomProfitInput.value);
+        selectedProfitCop = Number.isFinite(val) && val > 0 ? val : 0;
+        updateProfitDisplay();
+      });
+    }
+
+    if (copyMm2QuoteCodeBtn) {
+      copyMm2QuoteCodeBtn.addEventListener('click', () => {
+        copyTextToClipboard(currentMm2QuoteCode, copyMm2QuoteCodeBtn, '¡Copiado!');
+      });
+    }
+    if (downloadMm2QuoteQrBtn) {
+      downloadMm2QuoteQrBtn.addEventListener('click', () => {
+        downloadQrPayloadPng(
+          currentMm2QuotePayload,
+          `MOONSHOP · ${currentMm2QuoteCode}`,
+          currentMm2QuoteCode,
+          currentMm2QuoteCode || 'qr-mm2'
+        );
+      });
+    }
+    if (openMm2QuoteInTicketsBtn) {
+      openMm2QuoteInTicketsBtn.addEventListener('click', () => {
+        openCodeInTickets(currentMm2QuoteCode);
+      });
+    }
+
+    if (ticketBarcodeInput) {
+      ticketBarcodeInput.addEventListener('input', updateTicketCodeInfoPreview);
+    }
+    if (clearTicketBarcodeBtn) {
+      clearTicketBarcodeBtn.addEventListener('click', () => {
+        if (!ticketBarcodeInput) return;
+        ticketBarcodeInput.value = '';
+        updateTicketCodeInfoPreview();
+        ticketBarcodeInput.focus();
+      });
+    }
+    if (toggleTicketScanBtn) {
+      toggleTicketScanBtn.addEventListener('click', () => toggleTicketScanMenu());
+    }
+    if (ticketBarcodePhotoInput) {
+      ticketBarcodePhotoInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        runBarcodeScanSequence({
+          file,
+          previewEl: ticketBarcodePhotoPreview,
+          labelEl: ticketBarcodePhotoLabel,
+          tintEl: ticketScanTint,
+          laserEl: ticketScanLaser,
+          badgeEl: ticketScanStatusBadge,
+          mode: 'tickets',
+          onComplete: (_fileName, detectedCode) => {
+            if (!ticketBarcodeInput) return;
+            if (detectedCode) {
+              ticketBarcodeInput.value = detectedCode;
+            }
+            const info = updateTicketCodeInfoPreview();
+            if (detectedCode) {
+              openFormalScanModal({
+                code: info.normalizedCode || detectedCode,
+                item: info.title,
+                price: info.detail.replace(/^Precio:\s*/i, '').split('·')[0].trim(),
+                badge: info.type
+              });
+            }
+          }
+        });
+      });
+    }
+
+    if (ticketCreatorForm) {
+      ticketCreatorForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rawCode = ticketBarcodeInput ? String(ticketBarcodeInput.value || '').trim().toUpperCase() : '';
+        const info = inspectItemCode(rawCode);
+        const robloxUser = (ticketRobloxUserInput ? String(ticketRobloxUserInput.value || '').trim() : '') || 'Sin usuario Roblox';
+        const tiktokUser = (ticketTiktokUserInput ? String(ticketTiktokUserInput.value || '').trim() : '') || 'Sin usuario TikTok';
+
+        const seqNum = String(ticketsHistory.length + 1).padStart(4, '0');
+        const uniqueRand = Math.floor(1000 + Math.random() * 9000);
+        const ticketId = `TKT-${seqNum}-${uniqueRand}`;
+        const nowStr = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        const codeValue = info.normalizedCode || rawCode || 'SIN-CODIGO';
+        const itemSummary = info.valid ? `${info.title} (${info.detail.split('·')[0].trim()})` : (rawCode || 'Ítem sin código');
+        const qrPayload = `MOONSHOP|${ticketId}|CODE:${codeValue}|ITEM:${itemSummary}|RBX:${robloxUser}|TT:${tiktokUser}`;
+
+        const newTicket = {
+          id: ticketId,
+          createdAt: nowStr,
+          code: codeValue,
+          itemSummary,
+          robloxUser,
+          tiktokUser,
+          qrPayload
+        };
+
+        ticketsHistory = [newTicket, ...ticketsHistory];
+        activeTicketObj = newTicket;
+        savePersistedTickets(ticketsHistory);
+        renderTicketsSection();
+        playScanSound('done');
+      });
+    }
+
+    if (copyTicketPayloadBtn) {
+      copyTicketPayloadBtn.addEventListener('click', () => {
+        if (!activeTicketObj) return;
+        copyTextToClipboard(activeTicketObj.qrPayload, copyTicketPayloadBtn, '¡Copiado!');
+      });
+    }
+
+    if (downloadTicketQrBtn) {
+      downloadTicketQrBtn.addEventListener('click', () => {
+        if (!activeTicketObj) return;
+        downloadTicketQrPng(activeTicketObj);
+      });
+    }
+
+    if (downloadTicketFormBtn) {
+      downloadTicketFormBtn.addEventListener('click', () => {
+        if (!activeTicketObj) return;
+        downloadTicketFormPng(activeTicketObj);
+      });
+    }
+
+    if (initialPersistedCodes.robuxAmount && robuxCodeAmountInput) {
+      robuxCodeAmountInput.value = String(initialPersistedCodes.robuxAmount);
+      updateRobuxCodeGenerator();
+    }
+    if (initialPersistedCodes.mm2WeaponName) {
+      const savedWeapon = MM2_WEAPONS.find((w) => w.name === initialPersistedCodes.mm2WeaponName);
+      if (savedWeapon) {
+        applyItemsMm2WeaponCode(savedWeapon);
+      }
+    }
+
+    updateCalculation();
+    renderItemsMm2SecondWeapons('GODLY');
+    updateProfitDisplay();
+    updateTicketCodeInfoPreview();
+    renderTicketsSection();
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const scannedParam = urlParams.get('scan');
+      const scannedItemParam = urlParams.get('item');
+      const scannedPriceParam = urlParams.get('price');
+      if (scannedParam) {
+        const cleanScannedCode = String(scannedParam).trim().toUpperCase();
+        registerPriceCode(cleanScannedCode, {
+          type: cleanScannedCode.includes('MM2') ? 'MM2 · PRECIO' : 'ROBUX · PRECIO',
+          title: scannedItemParam || cleanScannedCode,
+          detail: scannedPriceParam
+            ? `Precio: ${scannedPriceParam} · Código: ${cleanScannedCode}`
+            : `Código: ${cleanScannedCode}`
+        });
+        if (ticketBarcodeInput) {
+          ticketBarcodeInput.value = cleanScannedCode;
+          updateTicketCodeInfoPreview();
+        }
+        openFormalScanModal({
+          code: cleanScannedCode,
+          item: scannedItemParam || cleanScannedCode,
+          price: scannedPriceParam || '—',
+          badge: 'Escaneado desde móvil'
+        });
+      }
+    } catch (_) {}
+  </script>
+</body>
+</html>
