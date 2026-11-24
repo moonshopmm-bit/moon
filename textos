@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOONSHOP — Estudio de Anuncios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --aero-glass: rgba(255, 255, 255, 0.78);
+      --aero-border: rgba(255, 255, 255, 0.92);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.35), transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.35), transparent 45%),
+        radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.25), transparent 50%),
+        linear-gradient(160deg, #e0f2fe 0%, #f0f9ff 48%, #dcfce7 100%);
+      min-height: 100vh;
+      color: #0f172a;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    .glass-panel {
+      background: var(--aero-glass);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1px solid var(--aero-border);
+      box-shadow:
+        0 20px 45px -15px rgba(2, 132, 199, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .aero-btn {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      box-shadow:
+        0 8px 20px -6px rgba(2, 132, 199, 0.55),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.65);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    }
+
+    .aero-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+      box-shadow:
+        0 12px 24px -6px rgba(2, 132, 199, 0.65),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .aero-btn:active {
+      transform: translateY(1px);
+    }
+
+    .aero-btn-emerald {
+      background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+      box-shadow:
+        0 8px 20px -6px rgba(5, 150, 105, 0.55),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    .aero-btn-emerald:hover {
+      filter: brightness(1.04);
+      box-shadow:
+        0 12px 24px -6px rgba(5, 150, 105, 0.65),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    /* Cuadrícula sutil detrás del canvas para notar transparencia exterior */
+    .canvas-stage-bg {
+      background-color: #0b192c;
+      background-image:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%);
+      background-size: 28px 28px;
+      background-position: 0 0, 0 14px, 14px -14px, -14px 0;
+    }
+
+    input[type="range"] {
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-200 selection:text-sky-950">
+
+  <!-- Notificación flotante (sin alert()) -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+    <div class="glass-panel px-4 py-3 rounded-2xl flex items-center gap-2.5 text-sm font-semibold text-slate-800 shadow-xl">
+      <span id="toast-icon" class="text-base">✨</span>
+      <span id="toast-text">Listo</span>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-7">
+    <!-- Encabezado Profesional -->
+    <header class="glass-panel rounded-3xl px-5 sm:px-7 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-400 via-cyan-500 to-emerald-400 p-[2px] shadow-md">
+          <div class="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center text-white font-display text-xl tracking-tight">
+            M
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              MOONSHOP <span class="text-sky-600">AD STUDIO</span>
+            </h1>
+            <span class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700 border border-sky-200">
+              1000 × 1000 HD
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600">
+            Crea anuncios promocionales de armas o ítems con estética Frutiger Aero y descárgalos en PNG.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+        <button type="button" id="btn-reset-all" class="px-4 py-2.5 rounded-2xl bg-white/80 hover:bg-white text-slate-700 border border-slate-200/90 text-xs sm:text-sm font-semibold transition cursor-pointer">
+          Reiniciar todo
+        </button>
+        <button type="button" id="btn-download" class="aero-btn-emerald text-white px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+          </svg>
+          Descargar PNG
+        </button>
+      </div>
+    </header>
+
+    <!-- Espacio Principal: Lienzo a la izquierda, Controles a la derecha -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Columna del Lienzo (7 cols en escritorio) -->
+      <section class="lg:col-span-7 glass-panel rounded-3xl p-4 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Vista Previa del Anuncio</span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">
+            Arrastra el arma/foto o los textos · Rueda para escalar
+          </span>
+        </div>
+
+        <div class="canvas-stage-bg rounded-2xl p-2.5 sm:p-4 border border-sky-950/20 shadow-inner flex items-center justify-center">
+          <canvas
+            id="ad-canvas"
+            width="1000"
+            height="1000"
+            class="w-full max-w-[620px] aspect-square rounded-2xl cursor-grab active:cursor-grabbing touch-none select-none"
+          ></canvas>
+        </div>
+
+        <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <span>Formato cuadrado a pantalla completa · Exportación PNG nítida 1000 × 1000.</span>
+          <span id="coords-indicator" class="font-mono text-[11px] bg-white/70 px-2.5 py-1 rounded-lg border border-slate-200/80">
+            Escala: 100% · Rotación: 0°
+          </span>
+        </div>
+      </section>
+
+      <!-- Columna de Controles (5 cols en escritorio) -->
+      <aside class="lg:col-span-5 space-y-5">
+
+        <!-- 1. Imágenes: Fondo a pantalla completa + Arma / Foto -->
+        <div class="glass-panel rounded-3xl p-5">
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 mb-3.5 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold">1</span>
+            Imágenes del Anuncio
+          </h2>
+
+          <!-- Subir Imagen de Fondo que ocupa todo el fondo -->
+          <div class="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-sky-50/90 to-indigo-50/90 border border-sky-200/90">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <span class="text-xs font-bold text-slate-800 block">Fondo del Anuncio (Pantalla Completa)</span>
+                <span id="bg-status-label" class="text-[11px] text-slate-500 truncate block">Paisaje Frutiger Aero predeterminado</span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" id="btn-reset-bg" class="hidden px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition cursor-pointer">
+                  Original
+                </button>
+                <label for="bg-upload" class="aero-btn text-white px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer">
+                  + Agregar Fondo
+                </label>
+              </div>
+            </div>
+            <input type="file" id="bg-upload" accept="image/*" multiple class="hidden">
+
+            <!-- Miniaturas de fondos agregados -->
+            <div id="bg-gallery" class="mt-3 flex items-center gap-2 overflow-x-auto pb-1 empty:hidden"></div>
+          </div>
+
+          <!-- Subir Imagen del Arma o Foto Principal -->
+          <label id="drop-zone" for="weapon-upload" class="group border-2 border-dashed border-sky-400/80 hover:border-sky-600 bg-white/75 hover:bg-sky-50/70 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all">
+            <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-600 group-hover:scale-105 transition-transform flex items-center justify-center mb-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <span class="text-sm font-bold text-slate-800">Subir imagen del arma o foto</span>
+            <span class="text-xs text-slate-500 mt-0.5">Arrastra aquí o haz clic · PNG, JPG, WEBP</span>
+            <input type="file" id="weapon-upload" accept="image/*" class="hidden">
+          </label>
+
+          <!-- Acciones rápidas sobre el arma/foto -->
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button type="button" id="btn-remove-bg" class="px-3 py-2 rounded-xl bg-white/85 hover:bg-white text-slate-700 border border-slate-200/90 text-xs font-semibold transition cursor-pointer disabled:opacity-45" disabled>
+              Quitar fondo claro/oscuro
+            </button>
+            <button type="button" id="btn-clear-weapon" class="px-3 py-2 rounded-xl bg-white/85 hover:bg-rose-50 text-rose-600 border border-slate-200/90 text-xs font-semibold transition cursor-pointer disabled:opacity-45" disabled>
+              Quitar arma/foto
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Ajuste y Estilo del Arma / Foto -->
+        <div class="glass-panel rounded-3xl p-5">
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 mb-3.5 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold">2</span>
+            Ajuste y Resplandor
+          </h2>
+
+          <div class="space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                <span>Tamaño</span>
+                <span id="val-scale">100%</span>
+              </div>
+              <input type="range" id="slider-scale" min="25" max="220" value="100" class="w-full">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                <span>Rotación</span>
+                <span id="val-rotation">0°</span>
+              </div>
+              <input type="range" id="slider-rotation" min="-180" max="180" value="0" class="w-full">
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs font-semibold text-slate-700">Color del aura</span>
+              <div class="flex items-center gap-2" id="aura-selector">
+                <button type="button" data-aura="cyan" title="Celeste" class="aura-dot w-6 h-6 rounded-full bg-cyan-400 ring-2 ring-offset-2 ring-sky-600 cursor-pointer"></button>
+                <button type="button" data-aura="gold" title="Dorado" class="aura-dot w-6 h-6 rounded-full bg-amber-400 opacity-75 hover:opacity-100 cursor-pointer"></button>
+                <button type="button" data-aura="emerald" title="Esmeralda" class="aura-dot w-6 h-6 rounded-full bg-emerald-400 opacity-75 hover:opacity-100 cursor-pointer"></button>
+                <button type="button" data-aura="violet" title="Místico" class="aura-dot w-6 h-6 rounded-full bg-violet-500 opacity-75 hover:opacity-100 cursor-pointer"></button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs font-semibold text-slate-700">Isla flotante debajo</span>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-island" checked class="sr-only peer">
+                <div class="w-10 h-5 bg-slate-300 peer-checked:bg-sky-600 rounded-full relative transition after:content-[''] after:w-4 after:h-4 after:bg-white after:rounded-full after:absolute after:top-0.5 after:left-0.5 peer-checked:after:translate-x-5 after:transition-all"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Textos del Anuncio -->
+        <div class="glass-panel rounded-3xl p-5">
+          <h2 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 mb-3.5 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold">3</span>
+            Textos del Anuncio
+          </h2>
+
+          <div class="space-y-3">
+            <div>
+              <label for="input-logo" class="block text-xs font-semibold text-slate-700 mb-1">Logo Principal</label>
+              <input
+                type="text"
+                id="input-logo"
+                value="MOONSHOP"
+                maxlength="16"
+                class="w-full px-3.5 py-2 rounded-xl bg-white/85 border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              >
+              <div class="mt-2 grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-8">
+                  <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+                    <span>Zoom Logo</span>
+                    <span id="val-logo-zoom">100%</span>
+                  </div>
+                  <input type="range" id="slider-logo-zoom" min="50" max="180" value="100" class="w-full">
+                </div>
+                <div class="col-span-4 flex flex-col items-end">
+                  <label for="color-logo" class="text-[11px] font-semibold text-slate-600 mb-0.5">Color</label>
+                  <input type="color" id="color-logo" value="#38bdf8" class="w-10 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer p-0.5">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="input-cta-left" class="block text-xs font-semibold text-slate-700 mb-1">Llamado a la acción (Izquierda)</label>
+              <input
+                type="text"
+                id="input-cta-left"
+                value="¡CONSIGUE LA TUYA YA!"
+                maxlength="34"
+                class="w-full px-3.5 py-2 rounded-xl bg-white/85 border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              >
+              <div class="mt-2 grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-8">
+                  <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+                    <span>Zoom Texto Izq.</span>
+                    <span id="val-cta-left-zoom">100%</span>
+                  </div>
+                  <input type="range" id="slider-cta-left-zoom" min="50" max="180" value="100" class="w-full">
+                </div>
+                <div class="col-span-4 flex flex-col items-end">
+                  <label for="color-cta-left" class="text-[11px] font-semibold text-slate-600 mb-0.5">Color</label>
+                  <input type="color" id="color-cta-left" value="#f59e0b" class="w-10 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer p-0.5">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="input-cta-right" class="block text-xs font-semibold text-slate-700 mb-1">Botón / Etiqueta (Derecha)</label>
+              <input
+                type="text"
+                id="input-cta-right"
+                value="¡DISPONIBLE!"
+                maxlength="22"
+                class="w-full px-3.5 py-2 rounded-xl bg-white/85 border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              >
+              <div class="mt-2 grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-8">
+                  <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-0.5">
+                    <span>Zoom Botón Der.</span>
+                    <span id="val-cta-right-zoom">100%</span>
+                  </div>
+                  <input type="range" id="slider-cta-right-zoom" min="50" max="180" value="100" class="w-full">
+                </div>
+                <div class="col-span-4 flex flex-col items-end">
+                  <label for="color-cta-right" class="text-[11px] font-semibold text-slate-600 mb-0.5">Color</label>
+                  <input type="color" id="color-cta-right" value="#0284c7" class="w-10 h-7 rounded-lg border border-slate-200 bg-white cursor-pointer p-0.5">
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="btn-reset-texts" class="w-full mt-1 px-3.5 py-2 rounded-xl bg-white/85 hover:bg-white text-slate-700 border border-slate-200/90 text-xs font-semibold transition cursor-pointer">
+              Restablecer posición, color y zoom
+            </button>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('ad-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Estado centralizado del anuncio
+    const state = {
+      bgImage: null,
+      savedBackgrounds: [],
+      activeBgIndex: -1,
+      weaponImage: null,
+      weaponX: 500,
+      weaponY: 545,
+      weaponScale: 1.0,
+      weaponRotation: 0,
+      auraColor: 'cyan',
+      showIsland: true,
+      logoText: 'MOONSHOP',
+      logoX: 500,
+      logoY: 188,
+      logoZoom: 1.0,
+      logoColor: '#38bdf8',
+      logoCustomColor: false,
+      ctaLeft: '¡CONSIGUE LA TUYA YA!',
+      ctaLeftX: 115,
+      ctaLeftY: 835,
+      ctaLeftZoom: 1.0,
+      ctaLeftColor: '#f59e0b',
+      ctaLeftCustomColor: false,
+      ctaRight: '¡DISPONIBLE!',
+      ctaRightX: 885,
+      ctaRightY: 835,
+      ctaRightZoom: 1.0,
+      ctaRightColor: '#0284c7',
+      ctaRightCustomColor: false,
+      activeTarget: null, // 'weapon' | 'logo' | 'ctaLeft' | 'ctaRight' | null
+      dragOffsetX: 0,
+      dragOffsetY: 0,
+      hitBoxes: {
+        logo: { x: 220, y: 140, w: 560, h: 96 },
+        ctaLeft: { x: 115, y: 805, w: 360, h: 60 },
+        ctaRight: { x: 685, y: 807, w: 200, h: 56 }
+      }
+    };
+
+    const AURA_PALETTES = {
+      cyan: { outer: 'rgba(56, 189, 248, 0.55)', mid: 'rgba(125, 211, 252, 0.35)', spark: '#e0f2fe' },
+      gold: { outer: 'rgba(251, 191, 36, 0.55)', mid: 'rgba(253, 224, 71, 0.35)', spark: '#fef9c3' },
+      emerald: { outer: 'rgba(52, 211, 153, 0.55)', mid: 'rgba(110, 231, 183, 0.35)', spark: '#d1fae5' },
+      violet: { outer: 'rgba(167, 139, 250, 0.55)', mid: 'rgba(196, 181, 253, 0.35)', spark: '#ede9fe' }
+    };
+
+    let toastTimer = null;
+    function showToast(message, icon = '✨') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = message;
+      document.getElementById('toast-icon').textContent = icon;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-3');
+      }, 2600);
+    }
+
+    // Dibuja el paisaje Frutiger Aero por defecto cuando no hay imagen de fondo subida
+    function drawDefaultAeroBackground() {
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Cielo vibrante
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.68);
+      skyGrad.addColorStop(0, '#0284c7');
+      skyGrad.addColorStop(0.55, '#38bdf8');
+      skyGrad.addColorStop(1, '#bae6fd');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Resplandor solar superior izquierdo
+      const sunGlow = ctx.createRadialGradient(150, 120, 10, 150, 120, 340);
+      sunGlow.addColorStop(0, 'rgba(255,255,255,0.92)');
+      sunGlow.addColorStop(0.35, 'rgba(224,242,254,0.45)');
+      sunGlow.addColorStop(1, 'rgba(224,242,254,0)');
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(0, 0, W, H);
+
+      // Luna brillante superior derecha
+      const moonX = 760, moonY = 215, moonR = 115;
+      const moonHalo = ctx.createRadialGradient(moonX, moonY, moonR * 0.7, moonX, moonY, moonR * 2.1);
+      moonHalo.addColorStop(0, 'rgba(224, 242, 254, 0.75)');
+      moonHalo.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = moonHalo;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, moonR * 2.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      const moonGrad = ctx.createRadialGradient(moonX - 30, moonY - 35, 15, moonX, moonY, moonR);
+      moonGrad.addColorStop(0, '#ffffff');
+      moonGrad.addColorStop(0.65, '#e0f2fe');
+      moonGrad.addColorStop(1, '#7dd3fc');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Nubes suaves
+      function drawCloud(cx, cy, scale) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.beginPath();
+        ctx.arc(-45, 5, 32, 0, Math.PI * 2);
+        ctx.arc(-12, -12, 42, 0, Math.PI * 2);
+        ctx.arc(28, -4, 34, 0, Math.PI * 2);
+        ctx.arc(58, 10, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      drawCloud(140, 245, 1.1);
+      drawCloud(560, 270, 0.95);
+      drawCloud(890, 320, 1.05);
+
+      // Colinas verdes
+      const hillGrad = ctx.createLinearGradient(0, H * 0.52, 0, H * 0.78);
+      hillGrad.addColorStop(0, '#4ade80');
+      hillGrad.addColorStop(0.55, '#16a34a');
+      hillGrad.addColorStop(1, '#14532d');
+      ctx.fillStyle = hillGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.63);
+      ctx.quadraticCurveTo(W * 0.28, H * 0.52, W * 0.58, H * 0.64);
+      ctx.quadraticCurveTo(W * 0.82, H * 0.72, W, H * 0.58);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // Lago reflejante inferior
+      const waterGrad = ctx.createLinearGradient(0, H * 0.68, 0, H);
+      waterGrad.addColorStop(0, '#0ea5e9');
+      waterGrad.addColorStop(0.45, '#0284c7');
+      waterGrad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = waterGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.74);
+      ctx.quadraticCurveTo(W * 0.5, H * 0.67, W, H * 0.75);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // Estelas luminosas cruzadas estilo Frutiger Aero
+      ctx.save();
+      ctx.strokeStyle = 'rgba(224, 242, 254, 0.72)';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 320);
+      ctx.bezierCurveTo(320, 620, 680, 260, 1000, 560);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(103, 232, 249, 0.55)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 620);
+      ctx.bezierCurveTo(360, 360, 650, 740, 1000, 420);
+      ctx.stroke();
+      ctx.restore();
+
+      // Burbujas cristalinas
+      const bubbles = [
+        { x: 185, y: 205, r: 44 },
+        { x: 840, y: 120, r: 30 },
+        { x: 895, y: 440, r: 38 },
+        { x: 130, y: 690, r: 28 },
+        { x: 790, y: 740, r: 34 }
+      ];
+      bubbles.forEach(b => {
+        const bGrad = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.1, b.x, b.y, b.r);
+        bGrad.addColorStop(0, 'rgba(255,255,255,0.85)');
+        bGrad.addColorStop(0.55, 'rgba(186,230,253,0.22)');
+        bGrad.addColorStop(0.88, 'rgba(255,255,255,0.65)');
+        bGrad.addColorStop(1, 'rgba(125,211,252,0.85)');
+        ctx.fillStyle = bGrad;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // Dibuja la isla flotante opcional debajo del arma
+    function drawFloatingIsland(cx, cy) {
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Sombra suave inferior
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(0, 58, 125, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Roca invertida
+      const rockGrad = ctx.createLinearGradient(-120, 0, 120, 55);
+      rockGrad.addColorStop(0, '#78716c');
+      rockGrad.addColorStop(0.5, '#57534e');
+      rockGrad.addColorStop(1, '#292524');
+      ctx.fillStyle = rockGrad;
+      ctx.beginPath();
+      ctx.moveTo(-115, 6);
+      ctx.lineTo(115, 6);
+      ctx.lineTo(65, 48);
+      ctx.lineTo(-10, 62);
+      ctx.lineTo(-75, 42);
+      ctx.closePath();
+      ctx.fill();
+
+      // Césped superior de la isla
+      const turfGrad = ctx.createLinearGradient(0, -14, 0, 14);
+      turfGrad.addColorStop(0, '#86efac');
+      turfGrad.addColorStop(0.55, '#22c55e');
+      turfGrad.addColorStop(1, '#15803d');
+      ctx.fillStyle = turfGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 122, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Dibuja el logo multicolor 3D estilo MOONSHOP en su posición arrastrable
+    function drawMoonshopLogo(text) {
+      const cleanText = (text || 'MOONSHOP').toUpperCase();
+      const colors = ['#38bdf8', '#22c55e', '#facc15', '#ef4444', '#a855f7', '#14b8a6', '#84cc16', '#f97316'];
+      const yPos = state.logoY;
+      const zoom = state.logoZoom || 1;
+      const fontSize = Math.round(94 * zoom);
+
+      ctx.save();
+      ctx.font = `700 ${fontSize}px "Fredoka", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const chars = cleanText.split('');
+      const totalWidth = ctx.measureText(cleanText).width;
+      let cursorX = state.logoX - totalWidth / 2;
+
+      // Actualiza área interactiva para arrastrar el logo
+      state.hitBoxes.logo = {
+        x: state.logoX - totalWidth / 2 - 16,
+        y: yPos - fontSize * 0.56,
+        w: totalWidth + 32,
+        h: fontSize * 1.12
+      };
+
+      chars.forEach((ch, idx) => {
+        const w = ctx.measureText(ch).width;
+        const centerX = cursorX + w / 2;
+        const baseColor = state.logoCustomColor ? state.logoColor : colors[idx % colors.length];
+
+        // Si el carácter es 'O' y estamos cerca del final, dibujamos la esfera verde brillante emblemática
+        if (ch === 'O' && idx >= chars.length - 3) {
+          const r = 42 * zoom;
+          ctx.save();
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+          ctx.shadowBlur = 10 * zoom;
+          ctx.shadowOffsetY = 5 * zoom;
+
+          const orbGrad = ctx.createRadialGradient(centerX - 14 * zoom, yPos - 16 * zoom, 6 * zoom, centerX, yPos, r);
+          orbGrad.addColorStop(0, '#bbf7d0');
+          orbGrad.addColorStop(0.35, state.logoCustomColor ? state.logoColor : '#22c55e');
+          orbGrad.addColorStop(1, '#14532d');
+          ctx.fillStyle = orbGrad;
+          ctx.beginPath();
+          ctx.arc(centerX, yPos, r, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.lineWidth = Math.max(2, 5 * zoom);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+          ctx.stroke();
+
+          // Brillo superior
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+          ctx.beginPath();
+          ctx.ellipse(centerX - 10 * zoom, yPos - 18 * zoom, 16 * zoom, 9 * zoom, -0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          // Extrusión 3D inferior
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+          ctx.fillText(ch, centerX, yPos + 7 * zoom);
+
+          // Borde exterior blanco/oscuro para contraste sobre cualquier fondo
+          ctx.lineWidth = Math.max(3, 8 * zoom);
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.72)';
+          ctx.strokeText(ch, centerX, yPos);
+
+          ctx.lineWidth = Math.max(1.5, 3 * zoom);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.strokeText(ch, centerX, yPos);
+
+          // Relleno degradado
+          const letterGrad = ctx.createLinearGradient(0, yPos - fontSize * 0.48, 0, yPos + fontSize * 0.48);
+          letterGrad.addColorStop(0, '#ffffff');
+          letterGrad.addColorStop(0.22, baseColor);
+          letterGrad.addColorStop(1, baseColor);
+          ctx.fillStyle = letterGrad;
+          ctx.fillText(ch, centerX, yPos);
+        }
+
+        cursorX += w;
+      });
+
+      ctx.restore();
+    }
+
+    // Dibuja los textos inferiores arrastrables del anuncio
+    function drawBottomCallouts() {
+      const leftText = (state.ctaLeft || '').trim();
+      const rightText = (state.ctaRight || '').trim();
+
+      if (leftText) {
+        const leftZoom = state.ctaLeftZoom || 1;
+        const leftFontSize = Math.round(34 * leftZoom);
+        ctx.save();
+        ctx.font = `700 ${leftFontSize}px "Fredoka", sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        const lx = state.ctaLeftX;
+        const ly = state.ctaLeftY;
+        const leftW = ctx.measureText(leftText).width;
+
+        state.hitBoxes.ctaLeft = {
+          x: lx - 10,
+          y: ly - leftFontSize * 0.82,
+          w: leftW + 20,
+          h: leftFontSize * 1.64
+        };
+
+        ctx.lineWidth = Math.max(3, 8 * leftZoom);
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeText(leftText, lx, ly);
+
+        const lGrad = ctx.createLinearGradient(0, ly - leftFontSize * 0.65, 0, ly + leftFontSize * 0.65);
+        if (state.ctaLeftCustomColor) {
+          lGrad.addColorStop(0, '#ffffff');
+          lGrad.addColorStop(0.35, state.ctaLeftColor);
+          lGrad.addColorStop(1, state.ctaLeftColor);
+        } else {
+          lGrad.addColorStop(0, '#fef08a');
+          lGrad.addColorStop(0.55, '#f59e0b');
+          lGrad.addColorStop(1, '#ea580c');
+        }
+        ctx.fillStyle = lGrad;
+        ctx.fillText(leftText, lx, ly);
+        ctx.restore();
+      }
+
+      if (rightText) {
+        const rightZoom = state.ctaRightZoom || 1;
+        const rightFontSize = Math.round(26 * rightZoom);
+        ctx.save();
+        ctx.font = `700 ${rightFontSize}px "Fredoka", sans-serif`;
+        const padX = Math.round(26 * rightZoom);
+        const textW = ctx.measureText(rightText).width;
+        const pillW = Math.max(120 * rightZoom, textW + padX * 2);
+        const pillH = Math.max(38, Math.round(56 * rightZoom));
+        // ctaRightX representa el borde derecho de la píldora
+        const rx = state.ctaRightX - pillW;
+        const ry = state.ctaRightY - pillH / 2;
+
+        state.hitBoxes.ctaRight = {
+          x: rx - 8,
+          y: ry - 8,
+          w: pillW + 16,
+          h: pillH + 16
+        };
+
+        // Cápsula brillante estilo botón Aero
+        const pillGrad = ctx.createLinearGradient(0, ry, 0, ry + pillH);
+        if (state.ctaRightCustomColor) {
+          pillGrad.addColorStop(0, '#ffffff');
+          pillGrad.addColorStop(0.22, state.ctaRightColor);
+          pillGrad.addColorStop(1, state.ctaRightColor);
+        } else {
+          pillGrad.addColorStop(0, '#38bdf8');
+          pillGrad.addColorStop(0.5, '#0284c7');
+          pillGrad.addColorStop(1, '#0369a1');
+        }
+
+        ctx.shadowColor = 'rgba(2, 132, 199, 0.5)';
+        ctx.shadowBlur = 14 * rightZoom;
+        ctx.shadowOffsetY = 5 * rightZoom;
+
+        ctx.beginPath();
+        ctx.roundRect(rx, ry, pillW, pillH, pillH / 2);
+        ctx.fillStyle = pillGrad;
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+        ctx.lineWidth = Math.max(2, 3 * rightZoom);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.stroke();
+
+        // Reflejo superior de cristal
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.beginPath();
+        ctx.roundRect(rx + 6 * rightZoom, ry + 4 * rightZoom, pillW - 12 * rightZoom, pillH * 0.42, pillH / 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(rightText, rx + pillW / 2, ry + pillH / 2 + 1);
+        ctx.restore();
+      }
+    }
+
+    // Dibuja el marco circular tipo emblema de referencia con transparencia exterior
+    // Dibuja el acabado cristalino sutil sobre todo el lienzo completo
+    function drawFullCanvasFinish(drawInnerContentFn) {
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.save();
+      ctx.clearRect(0, 0, W, H);
+
+      // Renderiza todo el contenido ocupando el 100% del lienzo
+      drawInnerContentFn();
+
+      // Reflejo curvo superior sutil estilo Frutiger Aero
+      const glossGrad = ctx.createLinearGradient(0, 0, 0, H * 0.36);
+      glossGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+      glossGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = glossGrad;
+      ctx.beginPath();
+      ctx.ellipse(W * 0.5, 20, W * 0.68, H * 0.24, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Marco luminoso perimetral sutil que abarca todo el borde del lienzo
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(224, 242, 254, 0.55)';
+      ctx.strokeRect(3, 3, W - 6, H - 6);
+
+      ctx.restore();
+    }
+
+    // Dibuja una imagen cubriendo por completo (cover) un área sin dejar bordes vacíos
+    function drawCoverImage(img, targetW, targetH) {
+      const imgW = img.naturalWidth || img.width || 1000;
+      const imgH = img.naturalHeight || img.height || 1000;
+      const imgRatio = imgW / imgH;
+      const canvasRatio = targetW / targetH;
+      let drawW = targetW;
+      let drawH = targetH;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (imgRatio > canvasRatio) {
+        drawW = targetH * imgRatio;
+        offsetX = (targetW - drawW) / 2;
+      } else {
+        drawH = targetW / imgRatio;
+        offsetY = (targetH - drawH) / 2;
+      }
+
+      ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+    }
+
+    // Renderizado maestro ocupando el 100% del lienzo
+    function renderBanner() {
+      drawFullCanvasFinish(() => {
+        // 1. Fondo a pantalla completa (imagen subida o paisaje Frutiger Aero por defecto)
+        if (state.bgImage) {
+          drawCoverImage(state.bgImage, canvas.width, canvas.height);
+        } else {
+          drawDefaultAeroBackground();
+        }
+
+        // 2. Isla flotante opcional debajo del arma
+        if (state.showIsland) {
+          drawFloatingIsland(state.weaponX, state.weaponY + 135 * Math.sqrt(state.weaponScale));
+        }
+
+        // 3. Arma o foto subida con resplandor y transformación
+        if (state.weaponImage) {
+          const palette = AURA_PALETTES[state.auraColor] || AURA_PALETTES.cyan;
+          const baseSize = 440;
+          const imgW = state.weaponImage.naturalWidth || state.weaponImage.width || 400;
+          const imgH = state.weaponImage.naturalHeight || state.weaponImage.height || 400;
+          const aspect = imgW / imgH;
+          let drawW = baseSize * state.weaponScale;
+          let drawH = drawW / aspect;
+
+          ctx.save();
+          ctx.translate(state.weaponX, state.weaponY);
+          ctx.rotate((state.weaponRotation * Math.PI) / 180);
+
+          const auraRadius = Math.max(drawW, drawH) * 0.62;
+          const auraGrad = ctx.createRadialGradient(0, 0, auraRadius * 0.1, 0, 0, auraRadius);
+          auraGrad.addColorStop(0, palette.outer);
+          auraGrad.addColorStop(0.55, palette.mid);
+          auraGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = auraGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, auraRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.drawImage(state.weaponImage, -drawW / 2, -drawH / 2, drawW, drawH);
+          ctx.restore();
+        }
+
+        // 4. Logo principal arrastrable
+        drawMoonshopLogo(state.logoText);
+
+        // 5. Textos inferiores arrastrables
+        drawBottomCallouts();
+      });
+
+      document.getElementById('coords-indicator').textContent =
+        `Escala: ${Math.round(state.weaponScale * 100)}% · Rotación: ${state.weaponRotation}°`;
+    }
+
+    // Convierte coordenadas de puntero/táctil al espacio del canvas 1000x1000
+    function getCanvasPoint(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function isInsideBox(pt, box) {
+      return (
+        pt.x >= box.x &&
+        pt.x <= box.x + box.w &&
+        pt.y >= box.y &&
+        pt.y <= box.y + box.h
+      );
+    }
+
+    // Detecta qué elemento tocó el usuario (prioriza textos sobre el arma para moverlos fácil)
+    function startDrag(clientX, clientY) {
+      const pt = getCanvasPoint(clientX, clientY);
+
+      if ((state.ctaRight || '').trim() && isInsideBox(pt, state.hitBoxes.ctaRight)) {
+        state.activeTarget = 'ctaRight';
+        state.dragOffsetX = pt.x - state.ctaRightX;
+        state.dragOffsetY = pt.y - state.ctaRightY;
+        return;
+      }
+
+      if ((state.ctaLeft || '').trim() && isInsideBox(pt, state.hitBoxes.ctaLeft)) {
+        state.activeTarget = 'ctaLeft';
+        state.dragOffsetX = pt.x - state.ctaLeftX;
+        state.dragOffsetY = pt.y - state.ctaLeftY;
+        return;
+      }
+
+      if ((state.logoText || '').trim() && isInsideBox(pt, state.hitBoxes.logo)) {
+        state.activeTarget = 'logo';
+        state.dragOffsetX = pt.x - state.logoX;
+        state.dragOffsetY = pt.y - state.logoY;
+        return;
+      }
+
+      if (state.weaponImage) {
+        state.activeTarget = 'weapon';
+        state.dragOffsetX = pt.x - state.weaponX;
+        state.dragOffsetY = pt.y - state.weaponY;
+      }
+    }
+
+    function moveDrag(clientX, clientY) {
+      if (!state.activeTarget) return;
+      const pt = getCanvasPoint(clientX, clientY);
+      const nextX = pt.x - state.dragOffsetX;
+      const nextY = pt.y - state.dragOffsetY;
+
+      if (state.activeTarget === 'weapon') {
+        state.weaponX = Math.max(120, Math.min(880, nextX));
+        state.weaponY = Math.max(240, Math.min(760, nextY));
+      } else if (state.activeTarget === 'logo') {
+        state.logoX = Math.max(140, Math.min(860, nextX));
+        state.logoY = Math.max(115, Math.min(885, nextY));
+      } else if (state.activeTarget === 'ctaLeft') {
+        state.ctaLeftX = Math.max(85, Math.min(760, nextX));
+        state.ctaLeftY = Math.max(115, Math.min(895, nextY));
+      } else if (state.activeTarget === 'ctaRight') {
+        state.ctaRightX = Math.max(240, Math.min(915, nextX));
+        state.ctaRightY = Math.max(115, Math.min(895, nextY));
+      }
+
+      renderBanner();
+    }
+
+    function endDrag() {
+      state.activeTarget = null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+    window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (state.activeTarget && e.touches.length === 1) {
+        e.preventDefault();
+        moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', endDrag);
+
+    // Escalar con la rueda del ratón sobre el lienzo
+    canvas.addEventListener('wheel', (e) => {
+      if (!state.weaponImage) return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 6 : -6;
+      const slider = document.getElementById('slider-scale');
+      const nextVal = Math.max(25, Math.min(220, Number(slider.value) + delta));
+      slider.value = nextVal;
+      state.weaponScale = nextVal / 100;
+      document.getElementById('val-scale').textContent = `${nextVal}%`;
+      renderBanner();
+    }, { passive: false });
+
+    // Carga de una o varias imágenes de fondo (ocupa el fondo completo)
+    function renderBackgroundGallery() {
+      const gallery = document.getElementById('bg-gallery');
+      gallery.innerHTML = '';
+
+      state.savedBackgrounds.forEach((bg, idx) => {
+        const isActive = state.activeBgIndex === idx;
+        const thumb = document.createElement('button');
+        thumb.type = 'button';
+        thumb.title = bg.name;
+        thumb.className = `relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border-2 transition cursor-pointer ${
+          isActive ? 'border-sky-600 ring-2 ring-sky-300 scale-105' : 'border-white/90 opacity-80 hover:opacity-100'
+        }`;
+        const thumbImg = document.createElement('img');
+        thumbImg.src = bg.src;
+        thumbImg.alt = bg.name;
+        thumbImg.className = 'w-full h-full object-cover';
+        thumb.appendChild(thumbImg);
+        thumb.addEventListener('click', () => {
+          state.activeBgIndex = idx;
+          state.bgImage = bg.img;
+          document.getElementById('bg-status-label').textContent = bg.name;
+          document.getElementById('btn-reset-bg').classList.remove('hidden');
+          renderBackgroundGallery();
+          renderBanner();
+          showToast(`Fondo "${bg.name}" activado`, '🖼️');
+        });
+        gallery.appendChild(thumb);
+      });
+    }
+
+    function applyBackgroundFile(file) {
+      if (!file) return;
+      const isImage = !file.type || file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif|heic|heif)$/i.test(file.name || '');
+      if (!isImage) {
+        showToast('Selecciona un archivo de imagen válido para el fondo.', '⚠️');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        const img = new Image();
+        img.onload = () => {
+          const bgName = file.name || 'Fondo personalizado';
+          state.savedBackgrounds.push({ name: bgName, src: dataUrl, img });
+          const newIdx = state.savedBackgrounds.length - 1;
+          state.activeBgIndex = newIdx;
+          state.bgImage = img;
+          document.getElementById('bg-status-label').textContent = bgName;
+          document.getElementById('btn-reset-bg').classList.remove('hidden');
+          renderBackgroundGallery();
+          renderBanner();
+          showToast(`Fondo "${bgName}" aplicado`, '🌌');
+        };
+        img.onerror = () => {
+          showToast('No se pudo cargar la imagen de fondo.', '❌');
+        };
+        img.src = dataUrl;
+      };
+      reader.onerror = () => {
+        showToast('Error al leer el archivo de fondo.', '❌');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('bg-upload').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = '';
+      if (!files.length) return;
+      files.forEach(applyBackgroundFile);
+    });
+
+    document.getElementById('btn-reset-bg').addEventListener('click', () => {
+      state.bgImage = null;
+      state.activeBgIndex = -1;
+      document.getElementById('bg-status-label').textContent = 'Paisaje Frutiger Aero predeterminado';
+      document.getElementById('btn-reset-bg').classList.add('hidden');
+      renderBackgroundGallery();
+      renderBanner();
+      showToast('Fondo original restaurado', '🌙');
+    });
+
+    // Carga de imagen de arma o foto
+    function handleWeaponFile(file) {
+      if (!file) return;
+      const isImage = !file.type || file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif|heic|heif)$/i.test(file.name || '');
+      if (!isImage) {
+        showToast('Selecciona una imagen válida (PNG, JPG, WEBP).', '⚠️');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          state.weaponImage = img;
+          state.weaponX = 500;
+          state.weaponY = 535;
+          document.getElementById('btn-remove-bg').disabled = false;
+          document.getElementById('btn-clear-weapon').disabled = false;
+          renderBanner();
+          showToast('Imagen cargada. Arrástrala para acomodarla.', '🎯');
+        };
+        img.onerror = () => showToast('Error al cargar la imagen.', '❌');
+        img.src = ev.target.result;
+      };
+      reader.onerror = () => showToast('Error al leer la imagen.', '❌');
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('bg-upload').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = '';
+      if (!files.length) return;
+      files.forEach(applyBackgroundFile);
+    });
+
+    document.getElementById('btn-reset-bg').addEventListener('click', () => {
+      state.bgImage = null;
+      state.activeBgIndex = -1;
+      document.getElementById('bg-status-label').textContent = 'Paisaje Frutiger Aero predeterminado';
+      document.getElementById('btn-reset-bg').classList.add('hidden');
+      renderBackgroundGallery();
+      renderBanner();
+      showToast('Fondo original restaurado', '🌙');
+    });
+
+    // Carga de imagen de arma o foto
+    function handleWeaponFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        showToast('Selecciona una imagen válida (PNG, JPG, WEBP).', '⚠️');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          state.weaponImage = img;
+          state.weaponX = 500;
+          state.weaponY = 535;
+          document.getElementById('btn-remove-bg').disabled = false;
+          document.getElementById('btn-clear-weapon').disabled = false;
+          renderBanner();
+          showToast('Imagen cargada. Arrástrala para acomodarla.', '🎯');
+        };
+        img.onerror = () => showToast('Error al cargar la imagen.', '❌');
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('weapon-upload').addEventListener('change', (e) => {
+      handleWeaponFile(e.target.files[0]);
+      e.target.value = '';
+    });
+
+    // Arrastrar y soltar en la zona de carga
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-sky-600', 'bg-sky-100/80');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-sky-600', 'bg-sky-100/80');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files[0];
+      handleWeaponFile(file);
+    });
+
+    // Eliminación sencilla de fondo uniforme en esquinas (blanco o negro sólido)
+    document.getElementById('btn-remove-bg').addEventListener('click', () => {
+      if (!state.weaponImage) return;
+      try {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = state.weaponImage.width;
+        tempCanvas.height = state.weaponImage.height;
+        const tctx = tempCanvas.getContext('2d');
+        tctx.drawImage(state.weaponImage, 0, 0);
+
+        const imgData = tctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imgData.data;
+        const r0 = data[0], g0 = data[1], b0 = data[2];
+        const threshold = 42;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const dr = Math.abs(data[i] - r0);
+          const dg = Math.abs(data[i + 1] - g0);
+          const db = Math.abs(data[i + 2] - b0);
+          if (dr < threshold && dg < threshold && db < threshold) {
+            data[i + 3] = 0;
+          }
+        }
+
+        tctx.putImageData(imgData, 0, 0);
+        const cleaned = new Image();
+        cleaned.onload = () => {
+          state.weaponImage = cleaned;
+          renderBanner();
+          showToast('Fondo sólido removido', '🪄');
+        };
+        cleaned.src = tempCanvas.toDataURL('image/png');
+      } catch (err) {
+        showToast('No se pudo limpiar el fondo de esta imagen.', '⚠️');
+      }
+    });
+
+    document.getElementById('btn-clear-weapon').addEventListener('click', () => {
+      state.weaponImage = null;
+      document.getElementById('btn-remove-bg').disabled = true;
+      document.getElementById('btn-clear-weapon').disabled = true;
+      renderBanner();
+      showToast('Arma/foto retirada', '🗑️');
+    });
+
+    // Controles deslizantes y opciones
+    document.getElementById('slider-scale').addEventListener('input', (e) => {
+      state.weaponScale = Number(e.target.value) / 100;
+      document.getElementById('val-scale').textContent = `${e.target.value}%`;
+      renderBanner();
+    });
+
+    document.getElementById('slider-rotation').addEventListener('input', (e) => {
+      state.weaponRotation = Number(e.target.value);
+      document.getElementById('val-rotation').textContent = `${e.target.value}°`;
+      renderBanner();
+    });
+
+    document.querySelectorAll('.aura-dot').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.auraColor = btn.dataset.aura;
+        document.querySelectorAll('.aura-dot').forEach(b => {
+          b.classList.remove('ring-2', 'ring-offset-2', 'ring-sky-600');
+          b.classList.add('opacity-75');
+        });
+        btn.classList.remove('opacity-75');
+        btn.classList.add('ring-2', 'ring-offset-2', 'ring-sky-600');
+        renderBanner();
+      });
+    });
+
+    document.getElementById('toggle-island').addEventListener('change', (e) => {
+      state.showIsland = e.target.checked;
+      renderBanner();
+    });
+
+    document.getElementById('input-logo').addEventListener('input', (e) => {
+      state.logoText = e.target.value;
+      renderBanner();
+    });
+
+    document.getElementById('input-cta-left').addEventListener('input', (e) => {
+      state.ctaLeft = e.target.value;
+      renderBanner();
+    });
+
+    document.getElementById('input-cta-right').addEventListener('input', (e) => {
+      state.ctaRight = e.target.value;
+      renderBanner();
+    });
+
+    document.getElementById('slider-logo-zoom').addEventListener('input', (e) => {
+      state.logoZoom = Number(e.target.value) / 100;
+      document.getElementById('val-logo-zoom').textContent = `${e.target.value}%`;
+      renderBanner();
+    });
+
+    document.getElementById('color-logo').addEventListener('input', (e) => {
+      state.logoColor = e.target.value;
+      state.logoCustomColor = true;
+      renderBanner();
+    });
+
+    document.getElementById('slider-cta-left-zoom').addEventListener('input', (e) => {
+      state.ctaLeftZoom = Number(e.target.value) / 100;
+      document.getElementById('val-cta-left-zoom').textContent = `${e.target.value}%`;
+      renderBanner();
+    });
+
+    document.getElementById('color-cta-left').addEventListener('input', (e) => {
+      state.ctaLeftColor = e.target.value;
+      state.ctaLeftCustomColor = true;
+      renderBanner();
+    });
+
+    document.getElementById('slider-cta-right-zoom').addEventListener('input', (e) => {
+      state.ctaRightZoom = Number(e.target.value) / 100;
+      document.getElementById('val-cta-right-zoom').textContent = `${e.target.value}%`;
+      renderBanner();
+    });
+
+    document.getElementById('color-cta-right').addEventListener('input', (e) => {
+      state.ctaRightColor = e.target.value;
+      state.ctaRightCustomColor = true;
+      renderBanner();
+    });
+
+    function resetTextPositions() {
+      state.logoX = 500;
+      state.logoY = 188;
+      state.logoZoom = 1.0;
+      state.logoColor = '#38bdf8';
+      state.logoCustomColor = false;
+      state.ctaLeftX = 115;
+      state.ctaLeftY = 835;
+      state.ctaLeftZoom = 1.0;
+      state.ctaLeftColor = '#f59e0b';
+      state.ctaLeftCustomColor = false;
+      state.ctaRightX = 885;
+      state.ctaRightY = 835;
+      state.ctaRightZoom = 1.0;
+      state.ctaRightColor = '#0284c7';
+      state.ctaRightCustomColor = false;
+
+      document.getElementById('slider-logo-zoom').value = 100;
+      document.getElementById('val-logo-zoom').textContent = '100%';
+      document.getElementById('color-logo').value = '#38bdf8';
+      document.getElementById('slider-cta-left-zoom').value = 100;
+      document.getElementById('val-cta-left-zoom').textContent = '100%';
+      document.getElementById('color-cta-left').value = '#f59e0b';
+      document.getElementById('slider-cta-right-zoom').value = 100;
+      document.getElementById('val-cta-right-zoom').textContent = '100%';
+      document.getElementById('color-cta-right').value = '#0284c7';
+    }
+
+    document.getElementById('btn-reset-texts').addEventListener('click', () => {
+      resetTextPositions();
+      renderBanner();
+      showToast('Posición, color y zoom restablecidos', '🔤');
+    });
+
+    // Reiniciar todo
+    document.getElementById('btn-reset-all').addEventListener('click', () => {
+      state.bgImage = null;
+      state.savedBackgrounds = [];
+      state.activeBgIndex = -1;
+      state.weaponImage = null;
+      state.weaponX = 500;
+      state.weaponY = 545;
+      state.weaponScale = 1.0;
+      state.weaponRotation = 0;
+      state.auraColor = 'cyan';
+      state.showIsland = true;
+      state.logoText = 'MOONSHOP';
+      state.ctaLeft = '¡CONSIGUE LA TUYA YA!';
+      state.ctaRight = '¡DISPONIBLE!';
+      resetTextPositions();
+
+      document.getElementById('slider-scale').value = 100;
+      document.getElementById('val-scale').textContent = '100%';
+      document.getElementById('slider-rotation').value = 0;
+      document.getElementById('val-rotation').textContent = '0°';
+      document.getElementById('toggle-island').checked = true;
+      document.getElementById('input-logo').value = 'MOONSHOP';
+      document.getElementById('input-cta-left').value = '¡CONSIGUE LA TUYA YA!';
+      document.getElementById('input-cta-right').value = '¡DISPONIBLE!';
+      document.getElementById('bg-status-label').textContent = 'Paisaje Frutiger Aero predeterminado';
+      document.getElementById('btn-reset-bg').classList.add('hidden');
+      document.getElementById('btn-remove-bg').disabled = true;
+      document.getElementById('btn-clear-weapon').disabled = true;
+      renderBackgroundGallery();
+
+      document.querySelectorAll('.aura-dot').forEach(b => {
+        b.classList.remove('ring-2', 'ring-offset-2', 'ring-sky-600');
+        b.classList.add('opacity-75');
+      });
+      const firstAura = document.querySelector('.aura-dot[data-aura="cyan"]');
+      if (firstAura) {
+        firstAura.classList.remove('opacity-75');
+        firstAura.classList.add('ring-2', 'ring-offset-2', 'ring-sky-600');
+      }
+
+      renderBanner();
+      showToast('Todo reiniciado', '🔄');
+    });
+
+    // Descarga en PNG de alta resolución
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'moonshop-anuncio.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Anuncio PNG descargado en 1000×1000', '📥');
+    });
+
+    // Renderizado inicial
+    renderBanner();
+  </script>
+</body>
+</html>
