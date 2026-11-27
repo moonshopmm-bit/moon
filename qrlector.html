@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>MOONSHOP — Calculadora de Robux (COP), MM2, Ítems y Tickets</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,20 +27,30 @@
   <style>
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #0b8a97 0%, #0d96a3 55%, #0a7e8b 100%);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(103, 232, 249, 0.24) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.22) 0%, transparent 45%),
+        linear-gradient(180deg, #0b8a97 0%, #0d96a3 55%, #0a7e8b 100%);
       color: #1e293b;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
     .moon-card {
-      background: #ffffff;
-      border-radius: 26px;
-      border: 1px solid rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.95);
       box-shadow:
-        0 0 56px rgba(103, 232, 249, 0.42),
-        0 24px 48px rgba(4, 52, 60, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        0 0 64px rgba(103, 232, 249, 0.38),
+        0 28px 56px rgba(4, 52, 60, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    @media (min-width: 768px) {
+      .moon-card {
+        border-radius: 32px;
+      }
     }
 
     .moon-input {
@@ -136,12 +146,18 @@
       min-width: 25%;
       max-width: 25%;
       flex: 0 0 25%;
-      max-height: 72vh;
+      max-height: 76vh;
       overflow-y: auto;
       overflow-x: hidden;
       overscroll-behavior: contain;
       scrollbar-width: thin;
       transition: opacity 0.28s ease;
+    }
+
+    @media (min-width: 768px) {
+      .tab-slide {
+        max-height: 80vh;
+      }
     }
 
     .tab-slide::-webkit-scrollbar,
@@ -167,7 +183,7 @@
 
     .route-barcode-svg {
       display: block;
-      height: 40px;
+      height: 42px;
       width: auto;
       filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.08));
     }
@@ -252,15 +268,15 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="scannedModalTitle"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 md:p-8 backdrop-blur-xs"
   >
-    <div class="w-full max-w-md rounded-3xl border border-white/90 bg-white p-6 shadow-2xl space-y-4 scan-formal-reveal">
+    <div class="w-full max-w-md md:max-w-lg rounded-3xl border border-white/90 bg-white p-6 md:p-7 shadow-2xl space-y-4 scan-formal-reveal">
       <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5">
         <div>
-          <span id="scannedModalBadge" class="inline-block rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-[#1e88e5]">
+          <span id="scannedModalBadge" class="inline-block rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] md:text-xs font-extrabold uppercase tracking-wider text-[#1e88e5]">
             Lectura QR · MOONSHOP
           </span>
-          <h2 id="scannedModalTitle" class="mt-1 text-lg font-black text-slate-900 tracking-tight">
+          <h2 id="scannedModalTitle" class="mt-1 text-lg md:text-xl font-black text-slate-900 tracking-tight">
             Ficha de código escaneado
           </h2>
         </div>
@@ -268,20 +284,20 @@
           type="button"
           id="closeScannedModalBtn"
           aria-label="Cerrar ficha escaneada"
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-black text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-black text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
         >
           ✕
         </button>
       </div>
 
-      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-4 space-y-2.5 text-xs">
-        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-4 md:p-5 space-y-3 text-xs md:text-sm">
+        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2.5">
           <span class="font-bold text-slate-500">Ítem / Producto</span>
           <span id="scannedModalItem" class="font-black text-slate-900 text-right">—</span>
         </div>
-        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+        <div class="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2.5">
           <span class="font-bold text-slate-500">Precio</span>
-          <span id="scannedModalPrice" class="font-black text-[#1e88e5] text-sm text-right">—</span>
+          <span id="scannedModalPrice" class="font-black text-[#1e88e5] text-sm md:text-base text-right">—</span>
         </div>
         <div class="flex items-center justify-between gap-2">
           <span class="font-bold text-slate-500">Código</span>
@@ -293,14 +309,14 @@
         <button
           type="button"
           id="scannedModalOpenTicketsBtn"
-          class="w-full sm:flex-1 rounded-xl bg-[#1e88e5] py-3 px-4 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
+          class="w-full sm:flex-1 rounded-xl bg-[#1e88e5] py-3.5 px-4 text-xs md:text-sm font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
         >
           Continuar en Tickets
         </button>
         <button
           type="button"
           id="scannedModalKeepHereBtn"
-          class="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs font-extrabold text-slate-700 transition-colors hover:bg-slate-50"
+          class="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-3.5 px-5 text-xs md:text-sm font-extrabold text-slate-700 transition-colors hover:bg-slate-50"
         >
           Ver calculadora
         </button>
@@ -308,774 +324,811 @@
     </div>
   </div>
 
-  <main class="min-h-screen w-full px-4 py-8 sm:px-6 sm:py-10 flex items-center justify-center">
-    <div class="w-full max-w-lg">
+  <main class="min-h-screen w-full px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex items-center justify-center">
+    <div class="w-full max-w-lg md:max-w-3xl lg:max-w-4xl transition-all duration-300">
 
-      <section class="moon-card p-6 sm:p-8 space-y-6" aria-label="Calculadora MOONSHOP de Robux, MM2, Ítems y Tickets">
-        <header class="relative text-center space-y-2">
-          <div class="text-2xl sm:text-3xl font-black tracking-tight select-none" aria-label="MOONSHOP">
-            <span class="logo-m1">M</span><span class="logo-o1">O</span><span class="logo-o2">O</span><span class="logo-n">N</span><span class="logo-s">S</span><span class="logo-h">H</span><span class="logo-o3">O</span><span class="logo-p">P</span>
+      <section class="moon-card p-5 sm:p-7 md:p-9 lg:p-10 space-y-6 md:space-y-7" aria-label="Calculadora MOONSHOP de Robux, MM2, Ítems y Tickets">
+        <!-- Encabezado optimizado para Tablet: Logo y barra de pestañas equilibrados -->
+        <header class="relative text-center space-y-3 md:space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6 border-b border-slate-100 pb-4">
+            <div class="text-2xl sm:text-3xl md:text-3xl font-black tracking-tight select-none md:text-left" aria-label="MOONSHOP">
+              <span class="logo-m1">M</span><span class="logo-o1">O</span><span class="logo-o2">O</span><span class="logo-n">N</span><span class="logo-s">S</span><span class="logo-h">H</span><span class="logo-o3">O</span><span class="logo-p">P</span>
+            </div>
+
+            <nav class="relative w-full md:w-[440px] lg:w-[480px] grid grid-cols-4 rounded-2xl bg-slate-100 p-1.5 shadow-inner" role="tablist" aria-label="Secciones de MOONSHOP">
+              <span
+                id="tabPillIndicator"
+                aria-hidden="true"
+                class="tab-pill-indicator pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(25%-0.225rem)] rounded-xl bg-white shadow-sm"
+              ></span>
+              <button type="button" id="tabRobuxBtn" role="tab" aria-selected="true" aria-controls="panelRobux" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-[#1e88e5]">
+                Robux
+              </button>
+              <button type="button" id="tabMm2Btn" role="tab" aria-selected="false" aria-controls="panelMm2" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+                MM2
+              </button>
+              <button type="button" id="tabItemsBtn" role="tab" aria-selected="false" aria-controls="panelItems" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+                Ítems
+              </button>
+              <button type="button" id="tabTicketsBtn" role="tab" aria-selected="false" aria-controls="panelTickets" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+                Tickets
+              </button>
+            </nav>
           </div>
 
           <div
             id="minRobuxToast"
             role="alert"
             aria-live="polite"
-            class="pointer-events-none absolute left-1/2 top-9 sm:top-10 z-30 flex w-[92%] max-w-xs -translate-x-1/2 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white/95 px-3.5 py-2 text-slate-800 shadow-lg backdrop-blur-sm opacity-0 -translate-y-1.5 transition-all duration-200"
+            class="pointer-events-none absolute left-1/2 top-12 md:top-16 z-30 flex w-[92%] max-w-xs -translate-x-1/2 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white/95 px-3.5 py-2 text-slate-800 shadow-lg backdrop-blur-sm opacity-0 -translate-y-1.5 transition-all duration-200"
           >
             <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-100 text-[11px] font-black text-red-600">!</span>
             <p class="text-xs font-bold leading-tight text-red-600">Mínimo 100 Robux</p>
           </div>
 
-          <nav class="relative mt-3 grid grid-cols-4 rounded-2xl bg-slate-100 p-1.5" role="tablist" aria-label="Secciones de MOONSHOP">
-            <span
-              id="tabPillIndicator"
-              aria-hidden="true"
-              class="tab-pill-indicator pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(25%-0.225rem)] rounded-xl bg-white shadow-sm"
-            ></span>
-            <button type="button" id="tabRobuxBtn" role="tab" aria-selected="true" aria-controls="panelRobux" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-[#1e88e5]">
-              Robux
-            </button>
-            <button type="button" id="tabMm2Btn" role="tab" aria-selected="false" aria-controls="panelMm2" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
-              MM2
-            </button>
-            <button type="button" id="tabItemsBtn" role="tab" aria-selected="false" aria-controls="panelItems" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
-              Ítems
-            </button>
-            <button type="button" id="tabTicketsBtn" role="tab" aria-selected="false" aria-controls="panelTickets" class="relative z-10 rounded-xl py-2.5 text-[11px] sm:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
-              Tickets
-            </button>
-          </nav>
-
-          <h1 id="sectionTitle" class="pt-2 text-xl sm:text-2xl font-extrabold text-[#1e88e5] tracking-tight transition-all duration-300">
-            Calculadora de Robux
-          </h1>
-          <p id="sectionSubtitle" class="text-xs font-medium text-slate-400">
-            Calcula precios en COP, ganancias y valor del Game Pass
-          </p>
+          <div class="pt-0.5 md:flex md:items-baseline md:justify-between md:text-left">
+            <h1 id="sectionTitle" class="text-xl sm:text-2xl md:text-2xl font-extrabold text-[#1e88e5] tracking-tight transition-all duration-300">
+              Calculadora de Robux
+            </h1>
+            <p id="sectionSubtitle" class="text-xs md:text-sm font-medium text-slate-400 mt-0.5 md:mt-0">
+              Calcula precios en COP, ganancias y valor del Game Pass
+            </p>
+          </div>
         </header>
 
         <div class="tabs-viewport">
           <div id="tabsTrack" class="tabs-track">
 
-            <!-- Panel 1: Robux -->
-            <div id="panelRobux" role="tabpanel" aria-labelledby="tabRobuxBtn" class="tab-slide px-0.5">
-              <form id="robuxOrderForm" novalidate class="space-y-4">
-                <div id="robuxFieldWrapper" class="space-y-1.5">
-                  <label for="robuxAmount" class="block text-sm font-bold text-slate-800">
-                    Código robux
-                  </label>
-                  <div class="relative flex items-center">
-                    <input
-                      type="text"
-                      id="robuxAmount"
-                      name="robuxAmount"
-                      inputmode="text"
-                      placeholder="Ej. RBX-00100-xxxx o 100"
-                      class="moon-input w-full rounded-xl py-3 pl-4 pr-24 text-base font-semibold uppercase"
-                    />
-                    <button
-                      type="button"
-                      id="clearRobuxInputBtn"
-                      aria-label="Limpiar código Robux"
-                      class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
-                    >
-                      ✕
-                    </button>
-                    <button
-                      type="button"
-                      id="togglePackagesBtn"
-                      aria-expanded="false"
-                      aria-controls="quickPackagesMenu"
-                      aria-label="Añadir foto del código de barras o QR"
-                      class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
-                    >
-                      <svg id="plusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                  <p id="robuxDecodedInfo" class="text-[11px] font-semibold text-[#0c7a8a]">
-                    Pega o escribe el código generado en Ítems (100 R$ = $3.800 COP)
-                  </p>
-                  <div id="robuxScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                    <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
-                    <span>Lectura completada · Datos cargados</span>
+            <!-- Panel 1: Robux (Distribución en 2 columnas en Tablet) -->
+            <div id="panelRobux" role="tabpanel" aria-labelledby="tabRobuxBtn" class="tab-slide px-0.5 md:px-1">
+              <form id="robuxOrderForm" novalidate class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
+
+                <!-- Columna Izquierda Tablet: Entrada de código y precio -->
+                <div class="md:col-span-6 space-y-4">
+                  <div id="robuxFieldWrapper" class="space-y-1.5">
+                    <label for="robuxAmount" class="block text-sm font-bold text-slate-800">
+                      Código robux
+                    </label>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        id="robuxAmount"
+                        name="robuxAmount"
+                        inputmode="text"
+                        placeholder="Ej. RBX-00100-xxxx o 100"
+                        class="moon-input w-full rounded-xl py-3 md:py-3.5 pl-4 pr-24 text-base font-semibold uppercase"
+                      />
+                      <button
+                        type="button"
+                        id="clearRobuxInputBtn"
+                        aria-label="Limpiar código Robux"
+                        class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        id="togglePackagesBtn"
+                        aria-expanded="false"
+                        aria-controls="quickPackagesMenu"
+                        aria-label="Añadir foto del código de barras o QR"
+                        class="absolute right-2 flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                      >
+                        <svg id="plusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p id="robuxDecodedInfo" class="text-[11px] md:text-xs font-semibold text-[#0c7a8a]">
+                      Pega o escribe el código generado en Ítems (100 R$ = $3.800 COP)
+                    </p>
+                    <div id="robuxScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                      <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                      <span>Lectura completada · Datos cargados</span>
+                    </div>
+
+                    <div id="quickPackagesMenu" aria-hidden="true" class="packages-accordion">
+                      <div class="packages-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 md:p-3.5 shadow-lg shadow-slate-900/5 space-y-2.5">
+                          <div class="flex items-center justify-between px-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
+                            <span id="robuxScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                          </div>
+                          <label
+                            for="robuxBarcodePhotoInput"
+                            class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3.5 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                          >
+                            <div id="robuxScanTint" class="scan-overlay-tint hidden"></div>
+                            <div id="robuxScanLaser" class="scan-laser-line hidden"></div>
+                            <img
+                              id="robuxBarcodePhotoPreview"
+                              alt="Foto del código de barras o QR"
+                              class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                            />
+                            <span id="robuxBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                              Añadir foto del código de barras o QR
+                            </span>
+                            <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
+                            <input type="file" id="robuxBarcodePhotoInput" accept="image/*" class="sr-only" />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div id="quickPackagesMenu" aria-hidden="true" class="packages-accordion">
-                    <div class="packages-accordion-inner">
-                      <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
-                        <div class="flex items-center justify-between px-1">
-                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
-                          <span id="robuxScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                  <div id="robuxPriceSummaryCard" class="rounded-2xl border border-sky-200 bg-sky-50/70 px-4 py-3.5 md:p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-bold text-slate-700">Precio en COP</span>
+                      <span id="priceCopDisplay" class="text-base sm:text-lg md:text-xl font-black text-[#1e88e5]">$0 COP</span>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-sky-200/70 pt-2.5">
+                      <label for="toggleCustomPackagePrice" class="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                        ¿Deseas cambiar el precio del paquete?
+                      </label>
+                      <input
+                        type="checkbox"
+                        id="toggleCustomPackagePrice"
+                        class="h-4 w-4 md:h-5 md:w-5 rounded border-slate-300 text-[#1e88e5] focus:ring-[#1e88e5] cursor-pointer"
+                      />
+                    </div>
+                    <div id="customPackagePriceBox" class="hidden pt-1 space-y-1">
+                      <label for="customPackagePriceInput" class="block text-[11px] font-bold text-slate-600">
+                        Nuevo precio del paquete en COP
+                      </label>
+                      <div class="relative flex items-center">
+                        <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
+                        <input
+                          type="number"
+                          id="customPackagePriceInput"
+                          min="0"
+                          step="100"
+                          inputmode="numeric"
+                          placeholder="Ej. 4000"
+                          class="moon-input w-full rounded-xl py-2.5 pl-14 pr-3 text-sm font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3.5 md:p-4 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-bold text-slate-700">Ganancia (base $28/R$)</span>
+                      <span id="robuxProfitBaseDisplay" class="text-base sm:text-lg md:text-xl font-black text-emerald-700">$0 COP</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
+                      <span>Margen vs. venta ($38/R$)</span>
+                      <span id="robuxProfitMarginDisplay" class="font-extrabold text-emerald-800">+$0 COP</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Columna Derecha Tablet: Game Pass, Tutorial y QR de cotización -->
+                <div class="md:col-span-6 space-y-4">
+                  <div class="space-y-1.5">
+                    <label for="gamepassAmountDisplay" class="block text-sm font-bold text-slate-800">
+                      ¿De cuánto debe ser el game pass?
+                    </label>
+                    <input
+                      type="text"
+                      id="gamepassAmountDisplay"
+                      readonly
+                      value="0 Robux"
+                      class="w-full rounded-xl px-4 py-3 md:py-3.5 text-base md:text-lg font-extrabold text-[#0c7a8a] bg-cyan-50/70 border border-cyan-200 cursor-default focus:outline-none"
+                    />
+                  </div>
+
+                  <div id="robuxQuoteQrBox" class="hidden rounded-2xl border border-cyan-200 bg-gradient-to-b from-cyan-50/70 to-white p-3.5 md:p-4 space-y-2.5 shadow-2xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <span class="block text-[10px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Código y QR de precio Robux</span>
+                        <span id="robuxQuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
+                      </div>
+                      <span id="robuxQuotePriceBadge" class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[10px] md:text-xs font-extrabold text-[#0c7a8a]">$0 COP</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white p-3">
+                      <div id="robuxQuoteQrContainer" class="shrink-0 rounded-lg border border-slate-200 bg-white p-1.5"></div>
+                      <div class="flex flex-wrap md:w-full items-center justify-center sm:justify-end md:justify-center gap-2">
+                        <button type="button" id="copyRobuxQuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Copiar código
+                        </button>
+                        <button type="button" id="downloadRobuxQuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Descargar QR
+                        </button>
+                        <button type="button" id="openRobuxQuoteInTicketsBtn" class="w-full sm:w-auto rounded-lg bg-[#1e88e5] px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
+                          Abrir en Tickets
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-0.5">
+                    <button
+                      type="button"
+                      id="toggleTutorialBtn"
+                      aria-expanded="false"
+                      aria-controls="tutorialCollapseBox"
+                      class="w-full flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/90 px-4 py-3 text-left transition-all duration-200 hover:border-[#1e88e5] hover:bg-sky-50/60 active:scale-[0.99]"
+                    >
+                      <span id="toggleTutorialLabel" class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Ver tutorial</span>
+                      <span class="inline-flex items-center gap-1.5">
+                        <span class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[11px] font-extrabold text-[#0c7a8a]">
+                          Pass: <span id="tutorialPassAmount">0</span> R$
+                        </span>
+                        <svg id="tutorialChevronIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                      </span>
+                    </button>
+
+                    <div id="tutorialCollapseBox" aria-hidden="true" class="tutorial-accordion">
+                      <div class="tutorial-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 md:p-4 space-y-2">
+                          <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Mini tutorial Game Pass</span>
+                            <button
+                              type="button"
+                              id="copyTutorialBtn"
+                              class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-extrabold text-slate-700 shadow-2xs transition-all hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95"
+                            >
+                              Copiar
+                            </button>
+                          </div>
+                          <ol id="tutorialStepsList" class="list-decimal list-inside space-y-1.5 text-xs font-medium text-slate-600 leading-relaxed">
+                            <li>Inicia sesión en <a href="https://create.roblox.com/dashboard/creations" target="_blank" rel="noopener noreferrer" class="font-bold text-[#1e88e5] underline decoration-[#1e88e5]/50 underline-offset-2 hover:text-[#1565c0]">Creaciones de Roblox</a> y selecciona tu experiencia.</li>
+                            <li>Dentro de tu experiencia, abre el menú lateral y entra a <strong>Monetización &gt; Pases</strong>.</li>
+                            <li>Haz clic en <strong>Crear un pase</strong> para hacer uno nuevo o entra a un pase existente.</li>
+                            <li>Configura nombre, imagen y guarda; luego abre el pase y entra a <strong>Ventas</strong>.</li>
+                            <li>Activa <strong>A la venta</strong> (<em>Item for Sale</em>) para habilitar la compra.</li>
+                            <li>Escribe como precio exacto <span id="tutorialPassPriceText" class="font-extrabold text-[#0c7a8a]">0 Robux</span> y guarda; recibirás <span id="tutorialReceivedRobuxText" class="font-extrabold text-[#1e88e5]">0 Robux</span> tras la comisión del 30%.</li>
+                          </ol>
                         </div>
-                        <label
-                          for="robuxBarcodePhotoInput"
-                          class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
-                        >
-                          <div id="robuxScanTint" class="scan-overlay-tint hidden"></div>
-                          <div id="robuxScanLaser" class="scan-laser-line hidden"></div>
-                          <img
-                            id="robuxBarcodePhotoPreview"
-                            alt="Foto del código de barras o QR"
-                            class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
-                          />
-                          <span id="robuxBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
-                            Añadir foto del código de barras o QR
-                          </span>
-                          <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
-                          <input type="file" id="robuxBarcodePhotoInput" accept="image/*" class="sr-only" />
-                        </label>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div id="robuxPriceSummaryCard" class="rounded-xl border border-sky-200 bg-sky-50/70 px-4 py-3 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold text-slate-700">Precio en COP</span>
-                    <span id="priceCopDisplay" class="text-base sm:text-lg font-black text-[#1e88e5]">$0 COP</span>
-                  </div>
-                  <div class="flex items-center justify-between border-t border-sky-200/70 pt-2">
-                    <label for="toggleCustomPackagePrice" class="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                      ¿Deseas cambiar el precio del paquete?
-                    </label>
-                    <input
-                      type="checkbox"
-                      id="toggleCustomPackagePrice"
-                      class="h-4 w-4 rounded border-slate-300 text-[#1e88e5] focus:ring-[#1e88e5] cursor-pointer"
-                    />
-                  </div>
-                  <div id="customPackagePriceBox" class="hidden pt-1 space-y-1">
-                    <label for="customPackagePriceInput" class="block text-[11px] font-bold text-slate-600">
-                      Nuevo precio del paquete en COP
+              </form>
+            </div>
+
+            <!-- Panel 2: MM2 (Distribución en 2 columnas en Tablet) -->
+            <div id="panelMm2" role="tabpanel" aria-labelledby="tabMm2Btn" class="tab-slide px-0.5 md:px-1">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
+
+                <!-- Columna Izquierda Tablet: Código de arma y arma detectada -->
+                <div class="md:col-span-6 space-y-4">
+                  <div id="mm2WeaponFieldWrapper" class="space-y-1.5">
+                    <label for="mm2WeaponInput" class="block text-sm font-bold text-slate-800">
+                      Código de arma
                     </label>
                     <div class="relative flex items-center">
-                      <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
                       <input
-                        type="number"
-                        id="customPackagePriceInput"
-                        min="0"
-                        step="100"
-                        inputmode="numeric"
-                        placeholder="Ej. 4000"
-                        class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold"
+                        type="text"
+                        id="mm2WeaponInput"
+                        name="mm2WeaponInput"
+                        placeholder="Ej. MM2-GOD-xxxx-xxxx o 1000"
+                        class="moon-input w-full rounded-xl py-3 md:py-3.5 pl-4 pr-24 text-base font-semibold uppercase"
+                      />
+                      <button
+                        type="button"
+                        id="clearMm2InputBtn"
+                        aria-label="Limpiar código de arma"
+                        class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        id="toggleMm2WeaponsBtn"
+                        aria-expanded="false"
+                        aria-controls="mm2WeaponsMenu"
+                        aria-label="Añadir foto del código de barras o QR del arma"
+                        class="absolute right-2 flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                      >
+                        <svg id="mm2PlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p id="mm2DecodedInfo" class="text-[11px] md:text-xs font-semibold text-[#0c7a8a]">
+                      Escribe o pega el código generado en Ítems (o sube la foto desde +)
+                    </p>
+                    <div id="mm2ScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                      <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                      <span>Lectura completada · Datos cargados</span>
+                    </div>
+
+                    <div id="mm2WeaponsMenu" aria-hidden="true" class="weapons-accordion">
+                      <div class="weapons-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 md:p-3.5 shadow-lg shadow-slate-900/5 space-y-2.5">
+                          <div class="flex items-center justify-between px-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
+                            <span id="mm2ScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                          </div>
+                          <label
+                            for="mm2BarcodePhotoInput"
+                            class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3.5 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                          >
+                            <div id="mm2ScanTint" class="scan-overlay-tint hidden"></div>
+                            <div id="mm2ScanLaser" class="scan-laser-line hidden"></div>
+                            <img
+                              id="mm2BarcodePhotoPreview"
+                              alt="Foto del código de barras o QR del arma"
+                              class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                            />
+                            <span id="mm2BarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                              Añadir foto del código de barras o QR
+                            </span>
+                            <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
+                            <input type="file" id="mm2BarcodePhotoInput" accept="image/*" class="sr-only" />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label for="mm2WeaponCodeDisplay" class="block text-sm font-bold text-slate-800">
+                      Arma detectada
+                    </label>
+                    <div id="mm2DetectedWeaponCard" class="flex items-center justify-between gap-2 rounded-2xl border border-cyan-200 bg-cyan-50/70 px-4 py-3.5">
+                      <div class="w-full">
+                        <span id="mm2WeaponCategoryLabel" class="block text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Sin rareza</span>
+                        <input
+                          type="text"
+                          id="mm2WeaponCodeDisplay"
+                          readonly
+                          value="—"
+                          class="w-full bg-transparent text-base md:text-lg font-black text-[#0c7a8a] cursor-default focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 md:p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <label for="mm2ForeignPriceInput" class="text-xs font-extrabold uppercase tracking-wide text-slate-600">
+                        Precio base (USD)
+                      </label>
+                      <span class="text-[11px] font-semibold text-slate-500">Comisión 5.4% + $0.22</span>
+                    </div>
+                    <div class="relative flex items-center">
+                      <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">USD $</span>
+                      <input type="number" id="mm2ForeignPriceInput" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 2.50" class="moon-input w-full rounded-xl py-2.5 pl-14 pr-3 text-sm font-semibold" />
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                      <div class="rounded-xl bg-white border border-slate-200/80 p-2.5">
+                        <span class="block text-[10px] font-bold text-slate-400">Comisión</span>
+                        <span id="mm2CommissionDisplay" class="text-xs md:text-sm font-extrabold text-slate-800">$0.00</span>
+                      </div>
+                      <div class="rounded-xl bg-white border border-slate-200/80 p-2.5">
+                        <span class="block text-[10px] font-bold text-slate-400">Total USD</span>
+                        <span id="mm2TotalForeignDisplay" class="text-xs md:text-sm font-extrabold text-[#1e88e5]">$0.00</span>
+                      </div>
+                      <div class="rounded-xl bg-white border border-slate-200/80 p-2.5">
+                        <span class="block text-[10px] font-bold text-slate-400">Base COP</span>
+                        <span id="mm2TotalForeignCopDisplay" class="text-xs md:text-sm font-extrabold text-[#0c7a8a]">$0 COP</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Columna Derecha Tablet: Ganancia, total COP y QR de cotización MM2 -->
+                <div class="md:col-span-6 space-y-4">
+                  <div id="mm2ProfitFieldWrapper" class="space-y-2">
+                    <label for="mm2ProfitDisplayInput" class="block text-sm font-bold text-slate-800">
+                      Ganancia
+                    </label>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        id="mm2ProfitDisplayInput"
+                        readonly
+                        value="$0 COP"
+                        class="moon-input w-full rounded-xl py-3 md:py-3.5 pl-4 pr-14 text-base font-extrabold text-emerald-700 bg-emerald-50/50 border-emerald-200 cursor-default"
+                      />
+                      <button
+                        type="button"
+                        id="toggleMm2ProfitBtn"
+                        aria-expanded="false"
+                        aria-controls="mm2ProfitMenu"
+                        aria-label="Ver opciones de ganancia"
+                        class="absolute right-2 flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
+                      >
+                        <svg id="mm2ProfitPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div id="mm2ProfitMenu" aria-hidden="true" class="profit-accordion">
+                      <div class="profit-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 md:p-3.5 shadow-lg shadow-slate-900/5 space-y-2.5">
+                          <div class="flex items-center justify-between px-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Opciones de ganancia</span>
+                            <span class="text-[11px] font-semibold text-[#1e88e5]">Pesos COP</span>
+                          </div>
+
+                          <div class="grid grid-cols-3 gap-2">
+                            <button type="button" data-profit-preset="1000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$1.000</button>
+                            <button type="button" data-profit-preset="2000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$2.000</button>
+                            <button type="button" data-profit-preset="3000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$3.000</button>
+                            <button type="button" data-profit-preset="4000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$4.000</button>
+                            <button type="button" data-profit-preset="5000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$5.000</button>
+                            <button type="button" data-profit-preset="6000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$6.000</button>
+                          </div>
+
+                          <button type="button" id="customProfitToggleBtn" class="w-full rounded-xl border border-dashed border-[#1e88e5] bg-sky-50/70 px-3 py-2.5 text-xs font-extrabold text-[#1e88e5] transition-colors hover:bg-sky-100/80 active:scale-[0.99]">
+                            Ganancia personalizada
+                          </button>
+
+                          <div id="customProfitBox" class="hidden pt-1 space-y-1.5">
+                            <label for="mm2CustomProfitInput" class="block text-[11px] font-bold text-slate-600">
+                              Escribe tu ganancia en pesos (COP)
+                            </label>
+                            <div class="relative flex items-center">
+                              <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
+                              <input type="number" id="mm2CustomProfitInput" min="0" step="100" inputmode="numeric" placeholder="Ej. 3500" class="moon-input w-full rounded-xl py-2.5 pl-14 pr-3 text-sm font-semibold" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3.5">
+                      <span class="text-xs md:text-sm font-bold text-slate-700">Total con ganancia (COP)</span>
+                      <span id="mm2FinalPriceWithProfitCop" class="text-sm sm:text-base md:text-lg font-black text-emerald-700">$0 COP</span>
+                    </div>
+                  </div>
+
+                  <div id="mm2QuoteQrBox" class="hidden rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50/70 to-white p-3.5 md:p-4 space-y-2.5 shadow-2xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <span class="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">Código y QR de precio MM2</span>
+                        <span id="mm2QuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
+                      </div>
+                      <span id="mm2QuotePriceBadge" class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] md:text-xs font-extrabold text-indigo-700">$0 COP</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white p-3">
+                      <div id="mm2QuoteQrContainer" class="shrink-0 rounded-lg border border-slate-200 bg-white p-1.5"></div>
+                      <div class="flex flex-wrap md:w-full items-center justify-center sm:justify-end md:justify-center gap-2">
+                        <button type="button" id="copyMm2QuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Copiar código
+                        </button>
+                        <button type="button" id="downloadMm2QuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Descargar QR
+                        </button>
+                        <button type="button" id="openMm2QuoteInTicketsBtn" class="w-full sm:w-auto rounded-lg bg-[#1e88e5] px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
+                          Abrir en Tickets
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Panel 3: Ítems (Tarjetas lado a lado en Tablet) -->
+            <div id="panelItems" role="tabpanel" aria-labelledby="tabItemsBtn" class="tab-slide px-0.5 md:px-1">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start">
+
+                <!-- Tarjeta Robux -->
+                <div class="rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 to-white p-4 md:p-5 shadow-2xs space-y-3.5">
+                  <div class="flex items-center justify-between">
+                    <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-wide text-slate-800">Robux</h2>
+                    <span class="rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] md:text-xs font-extrabold text-[#1e88e5]">100 - 20.000</span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <label for="robuxCodeAmountInput" class="block text-xs md:text-sm font-bold text-slate-700">
+                        Colocar cantidad de robux
+                      </label>
+                      <div class="inline-flex items-center gap-1.5">
+                        <button type="button" id="stepDownRobuxBtn" aria-label="Restar 1 Robux" class="h-7 w-7 md:h-8 md:w-8 rounded-lg border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">-</button>
+                        <button type="button" id="stepUpRobuxBtn" aria-label="Sumar 1 Robux" class="h-7 w-7 md:h-8 md:w-8 rounded-lg border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">+</button>
+                      </div>
+                    </div>
+                    <input
+                      type="number"
+                      id="robuxCodeAmountInput"
+                      min="100"
+                      max="20000"
+                      step="1"
+                      inputmode="numeric"
+                      placeholder="Mín. 100 — Máx. 20.000"
+                      class="moon-input w-full rounded-xl py-2.5 md:py-3 px-3.5 text-sm font-semibold"
+                    />
+                    <div class="flex items-center justify-between text-[11px] font-semibold">
+                      <span class="text-slate-500">Paquetes únicos: 100 a 20.000</span>
+                      <span id="robuxCodeRangeStatus" class="font-extrabold text-slate-400">Ingresa cantidad</span>
+                    </div>
+                  </div>
+
+                  <div id="robuxGeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 md:p-4 space-y-3 shadow-2xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código único del paquete</span>
+                        <span id="robuxGeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
+                      </div>
+                      <span id="robuxGeneratedAmountBadge" class="rounded-full bg-cyan-100 px-2.5 py-1 text-[11px] font-extrabold text-[#0c7a8a]">0 Robux</span>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 space-y-2">
+                      <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
+                      <svg id="robuxBarcodeSvg" class="route-barcode-svg rounded bg-white px-2.5 py-1.5 border border-slate-200" aria-label="Código de barras de Robux"></svg>
+                      <span id="robuxBarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
+                      <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+                        <button type="button" id="copyRobuxCodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Copiar código
+                        </button>
+                        <button type="button" id="downloadRobuxBarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                          Descargar PNG
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tarjeta Murder Mystery 2 -->
+                <div class="rounded-2xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 to-white p-4 md:p-5 shadow-2xs space-y-3.5">
+                  <div class="flex items-center justify-between">
+                    <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-wide text-slate-800">Murder Mistery 2</h2>
+                    <span class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] md:text-xs font-extrabold text-indigo-700">MM2</span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label for="itemsMm2SecondWeaponInput" class="block text-xs md:text-sm font-bold text-slate-700">
+                      Seleccionar arma
+                    </label>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        id="itemsMm2SecondWeaponInput"
+                        readonly
+                        placeholder="Presiona + para elegir un arma"
+                        class="moon-input w-full rounded-xl py-2.5 md:py-3 pl-3.5 pr-12 text-sm font-semibold cursor-pointer select-none"
+                      />
+                      <button
+                        type="button"
+                        id="toggleItemsMm2SecondBtn"
+                        aria-expanded="false"
+                        aria-controls="itemsMm2SecondMenu"
+                        aria-label="Ver listado de armas MM2"
+                        class="absolute right-1.5 flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
+                      >
+                        <svg id="itemsMm2SecondPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div id="itemsMm2SecondMenu" aria-hidden="true" class="weapons-accordion">
+                      <div class="weapons-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-lg shadow-slate-900/5">
+                          <div class="mb-2 flex items-center justify-between px-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Armas MM2</span>
+                            <span id="itemsMm2SecondCount" class="text-[11px] font-semibold text-[#1e88e5]"></span>
+                          </div>
+
+                          <div class="mb-2.5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Rarezas de armas MM2 en Ítems">
+                            <button type="button" data-second-rarity-tab="GODLY" role="tab" aria-selected="true" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all bg-white text-[#1e88e5] shadow-2xs">GODLY</button>
+                            <button type="button" data-second-rarity-tab="CHROMA" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">CHROMA</button>
+                            <button type="button" data-second-rarity-tab="ANCIENT" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">ANCIENT</button>
+                          </div>
+
+                          <div id="itemsMm2SecondList" class="mm2-scroll max-h-52 md:max-h-60 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="itemsMm2GeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 md:p-4 space-y-3 shadow-2xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código propio</span>
+                        <span id="itemsMm2GeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
+                      </div>
+                      <span id="itemsMm2GeneratedWeaponBadge" class="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700">—</span>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 space-y-2">
+                      <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
+                      <svg id="itemsMm2BarcodeSvg" class="route-barcode-svg rounded bg-white px-2.5 py-1.5 border border-slate-200" aria-label="Código de barras del arma MM2"></svg>
+                      <span id="itemsMm2BarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
+                      <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+                        <button type="button" id="copyItemsMm2CodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Copiar código
+                        </button>
+                        <button type="button" id="downloadItemsMm2BarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                          Descargar PNG
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Panel 4: Tickets (Distribución en 2 columnas en Tablet: Formulario a la izquierda, Ticket + Historial a la derecha) -->
+            <div id="panelTickets" role="tabpanel" aria-labelledby="tabTicketsBtn" class="tab-slide px-0.5 md:px-1">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
+
+                <!-- Columna Izquierda Tablet: Formulario de creación de ticket -->
+                <form id="ticketCreatorForm" novalidate class="md:col-span-6 space-y-4">
+                  <div class="space-y-1.5">
+                    <label for="ticketBarcodeInput" class="block text-sm font-bold text-slate-800">
+                      Código de barra / Código QR / Precio
+                    </label>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        id="ticketBarcodeInput"
+                        name="ticketBarcodeInput"
+                        inputmode="text"
+                        placeholder="Ej. QTE-RBX-..., QTE-MM2-..., RBX-... o MM2-..."
+                        class="moon-input w-full rounded-xl py-3 md:py-3.5 pl-3.5 pr-20 text-sm font-semibold uppercase"
+                      />
+                      <button
+                        type="button"
+                        id="clearTicketBarcodeBtn"
+                        aria-label="Limpiar código del ticket"
+                        class="hidden absolute right-11 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        id="toggleTicketScanBtn"
+                        aria-expanded="false"
+                        aria-controls="ticketScanMenu"
+                        aria-label="Subir foto de código de barras o QR para el ticket"
+                        class="absolute right-1.5 flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
+                      >
+                        <svg id="ticketPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div id="ticketScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                      <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
+                      <span>Lectura completada · Datos cargados</span>
+                    </div>
+
+                    <div id="ticketScanMenu" aria-hidden="true" class="packages-accordion">
+                      <div class="packages-accordion-inner">
+                        <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2">
+                          <div class="flex items-center justify-between px-1">
+                            <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Escanear imagen</span>
+                            <span id="ticketScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
+                          </div>
+                          <label
+                            for="ticketBarcodePhotoInput"
+                            class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
+                          >
+                            <div id="ticketScanTint" class="scan-overlay-tint hidden"></div>
+                            <div id="ticketScanLaser" class="scan-laser-line hidden"></div>
+                            <img
+                              id="ticketBarcodePhotoPreview"
+                              alt="Imagen escaneada para ticket"
+                              class="relative z-20 hidden mb-1.5 h-16 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
+                            />
+                            <span id="ticketBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
+                              Subir foto de código de barras o QR
+                            </span>
+                            <input type="file" id="ticketBarcodePhotoInput" accept="image/*" class="sr-only" />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="ticketCodeInfoCard" class="rounded-2xl border border-cyan-200 bg-cyan-50/70 px-4 py-3.5 space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Información del código</span>
+                      <span id="ticketCodeTypeBadge" class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">Sin código</span>
+                    </div>
+                    <p id="ticketCodeSummaryText" class="text-sm md:text-base font-black text-slate-800">—</p>
+                    <p id="ticketCodeDetailText" class="text-xs font-semibold text-slate-600">Ingresa o abre un código de Robux o MM2 para ver los detalles.</p>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                      <label for="ticketRobloxUserInput" class="block text-xs font-bold text-slate-800">
+                        User Roblox
+                      </label>
+                      <input
+                        type="text"
+                        id="ticketRobloxUserInput"
+                        name="ticketRobloxUserInput"
+                        placeholder="@usuario_roblox"
+                        class="moon-input w-full rounded-xl py-2.5 md:py-3 px-3.5 text-sm font-semibold"
+                      />
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <label for="ticketTiktokUserInput" class="block text-xs font-bold text-slate-800">
+                        User TikTok
+                      </label>
+                      <input
+                        type="text"
+                        id="ticketTiktokUserInput"
+                        name="ticketTiktokUserInput"
+                        placeholder="@usuario_tiktok"
+                        class="moon-input w-full rounded-xl py-2.5 md:py-3 px-3.5 text-sm font-semibold"
                       />
                     </div>
                   </div>
-                </div>
 
-                <div id="robuxQuoteQrBox" class="hidden rounded-2xl border border-cyan-200 bg-gradient-to-b from-cyan-50/70 to-white p-3.5 space-y-2.5 shadow-2xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <div>
-                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Código y QR de precio Robux</span>
-                      <span id="robuxQuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
-                    </div>
-                    <span id="robuxQuotePriceBadge" class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">$0 COP</span>
-                  </div>
-                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 space-y-2">
-                    <div id="robuxQuoteQrContainer" class="rounded-lg border border-slate-200 bg-white p-1.5"></div>
-                    <div class="flex flex-wrap items-center justify-center gap-2">
-                      <button type="button" id="copyRobuxQuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                        Copiar código
-                      </button>
-                      <button type="button" id="downloadRobuxQuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                        Descargar QR
-                      </button>
-                      <button type="button" id="openRobuxQuoteInTicketsBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
-                        Abrir en Tickets
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 space-y-1">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold text-slate-700">Ganancia (base $28/R$)</span>
-                    <span id="robuxProfitBaseDisplay" class="text-base sm:text-lg font-black text-emerald-700">$0 COP</span>
-                  </div>
-                  <div class="flex items-center justify-between text-xs font-semibold text-slate-600">
-                    <span>Margen vs. venta ($38/R$)</span>
-                    <span id="robuxProfitMarginDisplay" class="font-extrabold text-emerald-800">+$0 COP</span>
-                  </div>
-                </div>
-
-                <div class="space-y-1.5">
-                  <label for="gamepassAmountDisplay" class="block text-sm font-bold text-slate-800">
-                    ¿De cuánto debe ser el game pass?
-                  </label>
-                  <input
-                    type="text"
-                    id="gamepassAmountDisplay"
-                    readonly
-                    value="0 Robux"
-                    class="w-full rounded-xl px-4 py-3 text-base font-extrabold text-[#0c7a8a] bg-cyan-50/70 border border-cyan-200 cursor-default focus:outline-none"
-                  />
-                </div>
-
-                <div class="pt-0.5">
                   <button
-                    type="button"
-                    id="toggleTutorialBtn"
-                    aria-expanded="false"
-                    aria-controls="tutorialCollapseBox"
-                    class="w-full flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/90 px-4 py-2.5 text-left transition-all duration-200 hover:border-[#1e88e5] hover:bg-sky-50/60 active:scale-[0.99]"
+                    type="submit"
+                    id="createTicketBtn"
+                    class="w-full rounded-xl bg-[#1e88e5] py-3.5 px-4 text-xs sm:text-sm font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
                   >
-                    <span id="toggleTutorialLabel" class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Ver tutorial</span>
-                    <span class="inline-flex items-center gap-1.5">
-                      <span class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-[11px] font-extrabold text-[#0c7a8a]">
-                        Pass: <span id="tutorialPassAmount">0</span> R$
-                      </span>
-                      <svg id="tutorialChevronIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                      </svg>
-                    </span>
+                    Generar Ticket con Código QR propio
                   </button>
+                </form>
 
-                  <div id="tutorialCollapseBox" aria-hidden="true" class="tutorial-accordion">
-                    <div class="tutorial-accordion-inner">
-                      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2">
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Mini tutorial Game Pass</span>
-                          <button
-                            type="button"
-                            id="copyTutorialBtn"
-                            class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-extrabold text-slate-700 shadow-2xs transition-all hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95"
-                          >
-                            Copiar
-                          </button>
-                        </div>
-                        <ol id="tutorialStepsList" class="list-decimal list-inside space-y-1.5 text-xs font-medium text-slate-600 leading-relaxed">
-                          <li>Inicia sesión en <a href="https://create.roblox.com/dashboard/creations" target="_blank" rel="noopener noreferrer" class="font-bold text-[#1e88e5] underline decoration-[#1e88e5]/50 underline-offset-2 hover:text-[#1565c0]">Creaciones de Roblox</a> y selecciona tu experiencia.</li>
-                          <li>Dentro de tu experiencia, abre el menú lateral y entra a <strong>Monetización &gt; Pases</strong>.</li>
-                          <li>Haz clic en <strong>Crear un pase</strong> para hacer uno nuevo o entra a un pase existente.</li>
-                          <li>Configura nombre, imagen y guarda; luego abre el pase y entra a <strong>Ventas</strong>.</li>
-                          <li>Activa <strong>A la venta</strong> (<em>Item for Sale</em>) para habilitar la compra.</li>
-                          <li>Escribe como precio exacto <span id="tutorialPassPriceText" class="font-extrabold text-[#0c7a8a]">0 Robux</span> y guarda; recibirás <span id="tutorialReceivedRobuxText" class="font-extrabold text-[#1e88e5]">0 Robux</span> tras la comisión del 30%.</li>
-                        </ol>
+                <!-- Columna Derecha Tablet: Ticket activo e historial -->
+                <div class="md:col-span-6 space-y-4">
+                  <div id="activeTicketCard" class="hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50/70 to-white p-4 md:p-5 shadow-2xs space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <span class="block text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Ticket generado</span>
+                        <span id="activeTicketIdText" class="text-sm sm:text-base font-black text-slate-900">TKT-0000</span>
+                      </div>
+                      <span id="activeTicketDateText" class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">—</span>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200/90 bg-white p-3 space-y-1.5 text-xs">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-slate-500">Ítem / Robux:</span>
+                        <span id="activeTicketItemText" class="font-extrabold text-slate-900 text-right">—</span>
+                      </div>
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-slate-500">Código:</span>
+                        <span id="activeTicketCodeText" class="font-extrabold text-[#0c7a8a] text-right">—</span>
+                      </div>
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-slate-500">User Roblox:</span>
+                        <span id="activeTicketRobloxText" class="font-extrabold text-slate-800 text-right">—</span>
+                      </div>
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-bold text-slate-500">User TikTok:</span>
+                        <span id="activeTicketTiktokText" class="font-extrabold text-slate-800 text-right">—</span>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 space-y-2">
+                      <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código QR propio del ticket</span>
+                      <div id="activeTicketQrContainer" class="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs"></div>
+                      <span id="activeTicketQrPayloadText" class="max-w-full truncate text-[10px] font-bold text-slate-500">—</span>
+                      <div class="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+                        <button type="button" id="copyTicketPayloadBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
+                          Copiar datos QR
+                        </button>
+                        <button type="button" id="downloadTicketQrBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                          Descargar QR PNG
+                        </button>
+                        <button type="button" id="downloadTicketFormBtn" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700">
+                          Descargar formulario
+                        </button>
                       </div>
                     </div>
                   </div>
-                </div>
-              </form>
-            </div>
 
-            <!-- Panel 2: MM2 -->
-            <div id="panelMm2" role="tabpanel" aria-labelledby="tabMm2Btn" class="tab-slide px-0.5 space-y-4">
-              <div id="mm2WeaponFieldWrapper" class="space-y-1.5">
-                <label for="mm2WeaponInput" class="block text-sm font-bold text-slate-800">
-                  Código de arma
-                </label>
-                <div class="relative flex items-center">
-                  <input
-                    type="text"
-                    id="mm2WeaponInput"
-                    name="mm2WeaponInput"
-                    placeholder="Ej. MM2-GOD-xxxx-xxxx o 1000"
-                    class="moon-input w-full rounded-xl py-3 pl-4 pr-24 text-base font-semibold uppercase"
-                  />
-                  <button
-                    type="button"
-                    id="clearMm2InputBtn"
-                    aria-label="Limpiar código de arma"
-                    class="hidden absolute right-12 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
-                  >
-                    ✕
-                  </button>
-                  <button
-                    type="button"
-                    id="toggleMm2WeaponsBtn"
-                    aria-expanded="false"
-                    aria-controls="mm2WeaponsMenu"
-                    aria-label="Añadir foto del código de barras o QR del arma"
-                    class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
-                  >
-                    <svg id="mm2PlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-                <p id="mm2DecodedInfo" class="text-[11px] font-semibold text-[#0c7a8a]">
-                  Escribe o pega el código generado en Ítems (o sube la foto desde +)
-                </p>
-                <div id="mm2ScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                  <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
-                  <span>Lectura completada · Datos cargados</span>
-                </div>
-
-                <div id="mm2WeaponsMenu" aria-hidden="true" class="weapons-accordion">
-                  <div class="weapons-accordion-inner">
-                    <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
-                      <div class="flex items-center justify-between px-1">
-                        <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Foto código de barras / QR</span>
-                        <span id="mm2ScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
-                      </div>
-                      <label
-                        for="mm2BarcodePhotoInput"
-                        class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-3 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
-                      >
-                        <div id="mm2ScanTint" class="scan-overlay-tint hidden"></div>
-                        <div id="mm2ScanLaser" class="scan-laser-line hidden"></div>
-                        <img
-                          id="mm2BarcodePhotoPreview"
-                          alt="Foto del código de barras o QR del arma"
-                          class="relative z-20 hidden mb-2 h-20 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
-                        />
-                        <span id="mm2BarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
-                          Añadir foto del código de barras o QR
-                        </span>
-                        <span class="relative z-20 mt-0.5 text-[10px] font-medium text-slate-500">PNG, JPG o WEBP · Escaneo automático</span>
-                        <input type="file" id="mm2BarcodePhotoInput" accept="image/*" class="sr-only" />
-                      </label>
+                  <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 md:p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Tickets creados</span>
+                      <span id="ticketsSavedCountBadge" class="rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700">0</span>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="space-y-1.5">
-                <label for="mm2WeaponCodeDisplay" class="block text-sm font-bold text-slate-800">
-                  Arma detectada
-                </label>
-                <div id="mm2DetectedWeaponCard" class="flex items-center justify-between gap-2 rounded-xl border border-cyan-200 bg-cyan-50/70 px-4 py-3">
-                  <div class="w-full">
-                    <span id="mm2WeaponCategoryLabel" class="block text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Sin rareza</span>
-                    <input
-                      type="text"
-                      id="mm2WeaponCodeDisplay"
-                      readonly
-                      value="—"
-                      class="w-full bg-transparent text-base font-black text-[#0c7a8a] cursor-default focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div id="mm2ProfitFieldWrapper" class="space-y-1.5">
-                <label for="mm2ProfitDisplayInput" class="block text-sm font-bold text-slate-800">
-                  Ganancia
-                </label>
-                <div class="relative flex items-center">
-                  <input
-                    type="text"
-                    id="mm2ProfitDisplayInput"
-                    readonly
-                    value="$0 COP"
-                    class="moon-input w-full rounded-xl py-3 pl-4 pr-14 text-base font-extrabold text-emerald-700 bg-emerald-50/50 border-emerald-200 cursor-default"
-                  />
-                  <button
-                    type="button"
-                    id="toggleMm2ProfitBtn"
-                    aria-expanded="false"
-                    aria-controls="mm2ProfitMenu"
-                    aria-label="Ver opciones de ganancia"
-                    class="absolute right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] hover:shadow-md active:scale-90"
-                  >
-                    <svg id="mm2ProfitPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div id="mm2ProfitMenu" aria-hidden="true" class="profit-accordion">
-                  <div class="profit-accordion-inner">
-                    <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2.5">
-                      <div class="flex items-center justify-between px-1">
-                        <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Opciones de ganancia</span>
-                        <span class="text-[11px] font-semibold text-[#1e88e5]">Pesos COP</span>
-                      </div>
-
-                      <div class="grid grid-cols-3 gap-2">
-                        <button type="button" data-profit-preset="1000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$1.000</button>
-                        <button type="button" data-profit-preset="2000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$2.000</button>
-                        <button type="button" data-profit-preset="3000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$3.000</button>
-                        <button type="button" data-profit-preset="4000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$4.000</button>
-                        <button type="button" data-profit-preset="5000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$5.000</button>
-                        <button type="button" data-profit-preset="6000" class="mm2-profit-preset rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-center text-xs font-extrabold text-slate-800 shadow-2xs transition-all hover:border-[#1e88e5] hover:bg-sky-50 active:scale-95">$6.000</button>
-                      </div>
-
-                      <button type="button" id="customProfitToggleBtn" class="w-full rounded-xl border border-dashed border-[#1e88e5] bg-sky-50/70 px-3 py-2 text-xs font-extrabold text-[#1e88e5] transition-colors hover:bg-sky-100/80 active:scale-[0.99]">
-                        Ganancia personalizada
-                      </button>
-
-                      <div id="customProfitBox" class="hidden pt-1 space-y-1.5">
-                        <label for="mm2CustomProfitInput" class="block text-[11px] font-bold text-slate-600">
-                          Escribe tu ganancia en pesos (COP)
-                        </label>
-                        <div class="relative flex items-center">
-                          <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">COP $</span>
-                          <input type="number" id="mm2CustomProfitInput" min="0" step="100" inputmode="numeric" placeholder="Ej. 3500" class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold" />
-                        </div>
-                      </div>
+                    <div id="ticketsHistoryList" class="mm2-scroll max-h-48 md:max-h-60 overflow-y-auto space-y-2">
+                      <p class="text-xs font-medium text-slate-400 text-center py-2">Aún no has creado tickets.</p>
                     </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5">
-                  <span class="text-xs font-bold text-slate-700">Total con ganancia (COP)</span>
-                  <span id="mm2FinalPriceWithProfitCop" class="text-sm sm:text-base font-black text-emerald-700">$0 COP</span>
-                </div>
-              </div>
-
-              <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <label for="mm2ForeignPriceInput" class="text-xs font-extrabold uppercase tracking-wide text-slate-600">
-                    Precio base (USD)
-                  </label>
-                  <span class="text-[11px] font-semibold text-slate-500">Comisión 5.4% + $0.22</span>
-                </div>
-                <div class="relative flex items-center">
-                  <span class="pointer-events-none absolute left-3 text-xs font-extrabold text-slate-400">USD $</span>
-                  <input type="number" id="mm2ForeignPriceInput" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 2.50" class="moon-input w-full rounded-xl py-2 pl-14 pr-3 text-sm font-semibold" />
-                </div>
-                <div class="grid grid-cols-3 gap-2 pt-1 text-center">
-                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
-                    <span class="block text-[10px] font-bold text-slate-400">Comisión</span>
-                    <span id="mm2CommissionDisplay" class="text-xs font-extrabold text-slate-800">$0.00</span>
-                  </div>
-                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
-                    <span class="block text-[10px] font-bold text-slate-400">Total USD</span>
-                    <span id="mm2TotalForeignDisplay" class="text-xs font-extrabold text-[#1e88e5]">$0.00</span>
-                  </div>
-                  <div class="rounded-xl bg-white border border-slate-200/80 p-2">
-                    <span class="block text-[10px] font-bold text-slate-400">Base COP</span>
-                    <span id="mm2TotalForeignCopDisplay" class="text-xs font-extrabold text-[#0c7a8a]">$0 COP</span>
-                  </div>
-                </div>
-              </div>
-
-              <div id="mm2QuoteQrBox" class="hidden rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50/70 to-white p-3.5 space-y-2.5 shadow-2xs">
-                <div class="flex items-center justify-between gap-2">
-                  <div>
-                    <span class="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">Código y QR de precio MM2</span>
-                    <span id="mm2QuoteCodeText" class="text-xs sm:text-sm font-black tracking-wider text-slate-900">—</span>
-                  </div>
-                  <span id="mm2QuotePriceBadge" class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-extrabold text-indigo-700">$0 COP</span>
-                </div>
-                <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-white p-2.5 space-y-2">
-                  <div id="mm2QuoteQrContainer" class="rounded-lg border border-slate-200 bg-white p-1.5"></div>
-                  <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button type="button" id="copyMm2QuoteCodeBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                      Copiar código
-                    </button>
-                    <button type="button" id="downloadMm2QuoteQrBtn" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                      Descargar QR
-                    </button>
-                    <button type="button" id="openMm2QuoteInTicketsBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#1565c0]">
-                      Abrir en Tickets
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Panel 3: Ítems -->
-            <div id="panelItems" role="tabpanel" aria-labelledby="tabItemsBtn" class="tab-slide px-0.5 space-y-4">
-              <div class="rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 to-white p-4 shadow-2xs space-y-3">
-                <div class="flex items-center justify-between">
-                  <h2 class="text-xs font-extrabold uppercase tracking-wide text-slate-800">Robux</h2>
-                  <span class="rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">100 - 20.000</span>
-                </div>
-
-                <div class="space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <label for="robuxCodeAmountInput" class="block text-xs font-bold text-slate-700">
-                      Colocar cantidad de robux
-                    </label>
-                    <div class="inline-flex items-center gap-1">
-                      <button type="button" id="stepDownRobuxBtn" aria-label="Restar 1 Robux" class="h-6 w-6 rounded-md border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">-</button>
-                      <button type="button" id="stepUpRobuxBtn" aria-label="Sumar 1 Robux" class="h-6 w-6 rounded-md border border-slate-200 bg-white text-xs font-black text-slate-700 hover:border-[#1e88e5] hover:text-[#1e88e5] active:scale-95">+</button>
-                    </div>
-                  </div>
-                  <input
-                    type="number"
-                    id="robuxCodeAmountInput"
-                    min="100"
-                    max="20000"
-                    step="1"
-                    inputmode="numeric"
-                    placeholder="Mín. 100 — Máx. 20.000"
-                    class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
-                  />
-                  <div class="flex items-center justify-between text-[11px] font-semibold">
-                    <span class="text-slate-500">Paquetes únicos: 100 a 20.000</span>
-                    <span id="robuxCodeRangeStatus" class="font-extrabold text-slate-400">Ingresa cantidad</span>
-                  </div>
-                </div>
-
-                <div id="robuxGeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 space-y-3 shadow-2xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <div>
-                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código único del paquete</span>
-                      <span id="robuxGeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
-                    </div>
-                    <span id="robuxGeneratedAmountBadge" class="rounded-full bg-cyan-100 px-2.5 py-1 text-[11px] font-extrabold text-[#0c7a8a]">0 Robux</span>
-                  </div>
-
-                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 space-y-1.5">
-                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
-                    <svg id="robuxBarcodeSvg" class="route-barcode-svg rounded bg-white px-2 py-1 border border-slate-200" aria-label="Código de barras de Robux"></svg>
-                    <span id="robuxBarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
-                    <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
-                      <button type="button" id="copyRobuxCodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                        Copiar código
-                      </button>
-                      <button type="button" id="downloadRobuxBarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
-                        Descargar PNG
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="rounded-2xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 to-white p-4 shadow-2xs space-y-3">
-                <div class="flex items-center justify-between">
-                  <h2 class="text-xs font-extrabold uppercase tracking-wide text-slate-800">Murder Mistery 2</h2>
-                  <span class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-extrabold text-indigo-700">MM2</span>
-                </div>
-
-                <div class="space-y-1.5">
-                  <label for="itemsMm2SecondWeaponInput" class="block text-xs font-bold text-slate-700">
-                    Seleccionar arma
-                  </label>
-                  <div class="relative flex items-center">
-                    <input
-                      type="text"
-                      id="itemsMm2SecondWeaponInput"
-                      readonly
-                      placeholder="Presiona + para elegir un arma"
-                      class="moon-input w-full rounded-xl py-2.5 pl-3.5 pr-12 text-sm font-semibold cursor-pointer select-none"
-                    />
-                    <button
-                      type="button"
-                      id="toggleItemsMm2SecondBtn"
-                      aria-expanded="false"
-                      aria-controls="itemsMm2SecondMenu"
-                      aria-label="Ver listado de armas MM2"
-                      class="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
-                    >
-                      <svg id="itemsMm2SecondPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div id="itemsMm2SecondMenu" aria-hidden="true" class="weapons-accordion">
-                    <div class="weapons-accordion-inner">
-                      <div class="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-lg shadow-slate-900/5">
-                        <div class="mb-2 flex items-center justify-between px-1">
-                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Armas MM2</span>
-                          <span id="itemsMm2SecondCount" class="text-[11px] font-semibold text-[#1e88e5]"></span>
-                        </div>
-
-                        <div class="mb-2.5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Rarezas de armas MM2 en Ítems">
-                          <button type="button" data-second-rarity-tab="GODLY" role="tab" aria-selected="true" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all bg-white text-[#1e88e5] shadow-2xs">GODLY</button>
-                          <button type="button" data-second-rarity-tab="CHROMA" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">CHROMA</button>
-                          <button type="button" data-second-rarity-tab="ANCIENT" role="tab" aria-selected="false" class="items-mm2-second-rarity-tab rounded-lg py-1.5 text-[11px] font-extrabold transition-all text-slate-500 hover:text-slate-800">ANCIENT</button>
-                        </div>
-
-                        <div id="itemsMm2SecondList" class="mm2-scroll max-h-48 overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="itemsMm2GeneratedCodeBox" class="hidden rounded-xl border border-cyan-200 bg-white p-3.5 space-y-3 shadow-2xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <div>
-                      <span class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Código propio</span>
-                      <span id="itemsMm2GeneratedCodeText" class="text-sm sm:text-base font-black tracking-wider text-[#0c7a8a]">—</span>
-                    </div>
-                    <span id="itemsMm2GeneratedWeaponBadge" class="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-extrabold text-indigo-700">—</span>
-                  </div>
-
-                  <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-2.5 space-y-1.5">
-                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código de barras</span>
-                    <svg id="itemsMm2BarcodeSvg" class="route-barcode-svg rounded bg-white px-2 py-1 border border-slate-200" aria-label="Código de barras del arma MM2"></svg>
-                    <span id="itemsMm2BarcodeDigitsText" class="text-[11px] font-extrabold tracking-widest text-slate-600">—</span>
-                    <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
-                      <button type="button" id="copyItemsMm2CodeBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                        Copiar código
-                      </button>
-                      <button type="button" id="downloadItemsMm2BarcodeBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
-                        Descargar PNG
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Panel 4: Tickets -->
-            <div id="panelTickets" role="tabpanel" aria-labelledby="tabTicketsBtn" class="tab-slide px-0.5 space-y-4">
-              <form id="ticketCreatorForm" novalidate class="space-y-3.5">
-                <div class="space-y-1.5">
-                  <label for="ticketBarcodeInput" class="block text-sm font-bold text-slate-800">
-                    Código de barra / Código QR / Precio
-                  </label>
-                  <div class="relative flex items-center">
-                    <input
-                      type="text"
-                      id="ticketBarcodeInput"
-                      name="ticketBarcodeInput"
-                      inputmode="text"
-                      placeholder="Ej. QTE-RBX-..., QTE-MM2-..., RBX-... o MM2-..."
-                      class="moon-input w-full rounded-xl py-2.5 pl-3.5 pr-20 text-sm font-semibold uppercase"
-                    />
-                    <button
-                      type="button"
-                      id="clearTicketBarcodeBtn"
-                      aria-label="Limpiar código del ticket"
-                      class="hidden absolute right-10 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/80 text-xs font-black text-slate-600 transition-colors hover:bg-slate-300 hover:text-slate-900"
-                    >
-                      ✕
-                    </button>
-                    <button
-                      type="button"
-                      id="toggleTicketScanBtn"
-                      aria-expanded="false"
-                      aria-controls="ticketScanMenu"
-                      aria-label="Subir foto de código de barras o QR para el ticket"
-                      class="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e88e5] text-white shadow-sm transition-all duration-300 ease-out hover:bg-[#1565c0] active:scale-90"
-                    >
-                      <svg id="ticketPlusIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div id="ticketScanFormalBanner" class="hidden items-center gap-1.5 rounded-lg border border-sky-200/90 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                    <span class="h-1.5 w-1.5 rounded-full bg-[#1e88e5]"></span>
-                    <span>Lectura completada · Datos cargados</span>
-                  </div>
-
-                  <div id="ticketScanMenu" aria-hidden="true" class="packages-accordion">
-                    <div class="packages-accordion-inner">
-                      <div class="rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 p-3 shadow-lg shadow-slate-900/5 space-y-2">
-                        <div class="flex items-center justify-between px-1">
-                          <span class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Escanear imagen</span>
-                          <span id="ticketScanStatusBadge" class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-[#1e88e5]">Toca para subir</span>
-                        </div>
-                        <label
-                          for="ticketBarcodePhotoInput"
-                          class="scan-stage flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/50 px-3 py-2.5 text-center transition-colors hover:border-[#1e88e5] hover:bg-sky-50 cursor-pointer"
-                        >
-                          <div id="ticketScanTint" class="scan-overlay-tint hidden"></div>
-                          <div id="ticketScanLaser" class="scan-laser-line hidden"></div>
-                          <img
-                            id="ticketBarcodePhotoPreview"
-                            alt="Imagen escaneada para ticket"
-                            class="relative z-20 hidden mb-1.5 h-16 w-auto max-w-full rounded-lg border border-slate-200 bg-white p-1 object-contain"
-                          />
-                          <span id="ticketBarcodePhotoLabel" class="relative z-20 text-xs font-extrabold text-slate-700">
-                            Subir foto de código de barras o QR
-                          </span>
-                          <input type="file" id="ticketBarcodePhotoInput" accept="image/*" class="sr-only" />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="ticketCodeInfoCard" class="rounded-xl border border-cyan-200 bg-cyan-50/70 px-4 py-3 space-y-1">
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#0c7a8a]">Información del código</span>
-                    <span id="ticketCodeTypeBadge" class="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-extrabold text-[#0c7a8a]">Sin código</span>
-                  </div>
-                  <p id="ticketCodeSummaryText" class="text-sm font-black text-slate-800">—</p>
-                  <p id="ticketCodeDetailText" class="text-xs font-semibold text-slate-600">Ingresa o abre un código de Robux o MM2 para ver los detalles.</p>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div class="space-y-1.5">
-                    <label for="ticketRobloxUserInput" class="block text-xs font-bold text-slate-800">
-                      User Roblox
-                    </label>
-                    <input
-                      type="text"
-                      id="ticketRobloxUserInput"
-                      name="ticketRobloxUserInput"
-                      placeholder="@usuario_roblox"
-                      class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
-                    />
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label for="ticketTiktokUserInput" class="block text-xs font-bold text-slate-800">
-                      User TikTok
-                    </label>
-                    <input
-                      type="text"
-                      id="ticketTiktokUserInput"
-                      name="ticketTiktokUserInput"
-                      placeholder="@usuario_tiktok"
-                      class="moon-input w-full rounded-xl py-2.5 px-3.5 text-sm font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  id="createTicketBtn"
-                  class="w-full rounded-xl bg-[#1e88e5] py-3 px-4 text-xs sm:text-sm font-extrabold text-white shadow-sm transition-all hover:bg-[#1565c0] active:scale-[0.99]"
-                >
-                  Generar Ticket con Código QR propio
-                </button>
-              </form>
-
-              <div id="activeTicketCard" class="hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50/70 to-white p-4 shadow-2xs space-y-3">
-                <div class="flex items-center justify-between gap-2">
-                  <div>
-                    <span class="block text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Ticket generado</span>
-                    <span id="activeTicketIdText" class="text-sm sm:text-base font-black text-slate-900">TKT-0000</span>
-                  </div>
-                  <span id="activeTicketDateText" class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-800">—</span>
-                </div>
-
-                <div class="rounded-xl border border-slate-200/90 bg-white p-3 space-y-1.5 text-xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="font-bold text-slate-500">Ítem / Robux:</span>
-                    <span id="activeTicketItemText" class="font-extrabold text-slate-900 text-right">—</span>
-                  </div>
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="font-bold text-slate-500">Código:</span>
-                    <span id="activeTicketCodeText" class="font-extrabold text-[#0c7a8a] text-right">—</span>
-                  </div>
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="font-bold text-slate-500">User Roblox:</span>
-                    <span id="activeTicketRobloxText" class="font-extrabold text-slate-800 text-right">—</span>
-                  </div>
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="font-bold text-slate-500">User TikTok:</span>
-                    <span id="activeTicketTiktokText" class="font-extrabold text-slate-800 text-right">—</span>
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 space-y-2">
-                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Código QR propio del ticket</span>
-                  <div id="activeTicketQrContainer" class="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs"></div>
-                  <span id="activeTicketQrPayloadText" class="max-w-full truncate text-[10px] font-bold text-slate-500">—</span>
-                  <div class="flex flex-wrap items-center justify-center gap-2 pt-0.5">
-                    <button type="button" id="copyTicketPayloadBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
-                      Copiar datos QR
-                    </button>
-                    <button type="button" id="downloadTicketQrBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
-                      Descargar QR PNG
-                    </button>
-                    <button type="button" id="downloadTicketFormBtn" class="rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700">
-                      Descargar formulario
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-extrabold uppercase tracking-wide text-slate-700">Tickets creados</span>
-                  <span id="ticketsSavedCountBadge" class="rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-extrabold text-slate-700">0</span>
-                </div>
-                <div id="ticketsHistoryList" class="mm2-scroll max-h-44 overflow-y-auto space-y-2">
-                  <p class="text-xs font-medium text-slate-400 text-center py-2">Aún no has creado tickets.</p>
-                </div>
               </div>
             </div>
 
@@ -2509,7 +2562,7 @@
       if (!rawInput) {
         if (robuxDecodedInfo) {
           robuxDecodedInfo.textContent = 'Pega o escribe el código generado en Ítems (100 R$ = $3.800 COP)';
-          robuxDecodedInfo.className = 'text-[11px] font-semibold text-[#0c7a8a]';
+          robuxDecodedInfo.className = 'text-[11px] md:text-xs font-semibold text-[#0c7a8a]';
         }
         if (priceCopDisplay) priceCopDisplay.textContent = '$0 COP';
         if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = '$0 COP';
@@ -2526,7 +2579,7 @@
         showMinRobuxToast();
         if (robuxDecodedInfo) {
           robuxDecodedInfo.textContent = `Mínimo ${MIN_ROBUX} Robux para calcular`;
-          robuxDecodedInfo.className = 'text-[11px] font-semibold text-red-600';
+          robuxDecodedInfo.className = 'text-[11px] md:text-xs font-semibold text-red-600';
         }
         if (priceCopDisplay) priceCopDisplay.textContent = '$0 COP';
         if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = '$0 COP';
@@ -2555,7 +2608,7 @@
         robuxDecodedInfo.textContent = pkg
           ? `Paquete ${pkg.code}: ${robuxQty.toLocaleString('es-CO')} Robux`
           : `Cantidad detectada: ${robuxQty.toLocaleString('es-CO')} Robux`;
-        robuxDecodedInfo.className = 'text-[11px] font-bold text-emerald-700';
+        robuxDecodedInfo.className = 'text-[11px] md:text-xs font-bold text-emerald-700';
       }
       if (priceCopDisplay) priceCopDisplay.textContent = formatCop(finalCopPrice);
       if (robuxProfitBaseDisplay) robuxProfitBaseDisplay.textContent = formatCop(baseProfitCop);
@@ -2934,7 +2987,7 @@
       if (!rawVal) {
         if (mm2DecodedInfo) {
           mm2DecodedInfo.textContent = 'Escribe o pega el código generado en Ítems (o sube la foto desde +)';
-          mm2DecodedInfo.className = 'text-[11px] font-semibold text-[#0c7a8a]';
+          mm2DecodedInfo.className = 'text-[11px] md:text-xs font-semibold text-[#0c7a8a]';
         }
         if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = 'Sin rareza';
         if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = '—';
@@ -2957,14 +3010,14 @@
       if (found) {
         if (mm2DecodedInfo) {
           mm2DecodedInfo.textContent = `Arma detectada: ${found.name} (${found.rarity})`;
-          mm2DecodedInfo.className = 'text-[11px] font-bold text-emerald-700';
+          mm2DecodedInfo.className = 'text-[11px] md:text-xs font-bold text-emerald-700';
         }
         if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = found.rarity;
         if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = found.name;
       } else {
         if (mm2DecodedInfo) {
           mm2DecodedInfo.textContent = 'Arma no reconocida';
-          mm2DecodedInfo.className = 'text-[11px] font-semibold text-amber-600';
+          mm2DecodedInfo.className = 'text-[11px] md:text-xs font-semibold text-amber-600';
         }
         if (mm2WeaponCategoryLabel) mm2WeaponCategoryLabel.textContent = 'Sin rareza';
         if (mm2WeaponCodeDisplay) mm2WeaponCodeDisplay.value = '—';
