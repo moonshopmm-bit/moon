@@ -120,32 +120,37 @@
       width: 100%;
     }
 
+    /* 5 pestañas: 500% de ancho, cada slide ocupa 20% */
     .tabs-track {
       display: flex;
       align-items: flex-start;
-      width: 400%;
+      width: 500%;
       transform: translateX(0%);
       transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform;
     }
 
     .tabs-track.show-mm2 {
-      transform: translateX(-25%);
+      transform: translateX(-20%);
     }
 
     .tabs-track.show-items {
-      transform: translateX(-50%);
+      transform: translateX(-40%);
     }
 
     .tabs-track.show-tickets {
-      transform: translateX(-75%);
+      transform: translateX(-60%);
+    }
+
+    .tabs-track.show-wa {
+      transform: translateX(-80%);
     }
 
     .tab-slide {
-      width: 25%;
-      min-width: 25%;
-      max-width: 25%;
-      flex: 0 0 25%;
+      width: 20%;
+      min-width: 20%;
+      max-width: 20%;
+      flex: 0 0 20%;
       max-height: 76vh;
       overflow-y: auto;
       overflow-x: hidden;
@@ -325,33 +330,36 @@
   </div>
 
   <main class="min-h-screen w-full px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10 flex items-center justify-center">
-    <div class="w-full max-w-lg md:max-w-3xl lg:max-w-4xl transition-all duration-300">
+    <div class="w-full max-w-lg md:max-w-3xl lg:max-w-4xl transition-all duration-300 space-y-5">
 
-      <section class="moon-card p-5 sm:p-7 md:p-9 lg:p-10 space-y-6 md:space-y-7" aria-label="Calculadora MOONSHOP de Robux, MM2, Ítems y Tickets">
-        <!-- Encabezado optimizado para Tablet: Logo y barra de pestañas equilibrados -->
+      <section class="moon-card p-5 sm:p-7 md:p-9 lg:p-10 space-y-6 md:space-y-7" aria-label="Calculadora MOONSHOP de Robux, MM2, Ítems, Tickets y WhatsApp">
+        <!-- Encabezado optimizado para Tablet: Logo y barra de 5 pestañas -->
         <header class="relative text-center space-y-3 md:space-y-4">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6 border-b border-slate-100 pb-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-5 border-b border-slate-100 pb-4">
             <div class="text-2xl sm:text-3xl md:text-3xl font-black tracking-tight select-none md:text-left" aria-label="MOONSHOP">
               <span class="logo-m1">M</span><span class="logo-o1">O</span><span class="logo-o2">O</span><span class="logo-n">N</span><span class="logo-s">S</span><span class="logo-h">H</span><span class="logo-o3">O</span><span class="logo-p">P</span>
             </div>
 
-            <nav class="relative w-full md:w-[440px] lg:w-[480px] grid grid-cols-4 rounded-2xl bg-slate-100 p-1.5 shadow-inner" role="tablist" aria-label="Secciones de MOONSHOP">
+            <nav class="relative w-full md:w-[500px] lg:w-[540px] grid grid-cols-5 rounded-2xl bg-slate-100 p-1.5 shadow-inner" role="tablist" aria-label="Secciones de MOONSHOP">
               <span
                 id="tabPillIndicator"
                 aria-hidden="true"
-                class="tab-pill-indicator pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(25%-0.225rem)] rounded-xl bg-white shadow-sm"
+                class="tab-pill-indicator pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 w-[calc(20%-0.24rem)] rounded-xl bg-white shadow-sm"
               ></span>
-              <button type="button" id="tabRobuxBtn" role="tab" aria-selected="true" aria-controls="panelRobux" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-[#1e88e5]">
+              <button type="button" id="tabRobuxBtn" role="tab" aria-selected="true" aria-controls="panelRobux" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[10px] sm:text-xs md:text-xs font-extrabold transition-colors duration-200 text-[#1e88e5]">
                 Robux
               </button>
-              <button type="button" id="tabMm2Btn" role="tab" aria-selected="false" aria-controls="panelMm2" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              <button type="button" id="tabMm2Btn" role="tab" aria-selected="false" aria-controls="panelMm2" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[10px] sm:text-xs md:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
                 MM2
               </button>
-              <button type="button" id="tabItemsBtn" role="tab" aria-selected="false" aria-controls="panelItems" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              <button type="button" id="tabItemsBtn" role="tab" aria-selected="false" aria-controls="panelItems" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[10px] sm:text-xs md:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
                 Ítems
               </button>
-              <button type="button" id="tabTicketsBtn" role="tab" aria-selected="false" aria-controls="panelTickets" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[11px] sm:text-xs md:text-sm font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+              <button type="button" id="tabTicketsBtn" role="tab" aria-selected="false" aria-controls="panelTickets" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[10px] sm:text-xs md:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
                 Tickets
+              </button>
+              <button type="button" id="tabWaBtn" role="tab" aria-selected="false" aria-controls="panelWa" class="relative z-10 rounded-xl py-2.5 md:py-3 text-[10px] sm:text-xs md:text-xs font-extrabold transition-colors duration-200 text-slate-500 hover:text-slate-800">
+                WhatsApp
               </button>
             </nav>
           </div>
@@ -379,11 +387,10 @@
         <div class="tabs-viewport">
           <div id="tabsTrack" class="tabs-track">
 
-            <!-- Panel 1: Robux (Distribución en 2 columnas en Tablet) -->
+            <!-- Panel 1: Robux -->
             <div id="panelRobux" role="tabpanel" aria-labelledby="tabRobuxBtn" class="tab-slide px-0.5 md:px-1">
               <form id="robuxOrderForm" novalidate class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
 
-                <!-- Columna Izquierda Tablet: Entrada de código y precio -->
                 <div class="md:col-span-6 space-y-4">
                   <div id="robuxFieldWrapper" class="space-y-1.5">
                     <label for="robuxAmount" class="block text-sm font-bold text-slate-800">
@@ -502,7 +509,6 @@
                   </div>
                 </div>
 
-                <!-- Columna Derecha Tablet: Game Pass, Tutorial y QR de cotización -->
                 <div class="md:col-span-6 space-y-4">
                   <div class="space-y-1.5">
                     <label for="gamepassAmountDisplay" class="block text-sm font-bold text-slate-800">
@@ -590,11 +596,10 @@
               </form>
             </div>
 
-            <!-- Panel 2: MM2 (Distribución en 2 columnas en Tablet) -->
+            <!-- Panel 2: MM2 -->
             <div id="panelMm2" role="tabpanel" aria-labelledby="tabMm2Btn" class="tab-slide px-0.5 md:px-1">
               <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
 
-                <!-- Columna Izquierda Tablet: Código de arma y arma detectada -->
                 <div class="md:col-span-6 space-y-4">
                   <div id="mm2WeaponFieldWrapper" class="space-y-1.5">
                     <label for="mm2WeaponInput" class="block text-sm font-bold text-slate-800">
@@ -712,7 +717,6 @@
                   </div>
                 </div>
 
-                <!-- Columna Derecha Tablet: Ganancia, total COP y QR de cotización MM2 -->
                 <div class="md:col-span-6 space-y-4">
                   <div id="mm2ProfitFieldWrapper" class="space-y-2">
                     <label for="mm2ProfitDisplayInput" class="block text-sm font-bold text-slate-800">
@@ -808,11 +812,10 @@
               </div>
             </div>
 
-            <!-- Panel 3: Ítems (Tarjetas lado a lado en Tablet) -->
+            <!-- Panel 3: Ítems -->
             <div id="panelItems" role="tabpanel" aria-labelledby="tabItemsBtn" class="tab-slide px-0.5 md:px-1">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start">
 
-                <!-- Tarjeta Robux -->
                 <div class="rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/70 to-white p-4 md:p-5 shadow-2xs space-y-3.5">
                   <div class="flex items-center justify-between">
                     <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-wide text-slate-800">Robux</h2>
@@ -870,7 +873,6 @@
                   </div>
                 </div>
 
-                <!-- Tarjeta Murder Mystery 2 -->
                 <div class="rounded-2xl border border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 to-white p-4 md:p-5 shadow-2xs space-y-3.5">
                   <div class="flex items-center justify-between">
                     <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-wide text-slate-800">Murder Mistery 2</h2>
@@ -951,11 +953,10 @@
               </div>
             </div>
 
-            <!-- Panel 4: Tickets (Distribución en 2 columnas en Tablet: Formulario a la izquierda, Ticket + Historial a la derecha) -->
+            <!-- Panel 4: Tickets -->
             <div id="panelTickets" role="tabpanel" aria-labelledby="tabTicketsBtn" class="tab-slide px-0.5 md:px-1">
               <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
 
-                <!-- Columna Izquierda Tablet: Formulario de creación de ticket -->
                 <form id="ticketCreatorForm" novalidate class="md:col-span-6 space-y-4">
                   <div class="space-y-1.5">
                     <label for="ticketBarcodeInput" class="block text-sm font-bold text-slate-800">
@@ -1070,7 +1071,6 @@
                   </button>
                 </form>
 
-                <!-- Columna Derecha Tablet: Ticket activo e historial -->
                 <div class="md:col-span-6 space-y-4">
                   <div id="activeTicketCard" class="hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50/70 to-white p-4 md:p-5 shadow-2xs space-y-3">
                     <div class="flex items-center justify-between gap-2">
@@ -1108,10 +1108,10 @@
                         <button type="button" id="copyTicketPayloadBtn" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-extrabold text-slate-700 transition-colors hover:border-[#1e88e5] hover:text-[#1e88e5]">
                           Copiar datos QR
                         </button>
-                        <button type="button" id="downloadTicketQrBtn" class="rounded-lg bg-[#1e88e5] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
+                        <button type="button" id="downloadTicketQrBtn" class="rounded-lg bg-[#1e88e5] px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-[#1565c0]">
                           Descargar QR PNG
                         </button>
-                        <button type="button" id="downloadTicketFormBtn" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700">
+                        <button type="button" id="downloadTicketFormBtn" class="rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[11px] font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700">
                           Descargar formulario
                         </button>
                       </div>
@@ -1126,6 +1126,116 @@
                     <div id="ticketsHistoryList" class="mm2-scroll max-h-48 md:max-h-60 overflow-y-auto space-y-2">
                       <p class="text-xs font-medium text-slate-400 text-center py-2">Aún no has creado tickets.</p>
                     </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Panel 5: WhatsApp (Pestaña dedicada con menú propio de opciones al pulsar Enviar) -->
+            <div id="panelWa" role="tabpanel" aria-labelledby="tabWaBtn" class="tab-slide px-0.5 md:px-1">
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
+
+                <div class="md:col-span-6 space-y-4">
+                  <div class="rounded-2xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/70 to-white p-4 md:p-5 space-y-3.5">
+                    <div class="flex items-center justify-between">
+                      <h2 class="text-xs md:text-sm font-extrabold uppercase tracking-wide text-emerald-800">Imagen para WhatsApp</h2>
+                      <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700">Listo</span>
+                    </div>
+
+                    <p id="waTabStatusText" class="text-xs md:text-sm font-medium text-slate-600">
+                      Agrega una imagen y pulsa Enviar para elegir una opción.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      <label
+                        for="waTabImageInput"
+                        class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs md:text-sm font-extrabold text-emerald-800 transition-colors hover:bg-emerald-100 cursor-pointer"
+                      >
+                        Agregar imagen
+                        <input type="file" id="waTabImageInput" accept="image/*" class="sr-only" />
+                      </label>
+
+                      <button
+                        type="button"
+                        id="waTabSendBtn"
+                        class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-2.5 text-xs md:text-sm font-extrabold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.99]"
+                      >
+                        Enviar
+                      </button>
+
+                      <button
+                        type="button"
+                        id="waTabClearBtn"
+                        class="hidden rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-extrabold text-slate-600 transition-colors hover:bg-slate-50"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Menú propio de opciones al pulsar Enviar (sin links ni descripción) -->
+                  <div id="waSendOptionsBox" class="hidden rounded-2xl border border-slate-200 bg-slate-50/90 p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700">Opciones de envío</span>
+                      <button
+                        type="button"
+                        id="waCloseOptionsBtn"
+                        aria-label="Cerrar opciones"
+                        class="rounded-lg bg-white border border-slate-200 px-2 py-0.5 text-[11px] font-black text-slate-500 hover:text-slate-900"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        id="waOptDirectQrBtn"
+                        class="rounded-xl bg-emerald-600 px-3.5 py-3 text-left text-xs font-extrabold text-white shadow-2xs transition-colors hover:bg-emerald-700"
+                      >
+                        Abrir WhatsApp directo
+                      </button>
+
+                      <button
+                        type="button"
+                        id="waOptCopyImgBtn"
+                        class="rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left text-xs font-extrabold text-slate-800 transition-colors hover:border-emerald-500 hover:text-emerald-700"
+                      >
+                        Copiar imagen
+                      </button>
+
+                      <button
+                        type="button"
+                        id="waOptDownloadImgBtn"
+                        class="rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left text-xs font-extrabold text-slate-800 transition-colors hover:border-emerald-500 hover:text-emerald-700"
+                      >
+                        Guardar imagen
+                      </button>
+
+                      <button
+                        type="button"
+                        id="waOptSelectChatBtn"
+                        class="rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left text-xs font-extrabold text-slate-800 transition-colors hover:border-emerald-500 hover:text-emerald-700"
+                      >
+                        Elegir chat de WhatsApp
+                      </button>
+                    </div>
+
+                    <p id="waOptionFeedbackText" class="text-[11px] font-bold text-emerald-700 min-h-[16px]"></p>
+                  </div>
+                </div>
+
+                <div class="md:col-span-6">
+                  <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/40 p-4 min-h-[210px]">
+                    <img
+                      id="waTabImagePreview"
+                      alt="Vista previa de la imagen"
+                      class="hidden max-h-48 w-auto rounded-xl border border-slate-200 bg-white p-1.5 object-contain shadow-2xs"
+                    />
+                    <span id="waTabPlaceholderText" class="text-xs font-bold text-slate-400 text-center">
+                      Ninguna imagen agregada
+                    </span>
                   </div>
                 </div>
 
@@ -1410,6 +1520,7 @@
     const tabMm2Btn = document.getElementById('tabMm2Btn');
     const tabItemsBtn = document.getElementById('tabItemsBtn');
     const tabTicketsBtn = document.getElementById('tabTicketsBtn');
+    const tabWaBtn = document.getElementById('tabWaBtn');
     const tabPillIndicator = document.getElementById('tabPillIndicator');
     const tabsTrack = document.getElementById('tabsTrack');
     const sectionTitle = document.getElementById('sectionTitle');
@@ -2167,7 +2278,6 @@
       return `${trimmed}…`;
     }
 
-    // Genera y descarga un formulario visual limpio con todos los datos del ticket y su código QR
     function downloadTicketFormPng(ticket) {
       if (!ticket) return;
       try {
@@ -2179,11 +2289,9 @@
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Fondo general suave
         ctx.fillStyle = '#eef6f8';
         ctx.fillRect(0, 0, width, height);
 
-        // Tarjeta principal del formulario
         drawRoundRect(ctx, 28, 28, width - 56, height - 56, 26);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
@@ -2191,7 +2299,6 @@
         ctx.strokeStyle = '#cbd5e1';
         ctx.stroke();
 
-        // Encabezado superior con acento MOONSHOP
         drawRoundRect(ctx, 28, 28, width - 56, 86, 26);
         ctx.fillStyle = '#0d96a3';
         ctx.fill();
@@ -2206,7 +2313,6 @@
         ctx.fillStyle = '#cffafe';
         ctx.fillText(`Registro oficial de orden · Hora: ${ticket.createdAt || '—'}`, 56, 98);
 
-        // Insignia de folio a la derecha en encabezado
         drawRoundRect(ctx, width - 270, 48, 214, 44, 12);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
         ctx.fill();
@@ -2215,7 +2321,6 @@
         ctx.textAlign = 'center';
         ctx.fillText(ticket.id || 'TKT-0000', width - 163, 75);
 
-        // Columna izquierda: campos del formulario
         const leftX = 56;
         const fieldW = 510;
         const fieldH = 62;
@@ -2248,7 +2353,6 @@
           ctx.fillText(fitSingleLineText(ctx, f.value, fieldW - 32), leftX + 16, y + 46);
         });
 
-        // Columna derecha: recuadro del código QR
         const qrBoxX = 590;
         const qrBoxY = 138;
         const qrBoxW = 274;
@@ -2285,7 +2389,6 @@
           qrBoxY + qrBoxH - 16
         );
 
-        // Pie del formulario
         ctx.textAlign = 'left';
         ctx.font = '600 11px Inter, sans-serif';
         ctx.fillStyle = '#64748b';
@@ -2871,15 +2974,19 @@
       const isMm2 = targetTab === 'mm2';
       const isItems = targetTab === 'items';
       const isTickets = targetTab === 'tickets';
+      const isWa = targetTab === 'wa';
 
       if (tabsTrack) {
         tabsTrack.classList.toggle('show-mm2', isMm2);
         tabsTrack.classList.toggle('show-items', isItems);
         tabsTrack.classList.toggle('show-tickets', isTickets);
+        tabsTrack.classList.toggle('show-wa', isWa);
       }
 
       if (tabPillIndicator) {
-        if (isTickets) {
+        if (isWa) {
+          tabPillIndicator.style.transform = 'translateX(400%)';
+        } else if (isTickets) {
           tabPillIndicator.style.transform = 'translateX(300%)';
         } else if (isItems) {
           tabPillIndicator.style.transform = 'translateX(200%)';
@@ -2891,10 +2998,11 @@
       }
 
       const tabs = [
-        { btn: tabRobuxBtn, active: !isMm2 && !isItems && !isTickets },
+        { btn: tabRobuxBtn, active: !isMm2 && !isItems && !isTickets && !isWa },
         { btn: tabMm2Btn, active: isMm2 },
         { btn: tabItemsBtn, active: isItems },
-        { btn: tabTicketsBtn, active: isTickets }
+        { btn: tabTicketsBtn, active: isTickets },
+        { btn: tabWaBtn, active: isWa }
       ];
       tabs.forEach(({ btn, active }) => {
         if (!btn) return;
@@ -2904,7 +3012,10 @@
       });
 
       if (sectionTitle) {
-        if (isTickets) {
+        if (isWa) {
+          sectionTitle.textContent = 'WhatsApp';
+          if (sectionSubtitle) sectionSubtitle.textContent = 'Agrega una imagen y elige cómo enviarla';
+        } else if (isTickets) {
           sectionTitle.textContent = 'Tickets';
           if (sectionSubtitle) sectionSubtitle.textContent = 'Lee códigos, asigna usuarios de Roblox/TikTok y genera un QR único';
         } else if (isItems) {
@@ -3047,6 +3158,7 @@
       switchTab('tickets');
       renderTicketsSection();
     });
+    if (tabWaBtn) tabWaBtn.addEventListener('click', () => switchTab('wa'));
 
     if (robuxInput) robuxInput.addEventListener('input', updateCalculation);
     if (clearRobuxInputBtn) {
@@ -3419,6 +3531,159 @@
         });
       }
     } catch (_) {}
+  </script>
+
+  <!-- Módulo independiente en pestaña WhatsApp: opciones propias al pulsar Enviar sin link de descripción -->
+  <script>
+    (function () {
+      const WHATSAPP_QR_LINK = 'https://api.whatsapp.com/qr/P2555V3Y7KTZI1?autoload=1&app_absent=0';
+      const waImageInput = document.getElementById('waTabImageInput');
+      const waImagePreview = document.getElementById('waTabImagePreview');
+      const waPlaceholderText = document.getElementById('waTabPlaceholderText');
+      const waSendBtn = document.getElementById('waTabSendBtn');
+      const waClearBtn = document.getElementById('waTabClearBtn');
+      const waStatusText = document.getElementById('waTabStatusText');
+      const waOptionsBox = document.getElementById('waSendOptionsBox');
+      const waCloseOptionsBtn = document.getElementById('waCloseOptionsBtn');
+      const waOptDirectQrBtn = document.getElementById('waOptDirectQrBtn');
+      const waOptCopyImgBtn = document.getElementById('waOptCopyImgBtn');
+      const waOptDownloadImgBtn = document.getElementById('waOptDownloadImgBtn');
+      const waOptSelectChatBtn = document.getElementById('waOptSelectChatBtn');
+      const waOptionFeedbackText = document.getElementById('waOptionFeedbackText');
+
+      let selectedWaFile = null;
+      let selectedWaDataUrl = '';
+
+      function setFeedback(msg) {
+        if (waOptionFeedbackText) waOptionFeedbackText.textContent = msg || '';
+      }
+
+      function syncWaPreview() {
+        setFeedback('');
+        if (!selectedWaFile) {
+          selectedWaDataUrl = '';
+          if (waImagePreview) {
+            waImagePreview.src = '';
+            waImagePreview.classList.add('hidden');
+          }
+          if (waPlaceholderText) waPlaceholderText.classList.remove('hidden');
+          if (waClearBtn) waClearBtn.classList.add('hidden');
+          if (waStatusText) {
+            waStatusText.textContent = 'Agrega una imagen y pulsa Enviar para elegir una opción.';
+          }
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          selectedWaDataUrl = String(reader.result || '');
+          if (waImagePreview) {
+            waImagePreview.src = selectedWaDataUrl;
+            waImagePreview.classList.remove('hidden');
+          }
+          if (waPlaceholderText) waPlaceholderText.classList.add('hidden');
+          if (waClearBtn) waClearBtn.classList.remove('hidden');
+          if (waStatusText) {
+            waStatusText.textContent = `Imagen lista: ${selectedWaFile.name}`;
+          }
+        };
+        reader.readAsDataURL(selectedWaFile);
+      }
+
+      if (waImageInput) {
+        waImageInput.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          selectedWaFile = file || null;
+          syncWaPreview();
+        });
+      }
+
+      if (waClearBtn) {
+        waClearBtn.addEventListener('click', () => {
+          selectedWaFile = null;
+          if (waImageInput) waImageInput.value = '';
+          if (waOptionsBox) waOptionsBox.classList.add('hidden');
+          syncWaPreview();
+        });
+      }
+
+      if (waSendBtn) {
+        waSendBtn.addEventListener('click', () => {
+          if (waOptionsBox) {
+            waOptionsBox.classList.remove('hidden');
+          }
+          if (!selectedWaFile) {
+            setFeedback('Sin imagen cargada: puedes abrir WhatsApp directo.');
+          } else {
+            setFeedback('Elige cómo deseas enviar o guardar la imagen.');
+          }
+        });
+      }
+
+      if (waCloseOptionsBtn && waOptionsBox) {
+        waCloseOptionsBtn.addEventListener('click', () => {
+          waOptionsBox.classList.add('hidden');
+          setFeedback('');
+        });
+      }
+
+      if (waOptDirectQrBtn) {
+        waOptDirectQrBtn.addEventListener('click', () => {
+          window.open(WHATSAPP_QR_LINK, '_blank', 'noopener,noreferrer');
+          setFeedback('Abriendo WhatsApp directo.');
+        });
+      }
+
+      if (waOptCopyImgBtn) {
+        waOptCopyImgBtn.addEventListener('click', async () => {
+          if (!selectedWaFile) {
+            setFeedback('Primero agrega una imagen.');
+            return;
+          }
+          try {
+            if (navigator.clipboard && typeof window.ClipboardItem === 'function') {
+              const item = new window.ClipboardItem({ [selectedWaFile.type || 'image/png']: selectedWaFile });
+              await navigator.clipboard.write([item]);
+              setFeedback('Imagen copiada al portapapeles.');
+              return;
+            }
+          } catch (_) {}
+          setFeedback('Tu navegador no permite copiar imagen; usa Guardar imagen.');
+        });
+      }
+
+      if (waOptDownloadImgBtn) {
+        waOptDownloadImgBtn.addEventListener('click', () => {
+          if (!selectedWaFile || !selectedWaDataUrl) {
+            setFeedback('Primero agrega una imagen.');
+            return;
+          }
+          const link = document.createElement('a');
+          link.href = selectedWaDataUrl;
+          link.download = selectedWaFile.name || 'imagen-whatsapp.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setFeedback('Imagen guardada en tu dispositivo.');
+        });
+      }
+
+      if (waOptSelectChatBtn) {
+        waOptSelectChatBtn.addEventListener('click', async () => {
+          if (!selectedWaFile) {
+            window.open('https://wa.me/', '_blank', 'noopener,noreferrer');
+            return;
+          }
+          try {
+            if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [selectedWaFile] })) {
+              await navigator.share({ files: [selectedWaFile] });
+              return;
+            }
+          } catch (_) {}
+          window.open('https://wa.me/', '_blank', 'noopener,noreferrer');
+        });
+      }
+    })();
   </script>
 </body>
 </html>
